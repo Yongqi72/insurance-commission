@@ -17,4 +17,4 @@
 - 前端：`AppLayout` 外壳、`LoginView`、`PolicyRecordListView`
 
 ## 当前状态
-V0 地基设计中（draft-foundation）
+V0 走骨架完成（PR #1 已合并 master，2026-08-25）。地基件 14 项落地，标杆切片（登录→保单记录列表）端到端跑通。下一步：V1 `draft-prd-vN`。

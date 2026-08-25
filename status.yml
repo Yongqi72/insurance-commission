@@ -32,9 +32,9 @@ tasks:
     type: develop
     discipline: dev-fullstack
     layer: null
-    status: done
+    status: merged
     assigned_to: cc
-    pr: null
+    pr: 1
     parent_id: null
     depends_on: []
     delivery: 串行
@@ -63,7 +63,28 @@ integration_tests: []
 #  - { iteration: v1, index: 1, description: ..., status: 待执行, failure_reason: null }
 #    # status: 待执行 / 执行中 / 通过 / 失败
 
-code_reviews: []
+code_reviews:
+  - iteration: v0
+    task_id: foundation
+    conclusion: 通过
+    rounds: 2
+    code_rounds: 2
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: iterations/v0/code-reviews/foundation
+    review_profile_version: foundation-review/v1
+    implementation_started_at: 2026-08-25T08:55:00Z
+    implementation_completed_at: 2026-08-25T09:29:20Z
+    review_started_at: 2026-08-25T09:29:20Z
+    review_completed_at: 2026-08-25T10:05:00Z
+    implementation_minutes: 35
+    review_minutes: 36
+    spec_minutes: 1
+    comment: "round-01（full）0 blocking / 3 advisory；F001/F002 页面外壳/HTTP 单例实测仅达强约定（非构造级），F003 三行文档口径未对齐 V0 范围授权。round-02（targeted，仅 foundation.md 文档改动）复核三条 finding 均 verified-closed，conclusion: pass"
+    issues:
+      - { id: foundation-F001, dimension: foundation-enforcement, severity: 建议, type: claim-failure, reachability: current, action: downgrade-claim, impact: "行为无变化，页面外壳声明构造级但实测仅强约定", description: "顶层新增不嵌套 AppLayout children 的路由未被 lint/类型系统拦截", location: "frontend/src/router/index.ts" }
+      - { id: foundation-F002, dimension: foundation-enforcement, severity: 建议, type: claim-failure, reachability: current, action: downgrade-claim, impact: "行为无变化，HTTP 单例声明构造级但实测仅强约定", description: "另建 axios.create() 第二实例未被 lint/类型系统拦截", location: "frontend/src/api/request.ts" }
+      - { id: foundation-F003, dimension: foundation-completeness, severity: 建议, type: claim-failure, reachability: unreachable, action: revise-doc, impact: "行为无变化，仅文档口径问题", description: "foundation.md 三行（提成阶梯/导入批次/分站映射）实际形式·档描述为已建成，实为 V1 授权延后", location: "foundation.md" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
