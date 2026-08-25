@@ -1,0 +1,67 @@
+﻿# status.yml · 机器侧状态契约（项目根，由 init-project 创建一次）
+# 字段定义见 ../hact-method-lab/skeleton/07-status-contract.md。看板应用直接 YAML.parse 取数。
+# 写入纪律：每次只改对应字段，其余不动；显式写 null，不省略键。
+# 总规则：凡往 iterations/vN/queue/ 写任务包处，同步往 tasks[] 追加一条；状态流转按 task-id 改。
+
+project: insurance-commission
+schema: 1
+generated_by: cc
+
+iterations:
+  v1:
+    gates:
+      G1: { signed: false, date: null }
+      G2: { signed: false, date: null }
+      G3: { signed: false, date: null }
+      G4: { signed: false, date: null }
+      G5: { signed: false, date: null }
+# v0 走骨架（A 类项目，先于 V1）：draft-foundation 建 iterations.v0 块，仅 G2（无 G1/G3-5）：
+#   v0:
+#     gates: { G2: { signed: false, date: null } }
+# 后续迭代由 draft-prd-vN 签 G1 时按需新增 vN 块（结构同 v1）
+
+tasks: []
+# 每条（写 queue 任务包处同步追加）：
+#  - id: {缩写}-v{N}-001     # B 类为 {缩写}-b-001
+#    iteration: v1           # 属哪期；B 类(bug/optimization)为 null
+#    sprint: 1               # B 类 / 修复任务为 null
+#    source: sprint          # sprint / foundation / integration / manual-test / bug / optimization
+#    title: ...
+#    type: develop           # 13 种 task type
+#    discipline: dev-backend # 8 种 discipline
+#    layer: backend          # frontend / backend / shared / null
+#    status: 可取            # 可取 / taken-by / done / merged
+#    assigned_to: null
+#    pr: null
+#    parent_id: null
+#    depends_on: []
+#    delivery: 可并行         # 串行 / 可并行 / null
+#    urgency: null           # hotfix / null
+
+integration_tests: []
+# 每条（generate-integration-tests 创建/更新）：
+#  - { iteration: v1, index: 1, description: ..., status: 待执行, failure_reason: null }
+#    # status: 待执行 / 执行中 / 通过 / 失败
+
+code_reviews: []
+# 每条（develop 自审末端追加，替代旧 pr-review）：
+#  - iteration: v1
+#    task_id: {被审 develop 任务 id}
+#    conclusion: 需修订       # 通过 / 需修订
+#    rounds: 2               # 兼容总轮次 = code_rounds + spec_rounds
+#    code_rounds: 1          # 代码证据审查运行数，int >= 1
+#    spec_rounds: 1          # freshness/contract/claim 独立复核数，int >= 0
+#    freshness: revised      # pass / revised；写代码前是否命中过期并完成修订
+#    review_report_dir: iterations/v1/code-reviews/{task-id}  # B 类为 b-reviews/{task-id}
+#    review_profile_version: develop-review-profile/v1        # Foundation 为 foundation-review/v1
+#    implementation_started_at: 2026-08-09T01:00:00Z
+#    implementation_completed_at: 2026-08-09T01:42:00Z
+#    review_started_at: 2026-08-09T01:42:00Z
+#    review_completed_at: 2026-08-09T02:18:00Z
+#    implementation_minutes: 42  # ceil(completed-started)，int >= 0
+#    review_minutes: 36          # 含独审等待与审查期间整改，int >= 0
+#    spec_minutes: 4             # preflight/revise-doc 澄清墙钟，int >= 0
+#    comment: null
+#    issues:
+#      - { id: task-F001, dimension: contract, severity: 严重, type: behavior-bug, reachability: current, action: fix-code, impact: ..., description: ..., location: src/x.ts:40 }
+#        # severity: 严重 / 一般 / 建议
