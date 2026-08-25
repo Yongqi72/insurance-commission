@@ -8,6 +8,9 @@ schema: 1
 generated_by: cc
 
 iterations:
+  v0:
+    gates:
+      G2: { signed: true, date: "2026-08-25" }
   v1:
     gates:
       G1: { signed: false, date: null }
