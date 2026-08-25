@@ -1,0 +1,47 @@
+// 视觉 token 占位值（V0 走骨架，foundation.md 视觉地基机械级：禁裸值 + 单一样式入口）。
+// 真值由 draft-ux 依据 design.md 正式定稿前，以下为合理占位色/尺寸，不代表最终视觉规格。
+
+// ------ 色彩系统 ------
+$primary: #2563eb;
+$primary-light: #dbeafe;
+$primary-dark: #1d4ed8;
+$bg-page: #f5f7fa;
+$bg-card: #fff;
+$bg-hover: #f0f4fa;
+$text-primary: #1f2329;
+$text-secondary: #5f6368;
+$text-hint: #9aa1a9;
+$border-color: #e4e7ed;
+$color-success: #16a34a;
+$color-warning: #d97706;
+$color-danger: #dc2626;
+$color-disabled: #c0c4cc;
+$color-info: #2563eb;
+
+// ------ 间距 ------
+$space-1: 4px;
+$space-2: 8px;
+$space-3: 12px;
+$space-4: 16px;
+$space-5: 24px;
+$space-6: 32px;
+
+// ------ 圆角 / 阴影 ------
+$radius-sm: 4px;
+$radius-md: 8px;
+$shadow-card: 0 1px 4px rgb(0 0 0 / 8%);
+
+// ------ 字体 ------
+$font-size-sm: 12px;
+$font-size-base: 14px;
+$font-size-lg: 16px;
+$font-size-xl: 20px;
+
+// ------ 过渡 ------
+$transition-fast: 0.15s;
+
+// ------ 布局关键容器 ------
+$layout-header-height: 56px;
+
+// ------ 响应式断点 ------
+$breakpoint-mobile: 768px;

@@ -56,12 +56,12 @@
 | 入参校验 | 后端 | 穿过它（校验管道） | 构造级 | 全局 `ValidationPipe`（`main.ts` `useGlobalPipes`，`whitelist + forbidNonWhitelisted`）+ DTO 必须有 class-validator 装饰器（构造级） |
 | 分页 / 列表协议 | 后端 | 说它（信封类型）+ 穿过它 | 机械级 | 共享 `PageQueryDto` / `PageResultDto` 类型 + 分页工具函数（机械级，靠约定复用，无编译期强制） |
 | 序列化格式（时间/金额/ID） | 后端 | 说它（共享类型） | 机械级 | 共享类型约定：时间统一 ISO 8601 字符串、金额统一 `number`（元，两位小数）、ID 统一 `string`（机械级） |
-| 页面外壳（导航/布局） | 前端 | 住进它（AppLayout） | 构造级 | `AppLayout`（顶部导航 + 内容区）挂在路由外壳层，业务页面路由统一嵌套在其 `router-view` 下，无法绕开（构造级） |
+| 页面外壳（导航/布局） | 前端 | 住进它（AppLayout） | 构造级 | `AppLayout`（顶部导航 + 内容区）挂在路由外壳层，业务页面路由嵌套在其 `children` 下（强约定/机械级-缺 lint——develop 独审 foundation-F001 实测：`routes` 顶层新增一条不嵌套路由，`vue-tsc`/`eslint`/`stylelint` 均不拦截，未到"写不出违规代码"的构造级门槛；顺手路径仍合规，无当前风险，待补路由结构 lint 或封装路由注册 helper 后再评构造级） |
 | 视觉地基（reset + 主题覆盖 + token 接线） | 前端 | 被它笼罩（全局样式入口） | 机械级（lint 禁裸值） | 唯一全局样式入口（`main.ts` 单次引入 `styles/index.scss`）+ Element Plus 主题变量覆盖（`--el-color-primary` 等）+ stylelint 禁裸值规则（机械级） |
 | 状态四态（加载/空/错/成） | 前端 | 往里填（数据页脚手架） | 机械级 | 数据页公共脚手架组件（封装加载/空/错/成四态），表格/报表页引入复用（机械级，约定用法） |
-| HTTP 单例（拦截器注入 token/作用域） | 前端 | 穿过它（api client） | 构造级 | 唯一 Axios 实例（`api/request.ts` 单例导出）+ 拦截器统一注入 token、统一处理 401/错误提示（构造级） |
-| **提成阶梯规则** | 后端 | 说它（单一权威计算函数/配置） | **机械级**（全集团唯一一套规则，禁止在多处手写计算逻辑；达标整体改率算法需单测覆盖边界值） | 单一权威函数 `calcCommission()`（commission 领域模块唯一入口，禁止其他模块重复实现阶梯逻辑），单测覆盖各档边界值（机械级） |
-| **导入批次边界** | 后端 | 穿过它（批次归属字段 + 统计查询按批次分组） | 机械级（票数统计禁止跨批次误累加） | 保单记录表 `import_batch_id` 字段 + 提成统计查询强制 `WHERE/GROUP BY import_batch_id`（机械级，靠 review 约束查询写法） |
-| **投保人→分站映射** | 后端 | 说它（映射表/规则） | 人审级（仅影响报表分类展示，不影响提成金额正确性） | 映射表/规则（配置在代码中的投保人关键字→分站映射，人审级） |
+| HTTP 单例（拦截器注入 token/作用域） | 前端 | 穿过它（api client） | 构造级 | 唯一 Axios 实例（`api/request.ts` 单例导出）+ 拦截器统一注入 token、统一处理 401/错误提示（强约定/机械级-缺 lint——develop 独审 foundation-F002 实测：另建文件裸 `axios.create()` 不经拦截器，`vue-tsc`/`eslint` 均不拦截，未到构造级门槛；顺手路径仍合规，无当前风险，待补 `no-restricted-imports` 类规则堵住裸 `axios.create()` 出口后再评构造级） |
+| **提成阶梯规则** | 后端 | 说它（单一权威计算函数/配置） | **机械级**（全集团唯一一套规则，禁止在多处手写计算逻辑；达标整体改率算法需单测覆盖边界值） | **V0 未建**（`foundation-design.md`「三」明确授权提成计算属 V1 功能范畴，V0 不接真实规则——develop 独审 foundation-F003 核实全仓无 `calcCommission` 实现，忠实执行了授权范围）。目标形态：单一权威函数 `calcCommission()`（commission 领域模块唯一入口，禁止其他模块重复实现阶梯逻辑），单测覆盖各档边界值，留 V1 develop 落地 |
+| **导入批次边界** | 后端 | 穿过它（批次归属字段 + 统计查询按批次分组） | 机械级（票数统计禁止跨批次误累加） | **字段级已建，查询级未建**：`PolicyRecord.importBatchId` 字段已建（`backend/src/policy-record/policy-record.entity.ts`）；提成统计查询的 `WHERE/GROUP BY import_batch_id` 约束因统计功能属 V1 范畴，V0 未建（同 foundation-F003），留 V1 develop 落地 |
+| **投保人→分站映射** | 后端 | 说它（映射表/规则） | 人审级（仅影响报表分类展示，不影响提成金额正确性） | **V0 未建**（属 V1 功能范畴，同 foundation-F003）。目标形态：映射表/规则（配置在代码中的投保人关键字→分站映射，人审级），留 V1 develop 落地 |
 
 > **走骨架（V0）= 把上表每一行最小化地各立一根，串成穿透前端→API→DB 的空壳应用**（不干实事，但每面承重墙就位）。纪律：**只立承重墙、不装修**——一根穿透到底的最薄切片证明架构，不建投机的完整框架。

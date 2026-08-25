@@ -23,7 +23,24 @@ iterations:
 #     gates: { G2: { signed: false, date: null } }
 # 后续迭代由 draft-prd-vN 签 G1 时按需新增 vN 块（结构同 v1）
 
-tasks: []
+tasks:
+  - id: foundation
+    iteration: v0
+    sprint: null
+    source: foundation
+    title: V0 走骨架（地基件 + 标杆穿透切片）
+    type: develop
+    discipline: dev-fullstack
+    layer: null
+    status: done
+    assigned_to: cc
+    pr: null
+    parent_id: null
+    depends_on: []
+    delivery: 串行
+    urgency: null
+    branch: foundation-v0
+    risk: sensitive
 # 每条（写 queue 任务包处同步追加）：
 #  - id: {缩写}-v{N}-001     # B 类为 {缩写}-b-001
 #    iteration: v1           # 属哪期；B 类(bug/optimization)为 null

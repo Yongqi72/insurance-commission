@@ -1,0 +1,58 @@
+{
+  "extends": ["stylelint-config-standard-scss"],
+  "plugins": ["stylelint-declaration-strict-value"],
+  "rules": {
+    "scale-unlimited/declaration-strict-value": [
+      [
+        "/color$/",
+        "/^background/",
+        "/border.*color/",
+        "font-size",
+        "/^margin/",
+        "/^padding/",
+        "border-radius",
+        "box-shadow",
+        "transition-duration",
+        "z-index"
+      ],
+      {
+        "ignoreValues": [
+          "0",
+          "none",
+          "inherit",
+          "initial",
+          "unset",
+          "transparent",
+          "currentColor",
+          "auto",
+          "100%",
+          "50%"
+        ],
+        "ignoreFunctions": true,
+        "message": "禁止硬编码视觉字面值（FE-DESIGN-01），请引用 src/styles/variables.scss 中定义的变量"
+      }
+    ],
+    "selector-disallowed-list": [
+      ["html", "body", "*"],
+      {
+        "message": "全局选择器（html/body/*）只允许出现在唯一全局样式入口 src/styles/index.scss（FE-DESIGN-03）"
+      }
+    ],
+    "no-descending-specificity": null,
+    "scss/at-rule-no-unknown": null,
+    "import-notation": null,
+    "selector-class-pattern": "^[a-z][a-z0-9-]*(__[a-z0-9-]+)?(--[a-z0-9-]+)?$"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.vue"],
+      "customSyntax": "postcss-html"
+    },
+    {
+      "files": ["src/styles/index.scss"],
+      "rules": {
+        "selector-disallowed-list": null
+      }
+    }
+  ]
+}
