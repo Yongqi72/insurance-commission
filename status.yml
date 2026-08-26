@@ -14,7 +14,7 @@ iterations:
   v1:
     gates:
       G1: { signed: true, date: "2026-08-25" }
-      G2: { signed: false, date: null }
+      G2: { signed: true, date: "2026-08-26" }
       G3: { signed: false, date: null }
       G4: { signed: false, date: null }
       G5: { signed: false, date: null }

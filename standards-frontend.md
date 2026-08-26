@@ -61,6 +61,17 @@
 
 ---
 
+### FE-ASYNC-03 · 写操作成功后必须有用户可见反馈
+
+- applies-if：新增/编辑/删除/导入等写操作请求成功返回后
+- rule：成功分支必须给用户可见反馈（`ElMessage.success`，或专用结果展示区域/面板承接同等信息，如导入结果的成功/失败行统计），禁止成功后无任何提示、只依赖页面数据静默变化
+- grade：人审级
+- enforcement：code-review
+- override：批量/静默操作经产品明确要求可豁免，须在 TRD 或任务包中登记
+- superseded-when：项目引入统一请求处理 composable 后由该 composable 承接，机制升级为机械级
+
+---
+
 ### FE-RESPONSIVE-01 · 弹窗/抽屉/多列布局移动端降级
 
 - applies-if：新增/修改 `el-dialog`、右侧抽屉或 Flex/Grid 多列布局
@@ -244,6 +255,39 @@
 - grade：人审级
 - enforcement：code-review
 - override：—
+- superseded-when：—
+
+---
+
+### FE-EP-05 · 编辑类弹窗存在未保存修改时关闭前需二次确认
+
+- applies-if：新增/修改承载表单编辑（新增或修改单条数据）的 `el-dialog`，且弹窗内含"保存"动作与未保存状态
+- rule：弹窗内维护"是否已修改（dirty）"标志，字段变更时置位，保存成功后复位；用户通过关闭按钮/遮罩/ESC 尝试关闭弹窗时，若 dirty 为真必须先弹二次确认（"有未保存的修改，确定要离开吗？"），确认放弃才真正关闭，否则回到编辑态；dirty 为假时直接关闭
+- grade：人审级
+- enforcement：code-review
+- override：单字段极简表单（如仅一个必填输入框、误操作代价低）经产品/UX 明确评估后可豁免，须在 TRD 或任务说明中登记
+- superseded-when：项目封装统一 `<AppDialog>`/`useDirtyGuard` 一类机制自动承接 dirty 追踪与离开确认后，由该机制承接，升级为机械级
+
+---
+
+### FE-EP-06 · 只读历史/日志类信息用右侧抽屉承载，不用弹窗
+
+- applies-if：新增"查看修改历史"/"查看变更日志"一类只读、按时间倒序展示的历史记录入口
+- rule：历史/日志类只读信息统一用右侧抽屉（`el-drawer`）承载，不使用 `el-dialog`；保留主页面/主表格在抽屉外可见，抽屉内容为按时间倒序的时间线列表，无记录时展示空态文案
+- grade：人审级
+- enforcement：code-review
+- override：历史记录本身需要独立的筛选/分页等复杂交互时，TRD 可改为独立页面承载
+- superseded-when：—
+
+---
+
+### FE-TABLE-01 · 单行少量字段编辑优先整行展开，不用弹窗
+
+- applies-if：表格中需要对单行数据做 1~2 个字段的即时编辑（如状态、备注、单个文本字段）
+- rule：优先采用点击整行展开一个内联编辑区（展开行）的交互，而非另开 `el-dialog` 承接同等编辑；同一时刻最多展开一行，展开新行前先收起已展开的行；三个及以上字段或字段间存在复杂校验/联动的编辑，改用弹窗
+- grade：人审级
+- enforcement：code-review
+- override：TRD 可为特定场景（如需要弹窗承载额外上下文）指定改用弹窗，须登记理由
 - superseded-when：—
 
 ---

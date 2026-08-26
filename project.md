@@ -12,15 +12,22 @@
 ## 技术层
 > 由 draft-tech-design 填写
 
-**技术栈**（V0 draft-foundation 定，2026-08-25）：
-- 后端：NestJS + TypeORM，MySQL
+**技术栈**（V0 draft-foundation 定，2026-08-25；v1 draft-tech-design 补充，2026-08-26）：
+- 后端：NestJS + TypeORM，MySQL（测试/开发/生产环境统一 MySQL，V0 沙箱曾用 SQLite 的临时方案已结束）
 - 前端：Vue3 + Element Plus + Pinia + Vite
 - 鉴权：需要登录（单一管理员账号密码登录 + JWT Bearer Token 校验，全局 Guard opt-out 模型）
 - 测试框架：后端 Jest（`npm run test` / `test:e2e` / `test:cov`）
+- 文件存储：阿里云 OSS（私有 Bucket + 后端签名 URL），封装于 `OssClient`
+- Excel 处理：`exceljs`（导入解析 + 导出生成共用列定义，封装于 `ExcelParser`/`ExcelBuilder`）
 
-**模块划分**（V0 走骨架范围）：
-- 后端：`auth`（登录）、`policy-record`（保单记录，V0 仅建列表查询，导入/回填/提成计算留待 V1）
-- 前端：`AppLayout` 外壳、`LoginView`、`PolicyRecordListView`
+**数据库结构（v1 新增/变更，详见 `iterations/v1/trd.md`）**：
+- 新建表：`commission_batch`（提成批次）、`import_file`（导入文件记录）、`sales_fill_log`（销售人员补录日志）、`commission_tier`（提成阶梯规则）、`commission_tier_change_log`（阶梯规则变更日志）
+- 修改表：`policy_record`（新增 `premium_amount`/`import_file_id`/`sales_fill_source`；`work_order_no`/`policy_no` 唯一约束移除）
+- 本次结构变更配套正式 migration 文件，替代 V0 遗留的 `synchronize` 建表方式
+
+**模块划分**：
+- 后端：`auth`（登录，V0）、`policy-record`（保单记录，V0 建列表查询，v1 扩展字段+补录接口）、`commission-batch`（v1 新增：批次/导入/回填触发）、`commission-tier`（v1 新增：阶梯规则）、`commission-report`（v1 新增：实时汇总+导出）、`common/oss`、`common/excel`（v1 新增共享封装）
+- 前端：`AppLayout` 外壳（V0）、`LoginView`（V0）、`PolicyRecordListView`（V0）、`BatchListView`/`BatchDetailView`/`CommissionTierView`（v1 新增）
 
 ## 当前状态
-V0 走骨架完成（PR #1 已合并 master，2026-08-25）。地基件 14 项落地，标杆切片（登录→保单记录列表）端到端跑通。下一步：V1 `draft-prd-vN`。
+V1 技术设计完成（TRD + standards，2026-08-26）：4 个功能、17 个接口、6 张表；G2 待签。V0 走骨架已完成（PR #1 已合并 master，2026-08-25）。下一步：`plan-sprint`。

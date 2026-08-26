@@ -62,6 +62,17 @@
 
 ---
 
+### BE-TYPEORM-03 · 金额/decimal 字段统一走 decimalTransformer
+
+- applies-if：新增/修改 Entity 中对应数据库 `DECIMAL` 列的金额类字段
+- rule：TypeORM 读取 `decimal` 列默认可能返回 string；金额字段必须显式指定 `decimalTransformer` 统一序列化为 number，禁止让字段裸用 TypeORM 默认行为
+- grade：人审级
+- enforcement：code-review
+- override：TRD 可为需要保留高精度字符串（如禁止浮点误差的场景）的字段指定另一套 transformer，须写明理由
+- superseded-when：引入 Entity 字段级 lint（检测 decimal 列缺失 transformer）后升级为机械级
+
+---
+
 ### BE-DB-01 · 唯一约束声明与生效核对
 
 - applies-if：新增/修改带唯一性要求的字段（如工作单号、保单号）
@@ -84,6 +95,17 @@
 
 ---
 
+### BE-DB-03 · 表结构变更须配套正式 migration
+
+- applies-if：新增/修改 Entity 引发数据库表结构变更（建表、加列、改列、加索引、加/删约束等）
+- rule：禁止只依赖 TypeORM `synchronize: true` 让应用启动时静默同步表结构；结构变更必须配套编写正式 migration 文件落库，保证变更可追溯、可在生产环境按序执行
+- grade：人审级
+- enforcement：code-review
+- override：TRD 可为沙箱/测试专属数据库明确保留 `synchronize`，须写明适用范围；生产路径不可覆盖
+- superseded-when：接入 migration 自动生成/校验的 CI 检查后升级为机械级
+
+---
+
 ### BE-EXT-01 · 外部接口返回值防御性校验
 
 - applies-if：调用任何第三方/外部 API 并使用其返回值（含工作单号回填销售人员姓名的第三方接口）
@@ -91,6 +113,28 @@
 - grade：人审级
 - enforcement：code-review
 - override：不可覆盖
+- superseded-when：—
+
+---
+
+### BE-EXT-02 · 对象存储访问统一走专属客户端封装
+
+- applies-if：新增/修改需要读写对象存储（OSS 等）的代码
+- rule：禁止在业务模块（Controller/Service）中直接 import 并调用对象存储 SDK；统一经由专属封装客户端（如 `OssClient`）暴露的方法（上传、生成签名 URL 等），SDK 初始化、鉴权、路径拼接等细节收敛在该封装内
+- grade：人审级
+- enforcement：code-review
+- override：TRD 可为一次性脚本（数据迁移/初始化脚本，非常规业务代码路径）指定直接调用 SDK，须写明理由
+- superseded-when：—
+
+---
+
+### BE-EXCEL-01 · Excel 解析与生成共用同一套列定义
+
+- applies-if：新增/修改 Excel 导入解析或导出生成逻辑，且导入与导出涉及同一批业务字段
+- rule：禁止导入解析与导出生成各自硬编码一份列顺序/表头；统一通过共享列定义（如 `ExcelParser`/`ExcelBuilder`）驱动读写，避免字段顺序在两处独立维护后悄然漂移不一致
+- grade：人审级
+- enforcement：code-review
+- override：TRD 可为导入/导出字段完全不重叠的场景豁免共享列定义
 - superseded-when：—
 
 ---
