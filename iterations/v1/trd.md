@@ -42,6 +42,11 @@
 - 字段：`id`（int，自增主键）/ `operation_type`（varchar 16，枚举 `create`|`update`|`delete`）/ `operator`（varchar 64）/ `changed_at`（datetime）/ `before_snapshot`（text，JSON 字符串，结构 `{lowerBound, upperBound, unitPrice}`，可空——`create` 时为空）/ `after_snapshot`（text，JSON 字符串，同结构，可空——`delete` 时为空）；API 层返回时统一解析为对象（非原始字符串），供前端直接取字段渲染
 - 约束 / 索引 / 外键 / 唯一性：`changed_at` 建索引（支撑倒序列表）；只增不改不删
 
+### 表：导出记录
+- 实际表名：`export_record`
+- 字段：`id`（int，自增主键）/ `batch_id`（bigint，外键→提成批次.id）/ `oss_key`（varchar 512，OSS 对象 key，用于生成签名 URL）/ `exported_at`（datetime）
+- 约束 / 索引 / 外键 / 唯一性：`batch_id` 外键约束 + 索引（支撑按批次查导出历史）；只增不改不删
+
 ## 接口设计
 
 ### 接口：POST /api/commission-batches
@@ -173,8 +178,15 @@
 - 请求体：无
 - 响应体：二进制文件流（`Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`，`Content-Disposition: attachment; filename="{批次名}-提成报表.xlsx"`）
 - 错误码：`1004`（批次不存在）、`2002`（阶梯规则不完整，无法导出——新增错误码，与 `1005`"操作冲突"语义不同，本期在 `standards-shared.md` 一并登记）
-- 服务流程：先查阶梯规则完整性，不完整 → `2002`，不生成文件；完整则查询该批次全部保单记录（含未匹配），按投保人值分组，`ExcelBuilder` 为每个投保人生成一个 sheet：sheet 上方写明细行（客户名称/工作单号/业务类型/币种/投保人/销售[未匹配留空]/保险金额/保费/保单号），下方写销售汇总（销售姓名/票数/提成，计算复用 `calcCommission()`，与 `commission-summary` 接口同一份实现）+ 末行合计；生成 buffer 后流式返回，不落库存档
+- 服务流程：先查阶梯规则完整性，不完整 → `2002`，不生成文件；完整则查询该批次全部保单记录（含未匹配），按投保人值分组，`ExcelBuilder` 为每个投保人生成一个 sheet：sheet 上方写明细行（客户名称/工作单号/业务类型/币种/投保人/销售[未匹配留空]/保险金额/保费/保单号），下方写销售汇总（销售姓名/票数/提成，计算复用 `calcCommission()`，与 `commission-summary` 接口同一份实现）+ 末行合计；生成 buffer 后先上传至 OSS（私有 Bucket，经 `OssClient`），插入一条导出记录（`batch_id`/`oss_key`/`exported_at`），再把同一份 buffer 流式返回前端下载（提成汇总本身仍现查现算，不做计算结果快照——归档的是"当次导出的文件"，不是把计算过程改成落库）
 # 满足 AC：AC-15, AC-16
+
+### 接口：GET /api/commission-batches/:id/exports
+- 请求体：无
+- 响应体：`[{ id, exportedAt, downloadUrl }]`，按 `exportedAt` 倒序，`downloadUrl` 为请求时现生成的 OSS 签名 URL（非持久链接）
+- 错误码：`1004`（批次不存在）
+- 服务流程：查询该批次全部导出记录，逐条用 `OssClient` 生成签名 URL 拼入响应；无记录时前端展示空态"暂无导出记录"；点击 `downloadUrl` 即拿到当时导出的原始文件，不重新计算
+# 满足 AC：AC-17
 
 ## 测试环境约定
 
