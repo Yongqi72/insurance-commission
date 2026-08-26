@@ -49,9 +49,9 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: taken-by
+    status: done
     assigned_to: yongqi.liu
-    pr: null
+    pr: 2
     parent_id: null
     depends_on: []
     delivery: 串行
