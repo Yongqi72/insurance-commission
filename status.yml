@@ -15,7 +15,7 @@ iterations:
     gates:
       G1: { signed: true, date: "2026-08-25" }
       G2: { signed: true, date: "2026-08-26" }
-      G3: { signed: false, date: null }
+      G3: { signed: true, date: "2026-08-26" }
       G4: { signed: false, date: null }
       G5: { signed: false, date: null }
 # v0 走骨架（A 类项目，先于 V1）：draft-foundation 建 iterations.v0 块，仅 G2（无 G1/G3-5）：
@@ -41,6 +41,186 @@ tasks:
     urgency: null
     branch: foundation-v0
     risk: sensitive
+  - id: ic-v1-001
+    iteration: v1
+    sprint: 1
+    source: sprint
+    title: 后端基础设施
+    type: develop
+    discipline: dev-backend
+    layer: backend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: []
+    delivery: 串行
+    urgency: null
+  - id: ic-v1-002
+    iteration: v1
+    sprint: 1
+    source: sprint
+    title: 批次管理与状态
+    type: develop
+    discipline: dev-backend
+    layer: backend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: [ic-v1-001]
+    delivery: 可并行
+    urgency: null
+  - id: ic-v1-003
+    iteration: v1
+    sprint: 1
+    source: sprint
+    title: Excel 导入与归档
+    type: develop
+    discipline: dev-backend
+    layer: backend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: [ic-v1-001]
+    delivery: 可并行
+    urgency: null
+  - id: ic-v1-004
+    iteration: v1
+    sprint: 1
+    source: sprint
+    title: 保单记录查询与回填补录
+    type: develop
+    discipline: dev-backend
+    layer: backend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: [ic-v1-001]
+    delivery: 可并行
+    urgency: null
+  - id: ic-v1-005
+    iteration: v1
+    sprint: 1
+    source: sprint
+    title: 提成阶梯规则管理
+    type: develop
+    discipline: dev-backend
+    layer: backend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: [ic-v1-001]
+    delivery: 可并行
+    urgency: null
+  - id: ic-v1-006
+    iteration: v1
+    sprint: 1
+    source: sprint
+    title: 提成汇总与导出
+    type: develop
+    discipline: dev-backend
+    layer: backend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: [ic-v1-001, ic-v1-005]
+    delivery: 串行
+    urgency: null
+  - id: ic-v1-007
+    iteration: v1
+    sprint: 1
+    source: sprint
+    title: 视觉地基包
+    type: develop
+    discipline: dev-frontend
+    layer: frontend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: []
+    delivery: 串行
+    urgency: null
+  - id: ic-v1-008
+    iteration: v1
+    sprint: 1
+    source: sprint
+    title: 批次列表页
+    type: develop
+    discipline: dev-frontend
+    layer: frontend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: [ic-v1-007, ic-v1-002]
+    delivery: 可并行
+    urgency: null
+  - id: ic-v1-009
+    iteration: v1
+    sprint: 1
+    source: sprint
+    title: 批次详情页骨架+导入区
+    type: develop
+    discipline: dev-frontend
+    layer: frontend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: [ic-v1-007, ic-v1-003]
+    delivery: 可并行
+    urgency: null
+  - id: ic-v1-010
+    iteration: v1
+    sprint: 1
+    source: sprint
+    title: 批次详情·明细回填补录
+    type: develop
+    discipline: dev-frontend
+    layer: frontend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: [ic-v1-007, ic-v1-009, ic-v1-004]
+    delivery: 串行
+    urgency: null
+  - id: ic-v1-011
+    iteration: v1
+    sprint: 1
+    source: sprint
+    title: 批次详情·汇总导出历史
+    type: develop
+    discipline: dev-frontend
+    layer: frontend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: [ic-v1-007, ic-v1-009, ic-v1-006]
+    delivery: 串行
+    urgency: null
+  - id: ic-v1-012
+    iteration: v1
+    sprint: 1
+    source: sprint
+    title: 提成阶梯规则页
+    type: develop
+    discipline: dev-frontend
+    layer: frontend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: [ic-v1-007, ic-v1-005]
+    delivery: 可并行
+    urgency: null
 # 每条（写 queue 任务包处同步追加）：
 #  - id: {缩写}-v{N}-001     # B 类为 {缩写}-b-001
 #    iteration: v1           # 属哪期；B 类(bug/optimization)为 null
