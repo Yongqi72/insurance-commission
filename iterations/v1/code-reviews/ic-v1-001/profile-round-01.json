@@ -1,0 +1,109 @@
+{
+  "schema": "develop-review-profile/v1",
+  "task_id": "ic-v1-001",
+  "task_type": "dev-backend",
+  "layers": [
+    "backend"
+  ],
+  "source": "sprint",
+  "effective_risk": "sensitive",
+  "changed_files": [
+    "backend/.env.example",
+    "backend/package-lock.json",
+    "backend/package.json",
+    "backend/src/commission-batch/commission-batch.entity.spec.ts",
+    "backend/src/commission-batch/commission-batch.entity.ts",
+    "backend/src/commission-batch/import-file.entity.ts",
+    "backend/src/commission-report/export-record.entity.spec.ts",
+    "backend/src/commission-report/export-record.entity.ts",
+    "backend/src/commission-tier/commission-tier-change-log.entity.ts",
+    "backend/src/commission-tier/commission-tier.entity.spec.ts",
+    "backend/src/commission-tier/commission-tier.entity.ts",
+    "backend/src/common/excel/excel-builder.spec.ts",
+    "backend/src/common/excel/excel-builder.ts",
+    "backend/src/common/excel/excel-parser.spec.ts",
+    "backend/src/common/excel/excel-parser.ts",
+    "backend/src/common/excel/policy-record-columns.ts",
+    "backend/src/common/oss/oss-client.spec.ts",
+    "backend/src/common/oss/oss-client.ts",
+    "backend/src/common/oss/oss.module.ts",
+    "backend/src/config/data-source.ts",
+    "backend/src/config/typeorm.config.ts",
+    "backend/src/migrations/1787735505276-CreateCommissionTablesAndAlterPolicyRecord.ts",
+    "backend/src/policy-record/policy-record.entity.spec.ts",
+    "backend/src/policy-record/policy-record.entity.ts",
+    "backend/src/policy-record/sales-fill-log.entity.spec.ts",
+    "backend/src/policy-record/sales-fill-log.entity.ts"
+  ],
+  "input_fingerprint": "6c8275c082390ef5c58d96fdcc45ecdf70b476371c346212821e136022b53358",
+  "signals": {
+    "metadata_incomplete": false,
+    "unknown_layer": false,
+    "surface": "production",
+    "frontend": false,
+    "backend": true,
+    "ui": false,
+    "input": true,
+    "query": true,
+    "concurrency": true,
+    "logging": true,
+    "enforcement": true,
+    "sensitive": true
+  },
+  "selected_dimensions": [
+    {
+      "id": "contract",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "scope-and-secrets",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "test-evidence",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "comment-hygiene",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "standards",
+      "reason": "task package has relevant-standards"
+    },
+    {
+      "id": "enforcement",
+      "reason": "task/change surface contains enforcement or test/tooling signals"
+    },
+    {
+      "id": "input-provenance",
+      "reason": "backend request/API input surface is present"
+    },
+    {
+      "id": "query-performance",
+      "reason": "backend query/data-read surface is present"
+    },
+    {
+      "id": "concurrency",
+      "reason": "backend write/transaction/concurrency surface is present"
+    },
+    {
+      "id": "logging-privacy",
+      "reason": "production or logging/privacy surface is present"
+    },
+    {
+      "id": "maintainability",
+      "reason": "fixed diff contains production code"
+    },
+    {
+      "id": "sensitive-boundaries",
+      "reason": "effective risk is sensitive; profile may only add high-risk scrutiny"
+    }
+  ],
+  "omitted_dimensions": [
+    {
+      "id": "design-fidelity",
+      "reason": "task is not frontend"
+    }
+  ]
+}

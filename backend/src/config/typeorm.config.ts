@@ -12,7 +12,6 @@ export function buildTypeOrmOptions(
 ): TypeOrmModuleOptions {
   const dbType = configService.get<string>('DB_TYPE', 'sqlite');
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
-  const isProduction = nodeEnv === 'production';
   const isTest = nodeEnv === 'test';
 
   if (dbType === 'mysql') {
@@ -24,8 +23,10 @@ export function buildTypeOrmOptions(
       password: configService.get<string>('DB_PASSWORD'),
       database: configService.get<string>('DB_DATABASE'),
       autoLoadEntities: true,
-      // 生产环境应改走 migration；V0 走骨架阶段尚未建 migration 体系，见完成报告 deviations。
-      synchronize: !isProduction,
+      // migrations 路径与 CLI 专用 DataSource（src/config/data-source.ts）保持一致（BE-DB-03）；
+      // 不设 migrationsRun——按 package.json migration:run 脚本手动执行，不随应用启动静默跑迁移。
+      migrations: [__dirname + '/../migrations/*{.ts,.js}'],
+      synchronize: false,
     };
   }
 
