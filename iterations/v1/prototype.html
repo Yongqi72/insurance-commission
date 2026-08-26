@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>提成批次 · 原型</title>
+<style>
+  :root {
+    --primary: #1677FF;
+    --primary-light: #E8F3FF;
+    --primary-dark: #0E56D9;
+    --bg-page: #F5F7FA;
+    --bg-card: #FFFFFF;
+    --bg-hover: #F5F7FA;
+    --text-primary: #1F2329;
+    --text-secondary: #646A73;
+    --text-hint: #8F959E;
+    --border-color: #E4E7ED;
+    --color-success: #52C41A;
+    --color-warning: #FAAD14;
+    --color-danger: #F53F3F;
+    --color-danger-dark: #D9342F;
+    --color-disabled: #C9CDD4;
+    --color-info: #909399;
+    --color-warning-bg: #FFF3D6;
+    --color-warning-text: #92600A;
+    --color-success-bg: #E4F7DE;
+    --color-success-text: #2C7A16;
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 8px;
+    --radius-full: 9999px;
+    --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 32px; --space-xxl: 48px;
+    --shadow-md: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+    --nav-h: 56px;
+    --content-max-w: 1440px;
+    --fs-h1: 32px; --fs-h2: 24px; --fs-h3: 18px; --fs-body: 16px; --fs-caption: 14px; --fs-small: 12px;
+    --input-width-sm: 120px; --input-width-md: 240px; --input-width-lg: 320px;
+    --btn-h-sm: 28px; --btn-h-md: 32px; --btn-h-lg: 36px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: var(--fs-caption);
+    line-height: 1.6;
+  }
+  a { color: var(--primary); text-decoration: none; cursor: pointer; }
+  a:hover { text-decoration: underline; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+
+  /* ---------- Top Nav ---------- */
+  .topnav {
+    height: var(--nav-h);
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 32px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .topnav .brand { font-weight: 700; font-size: var(--fs-body); margin-right: 8px; }
+  .topnav .navlink {
+    color: var(--text-secondary);
+    font-size: var(--fs-caption);
+    padding: 6px 4px;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+  }
+  .topnav .navlink.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+  .topnav .navlink:hover { color: var(--primary); }
+
+  .page { display: none; max-width: var(--content-max-w); margin: 0 auto; padding: 24px; }
+  .page.visible { display: block; }
+
+  /* ---------- Common atoms ---------- */
+  .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .page-title { font-size: var(--fs-h3); font-weight: 700; margin: 0; }
+  .page-title .back { font-size: var(--fs-caption); font-weight: 400; color: var(--text-secondary); margin-right: 12px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: var(--btn-h-md); padding: 0 14px;
+    border-radius: var(--radius-sm);
+    background: var(--primary); color: #fff;
+    border: none; font-size: var(--fs-caption); font-weight: 600;
+    cursor: pointer;
+  }
+  .btn:hover { background: var(--primary-dark); }
+  .btn:focus-visible { outline: 2px solid var(--primary-dark); outline-offset: 2px; }
+  .btn.ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); }
+  .btn.ghost:hover { color: var(--primary); border-color: var(--primary); background: var(--primary-light); }
+  .btn.danger { background: var(--color-danger); }
+  .btn.danger:hover { background: var(--color-danger-dark); }
+  .btn.sm { height: var(--btn-h-sm); padding: 0 10px; font-size: var(--fs-small); }
+  .btn[disabled] { background: var(--color-disabled); cursor: not-allowed; }
+  .btn.link { background: none; color: var(--primary); padding: 0; height: auto; font-weight: 600; }
+
+  .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
+  .section { margin-bottom: 24px; }
+  .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .section-title { font-size: var(--fs-body); font-weight: 700; }
+
+  input[type=text], input[type=number], select {
+    height: var(--btn-h-md); padding: 0 10px;
+    border: 1px solid var(--border-color); border-radius: var(--radius-sm);
+    background: var(--bg-card); color: var(--text-primary);
+    font-size: var(--fs-caption);
+  }
+  input:focus, select:focus, .btn:focus-visible, button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+  label { font-size: var(--fs-small); color: var(--text-secondary); display: block; margin-bottom: 4px; }
+  .field { margin-bottom: 14px; }
+  .field-error { color: var(--color-danger); font-size: var(--fs-small); margin-top: 4px; display: none; }
+  .field.has-error input { border-color: var(--color-danger); }
+  .field.has-error .field-error { display: block; }
+
+  table { width: 100%; border-collapse: collapse; font-size: var(--fs-caption); }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-color); }
+  th { color: var(--text-secondary); font-weight: 600; font-size: var(--fs-small); background: var(--bg-hover); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tbody tr:hover { background: var(--bg-hover); }
+  .table-wrap { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border-color); }
+  .table-wrap table { border: none; }
+  .table-wrap tr:last-child td { border-bottom: none; }
+
+  .tag { display: inline-flex; align-items: center; font-size: var(--fs-small); padding: 2px 8px; border-radius: var(--radius-full); font-weight: 600; }
+  .tag.warn { background: var(--color-warning-bg); color: var(--color-warning-text); }
+  .tag.ok { background: var(--color-success-bg); color: var(--color-success-text); }
+  .tag.info { background: var(--primary-light); color: var(--primary-dark); }
+  .tag.neutral { background: var(--bg-hover); color: var(--text-secondary); border: 1px solid var(--border-color); }
+
+  .empty-state { text-align: center; padding: var(--space-xxl) var(--space-md); color: var(--text-hint); }
+  .empty-state .icon { font-size: var(--fs-h2); margin-bottom: 8px; }
+  .empty-state .txt { margin-bottom: 14px; font-size: var(--fs-caption); }
+
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .toolbar .spacer { flex: 1; }
+
+  .clickable-row { cursor: pointer; }
+  .clickable-row td { cursor: pointer; }
+  .expand-row td { background: var(--bg-hover); padding: 14px 16px; }
+  .expand-panel { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+
+  .toast { position: fixed; top: 72px; right: 24px; z-index: 500; display: flex; flex-direction: column; gap: 8px; }
+  .toast-item {
+    background: var(--text-primary); color: #fff;
+    padding: 10px 16px; border-radius: var(--radius-md);
+    font-size: var(--fs-caption); box-shadow: var(--shadow-lg);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toast-item.success { background: var(--color-success); }
+  .toast-item.error { background: var(--color-danger); }
+
+  /* ---------- overlays: modal / drawer ---------- */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(15,20,30,0.45); z-index: 200; align-items: center; justify-content: center; }
+  .overlay.visible { display: flex; }
+  .overlay.drawer-overlay { justify-content: flex-end; align-items: stretch; }
+
+  .modal { background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); width: 420px; max-width: 92vw; max-height: 86vh; display: flex; flex-direction: column; }
+  .modal.wide { width: 640px; }
+  .modal.narrow { width: 340px; }
+  .modal-head { padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
+  .modal-head h3 { margin: 0; font-size: var(--fs-body); }
+  .modal-close { background: none; border: none; font-size: var(--fs-body); color: var(--text-hint); cursor: pointer; padding: 4px; }
+  .modal-body { padding: 20px; overflow-y: auto; }
+  .modal-foot { padding: 14px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; }
+
+  .drawer { background: var(--bg-card); width: 420px; max-width: 90vw; height: 100%; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; animation: slidein .2s ease; }
+  @media (prefers-reduced-motion: reduce) { .drawer { animation: none; } }
+  @keyframes slidein { from { transform: translateX(24px); opacity:.4; } to { transform: translateX(0); opacity:1; } }
+  .drawer-head { padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
+  .drawer-head h3 { margin: 0; font-size: var(--fs-body); }
+  .drawer-body { padding: 20px; overflow-y: auto; flex: 1; }
+
+  .log-item { padding: 12px 0; border-bottom: 1px dashed var(--border-color); font-size: var(--fs-caption); }
+  .log-item:last-child { border-bottom: none; }
+  .log-item .log-change { margin-bottom: 2px; }
+  .log-item .log-meta { color: var(--text-hint); font-size: var(--fs-small); }
+  .log-item .old { color: var(--color-danger); text-decoration: line-through; }
+  .log-item .new { color: var(--color-success); font-weight: 600; }
+
+  .upload-box { border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 32px 16px; text-align: center; color: var(--text-secondary); cursor: pointer; }
+  .upload-box:hover { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+  .upload-box .fname { color: var(--text-primary); font-weight: 600; margin-top: 8px; }
+
+  .import-result { margin-top: 14px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--bg-hover); border: 1px solid var(--border-color); font-size: var(--fs-caption); }
+  .import-result .fail-list { margin-top: 8px; padding-left: 18px; color: var(--color-danger); font-size: var(--fs-small); }
+
+  /* summary cards (方案 B) */
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .summary-card { padding: 14px 16px; }
+  .summary-card .station { font-size: var(--fs-caption); font-weight: 700; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: var(--fs-caption); border-bottom: 1px dashed var(--border-color); }
+  .summary-row:last-of-type { border-bottom: none; }
+  .summary-row .amt { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .summary-total { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; font-weight: 700; font-size: var(--fs-caption); }
+
+  .hint-inline { color: var(--text-hint); font-size: var(--fs-small); }
+  .status-toggle { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 1px solid var(--border-color); border-radius: var(--radius-full); padding: 3px 10px 3px 3px; background: var(--bg-card); }
+  .status-toggle .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-warning); }
+  .status-toggle.done .dot { background: var(--color-success); }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="brand">提成管理</span>
+  <span class="navlink active" id="link-nav-batch-list" onclick="showScreen('batch-list')">提成批次</span>
+  <span class="navlink" id="link-nav-rule" onclick="showScreen('rule')">提成阶梯规则</span>
+</nav>
+
+<div class="toast" id="toast-root"></div>
+
+<!-- ============ 批次列表 ============ -->
+<section class="page" id="page-batch-list">
+  <div class="page-head">
+    <h1 class="page-title">提成批次</h1>
+    <button class="btn" id="btn-new-batch" onclick="openModal('modal-new-batch')">+ 新建批次</button>
+  </div>
+
+  <div class="section">
+    <div class="toolbar">
+      <button class="btn ghost sm" onclick="toggleEmptyDemo('batch-list')">切换空态预览</button>
+    </div>
+    <div class="card table-wrap" id="wrap-batch-list">
+      <table id="table-batch-list">
+        <thead><tr><th>批次名称</th><th>状态</th><th>创建时间</th><th></th></tr></thead>
+        <tbody>
+          <tr class="clickable-row" onclick="showBatchDetail('2026年8月批次','doing')">
+            <td>2026年8月批次</td>
+            <td><span class="tag warn">进行中</span></td>
+            <td>2026-08-25 09:12</td>
+            <td><a>查看</a></td>
+          </tr>
+          <tr class="clickable-row" onclick="showBatchDetail('2026年7月批次','done')">
+            <td>2026年7月批次</td>
+            <td><span class="tag ok">已完成</span></td>
+            <td>2026-07-28 10:03</td>
+            <td><a>查看</a></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="empty-state" id="empty-batch-list" style="display:none;">
+        <div class="icon">🗂️</div>
+        <div class="txt">暂无批次，请新建</div>
+        <button class="btn" onclick="openModal('modal-new-batch')">+ 新建批次</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 批次详情 ============ -->
+<section class="page" id="page-batch-detail">
+  <div class="page-head">
+    <h1 class="page-title">
+      <a class="back" onclick="showScreen('batch-list')">← 返回批次列表</a>
+      <span id="detail-batch-name">2026年8月批次</span>
+    </h1>
+    <div class="status-toggle" id="tag-batch-status" onclick="toggleBatchStatus()">
+      <span class="dot"></span> <span id="status-toggle-text">进行中，点击标记完成</span>
+    </div>
+  </div>
+
+  <!-- 导入区 -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">导入记录</div>
+      <button class="btn" id="btn-open-import" onclick="openModal('modal-import')">导入 Excel</button>
+    </div>
+    <div class="card table-wrap">
+      <table id="table-import-list">
+        <thead><tr><th>文件名</th><th>导入时间</th><th class="num">成功</th><th class="num">失败</th><th></th></tr></thead>
+        <tbody>
+          <tr>
+            <td>7月账单.xlsx</td><td>2026-08-25 09:15</td><td class="num">139</td><td class="num">0</td>
+            <td><a class="btn-delete-import" onclick="openModal('modal-confirm-delete-import')">删除</a></td>
+          </tr>
+          <tr>
+            <td>常熟账单-补.xlsx</td><td>2026-08-25 09:40</td><td class="num">42</td><td class="num">3</td>
+            <td><a class="btn-delete-import" onclick="openModal('modal-confirm-delete-import')">删除</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 保单记录明细 -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">保单记录明细</div>
+      <button class="btn ghost" id="btn-start-fill" onclick="startFill()">开始回填</button>
+    </div>
+    <div class="toolbar">
+      <input type="text" id="input-search-record" placeholder="搜索工作单号 / 保单号 / 客户名称" style="width:var(--input-width-lg);" oninput="filterRecords()">
+      <select id="select-fill-status-filter" onchange="filterRecords()">
+        <option value="all">回填状态：全部</option>
+        <option value="unmatched">未匹配</option>
+        <option value="system">系统回填</option>
+        <option value="manual">人工补录</option>
+      </select>
+      <span class="spacer"></span>
+      <span class="hint-inline" id="record-count-hint">共 4 条，点击整行展开编辑</span>
+      <button class="btn ghost sm" onclick="toggleEmptyDemo('record-list')">切换空态预览</button>
+    </div>
+    <div class="card table-wrap" id="wrap-record-list">
+      <table id="table-record-list">
+        <thead>
+          <tr><th>客户名称</th><th>工作单号</th><th>业务类型</th><th>币种</th><th>投保人</th><th>销售</th><th class="num">保险金额</th><th class="num">保费</th><th>保单号</th></tr>
+        </thead>
+        <tbody>
+          <tr class="clickable-row" data-fill="unmatched" onclick="toggleExpandRow(this,'r1')">
+            <td>钰丰易</td><td>CSAE260508551</td><td>出口</td><td>美元</td><td>常熟</td>
+            <td><span class="tag warn">未匹配</span></td><td class="num">1,662.00</td><td class="num">34.21</td><td>ANAJA9924226EGB845F7</td>
+          </tr>
+          <tr class="expand-row" id="row-r1" style="display:none;"><td colspan="9">
+            <div class="expand-panel">
+              <div class="field" style="margin-bottom:0;">
+                <label for="input-sales-name-r1">销售人员</label>
+                <input type="text" id="input-sales-name-r1" placeholder="填写姓名">
+              </div>
+              <button class="btn sm" id="btn-save-sales-r1" onclick="saveSalesName('r1')">保存</button>
+              <button class="btn ghost sm" id="btn-view-record-history" onclick="openDrawer('drawer-record-history')">查看修改历史</button>
+            </div>
+          </td></tr>
+
+          <tr class="clickable-row" data-fill="manual" onclick="toggleExpandRow(this,'r2')">
+            <td>富士莱</td><td>CSAE260507497</td><td>出口</td><td>美元</td><td>常熟</td>
+            <td><span class="tag info">张三</span></td><td class="num">4,950.00</td><td class="num">34.21</td><td>ANAJA9924226EGB84615</td>
+          </tr>
+          <tr class="expand-row" id="row-r2" style="display:none;"><td colspan="9">
+            <div class="expand-panel">
+              <div class="field" style="margin-bottom:0;">
+                <label for="input-sales-name-r2">销售人员</label>
+                <input type="text" id="input-sales-name-r2" value="张三">
+              </div>
+              <button class="btn sm" id="btn-save-sales-r2" onclick="saveSalesName('r2')">保存</button>
+              <button class="btn ghost sm" onclick="openDrawer('drawer-record-history')">查看修改历史</button>
+            </div>
+          </td></tr>
+
+          <tr class="clickable-row" data-fill="system" onclick="toggleExpandRow(this,'r3')">
+            <td>华翔</td><td>CSSE260501830</td><td>出口</td><td>欧元</td><td>常熟</td>
+            <td><span class="tag neutral">李四</span></td><td class="num">62,582.00</td><td class="num">95.23</td><td>ANAJA9924226EGB6284A</td>
+          </tr>
+          <tr class="expand-row" id="row-r3" style="display:none;"><td colspan="9">
+            <div class="expand-panel">
+              <div class="field" style="margin-bottom:0;">
+                <label for="input-sales-name-r3">销售人员</label>
+                <input type="text" id="input-sales-name-r3" value="李四">
+              </div>
+              <button class="btn sm" id="btn-save-sales-r3" onclick="saveSalesName('r3')">保存</button>
+              <button class="btn ghost sm" onclick="openDrawer('drawer-record-history')">查看修改历史</button>
+            </div>
+          </td></tr>
+
+          <tr class="clickable-row" data-fill="manual" onclick="toggleExpandRow(this,'r4')">
+            <td>艾利</td><td>KSSE260507646</td><td>海出</td><td>美元</td><td>太仓</td>
+            <td><span class="tag info">张三</span></td><td class="num">4,861.00</td><td class="num">34.17</td><td>ANAJA9924226EGB9C965</td>
+          </tr>
+          <tr class="expand-row" id="row-r4" style="display:none;"><td colspan="9">
+            <div class="expand-panel">
+              <div class="field" style="margin-bottom:0;">
+                <label for="input-sales-name-r4">销售人员</label>
+                <input type="text" id="input-sales-name-r4" value="张三">
+              </div>
+              <button class="btn sm" id="btn-save-sales-r4" onclick="saveSalesName('r4')">保存</button>
+              <button class="btn ghost sm" onclick="openDrawer('drawer-record-history')">查看修改历史</button>
+            </div>
+          </td></tr>
+        </tbody>
+      </table>
+      <div class="empty-state" id="empty-record-list" style="display:none;">
+        <div class="icon">📄</div>
+        <div class="txt">暂无保单记录，请上传 Excel 导入</div>
+        <button class="btn" onclick="openModal('modal-import')">导入 Excel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 提成汇总 -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">提成汇总（实时）</div>
+      <button class="btn" id="btn-export" onclick="doExport()">导出 Excel</button>
+    </div>
+    <div class="summary-grid" id="grid-commission-summary">
+      <div class="card summary-card">
+        <div class="station">常熟</div>
+        <div class="summary-row"><span>张三</span><span class="amt">40 票 · ¥80.00</span></div>
+        <div class="summary-total"><span>合计</span><span>¥80.00</span></div>
+      </div>
+      <div class="card summary-card">
+        <div class="station">太仓</div>
+        <div class="summary-row"><span>张三</span><span class="amt">20 票 · ¥40.00</span></div>
+        <div class="summary-row"><span>李四</span><span class="amt">18 票 · ¥36.00</span></div>
+        <div class="summary-total"><span>合计</span><span>¥76.00</span></div>
+      </div>
+      <div class="card summary-card" id="card-commission-empty">
+        <div class="station">亚东</div>
+        <div class="hint-inline" style="padding:10px 0;">当前没有已确认销售人员的记录</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;">
+      <span class="hint-inline">未配置阶梯规则时：</span>
+      <a onclick="toggleRuleUnconfiguredDemo()">切换"未配置规则"预览</a>
+    </div>
+    <div class="card" id="commission-unconfigured" style="display:none; padding:20px; margin-top:10px; text-align:center; color:var(--text-hint);">未配置规则，无法计算</div>
+  </div>
+</section>
+
+<!-- ============ 提成阶梯规则 ============ -->
+<section class="page" id="page-rule">
+  <div class="page-head">
+    <h1 class="page-title">提成阶梯规则</h1>
+    <div style="display:flex; gap:10px;">
+      <button class="btn ghost" id="btn-view-rule-history" onclick="openDrawer('drawer-rule-history')">查看变更历史</button>
+      <button class="btn" id="btn-add-tier" onclick="openTierModal(null)">+ 新增档位</button>
+    </div>
+  </div>
+  <div class="toolbar">
+    <button class="btn ghost sm" onclick="toggleEmptyDemo('rule')">切换空态预览</button>
+  </div>
+  <div class="card table-wrap" id="wrap-rule-list">
+    <table id="table-rule-list">
+      <thead><tr><th>下限（票）</th><th>上限（票）</th><th class="num">单价（元/票）</th><th></th></tr></thead>
+      <tbody id="tbody-rule-list">
+        <tr data-lower="0" data-upper="50"><td>0</td><td>50</td><td class="num">2.00</td>
+          <td><a onclick="openTierModal(this)">编辑</a> · <a onclick="deleteTier(this)">删除</a></td></tr>
+        <tr data-lower="50" data-upper="100"><td>50</td><td>100</td><td class="num">2.20</td>
+          <td><a onclick="openTierModal(this)">编辑</a> · <a onclick="deleteTier(this)">删除</a></td></tr>
+        <tr data-lower="100" data-upper=""><td>100</td><td>及以上</td><td class="num">2.40</td>
+          <td><a onclick="openTierModal(this)">编辑</a> · <a onclick="deleteTier(this)">删除</a></td></tr>
+      </tbody>
+    </table>
+    <div class="empty-state" id="empty-rule-list" style="display:none;">
+      <div class="icon">📐</div>
+      <div class="txt">暂未配置提成规则</div>
+      <button class="btn" onclick="openTierModal(null)">+ 新增档位</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Modal: 新建批次 ============ -->
+<div class="overlay" id="modal-new-batch" onclick="backdropClose(event,'modal-new-batch')">
+  <div class="modal">
+    <div class="modal-head"><h3>新建批次</h3><button class="modal-close" onclick="closeModal('modal-new-batch')" aria-label="关闭">✕</button></div>
+    <div class="modal-body">
+      <div class="field">
+        <label for="input-batch-name">批次名称</label>
+        <input type="text" id="input-batch-name" placeholder="如：2026年8月批次" style="width:100%;">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeModal('modal-new-batch')">取消</button>
+      <button class="btn" id="btn-submit-new-batch" onclick="submitNewBatch()">创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Modal: 导入 Excel（方案 A 独立弹窗）============ -->
+<div class="overlay" id="modal-import" onclick="backdropClose(event,'modal-import')">
+  <div class="modal">
+    <div class="modal-head"><h3>导入 Excel</h3><button class="modal-close" onclick="closeModal('modal-import')" aria-label="关闭">✕</button></div>
+    <div class="modal-body">
+      <div class="upload-box" id="input-file-import" onclick="simulateUpload()">
+        <div>点击或拖拽文件到此处</div>
+        <div class="hint-inline">仅解析文件中名为「账单」的 sheet</div>
+        <div class="fname" id="import-fname" style="display:none;"></div>
+      </div>
+      <div class="import-result" id="import-result" style="display:none;">
+        <div>成功导入 <b>139</b> 行，失败 <b>3</b> 行</div>
+        <ul class="fail-list">
+          <li>第 46 行：投保人为空</li>
+          <li>第 88 行：保险金额非数字</li>
+          <li>第 121 行：工作单号为空</li>
+        </ul>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeModal('modal-import')">关闭</button>
+      <button class="btn" id="btn-start-import" onclick="startImport()">开始导入</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Modal: 删除导入二次确认 ============ -->
+<div class="overlay" id="modal-confirm-delete-import" onclick="backdropClose(event,'modal-confirm-delete-import')">
+  <div class="modal narrow">
+    <div class="modal-head"><h3>删除该次导入</h3><button class="modal-close" onclick="closeModal('modal-confirm-delete-import')" aria-label="关闭">✕</button></div>
+    <div class="modal-body">
+      删除后，该次导入产生的全部保单记录将被移除，此操作不可撤销。原始文件仍保留在存档中。确定删除吗？
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeModal('modal-confirm-delete-import')">取消</button>
+      <button class="btn danger" id="btn-confirm-delete-import" onclick="confirmDeleteImport()">确定删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Modal: 编辑档位（方案 B）============ -->
+<div class="overlay" id="modal-rule-edit" onclick="backdropClose(event,'modal-rule-edit')">
+  <div class="modal narrow">
+    <div class="modal-head"><h3 id="tier-modal-title">编辑档位</h3><button class="modal-close" onclick="requestCloseTierModal()" aria-label="关闭">✕</button></div>
+    <div class="modal-body">
+      <div class="field">
+        <label for="input-tier-lower">下限（票，不含）</label>
+        <input type="number" id="input-tier-lower" oninput="markTierDirty()">
+      </div>
+      <div class="field">
+        <label for="input-tier-upper">上限（票，含；最高档留空="及以上"）</label>
+        <input type="number" id="input-tier-upper" oninput="markTierDirty()">
+      </div>
+      <div class="field" id="field-tier-price">
+        <label for="input-tier-price">单价（元/票）</label>
+        <input type="number" id="input-tier-price" step="0.01" oninput="markTierDirty()">
+        <div class="field-error" id="error-tier-conflict">与相邻档位有空隙或重叠，请调整后重新保存</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="requestCloseTierModal()">取消</button>
+      <button class="btn" id="btn-save-tier" onclick="saveTier()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Modal: 未保存离开确认 ============ -->
+<div class="overlay" id="modal-confirm-leave" onclick="backdropClose(event,'modal-confirm-leave')">
+  <div class="modal narrow">
+    <div class="modal-head"><h3>有未保存的修改</h3><button class="modal-close" onclick="closeModal('modal-confirm-leave')" aria-label="关闭">✕</button></div>
+    <div class="modal-body">当前档位的修改还没保存，确定要离开吗？未保存的内容会丢失。</div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeModal('modal-confirm-leave')">继续编辑</button>
+      <button class="btn danger" onclick="forceCloseTierModal()">放弃修改</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Drawer: 补录历史（方案 A）============ -->
+<div class="overlay drawer-overlay" id="drawer-record-history" onclick="backdropClose(event,'drawer-record-history')">
+  <div class="drawer">
+    <div class="drawer-head"><h3>修改历史 · 工作单号 CSAE260508551</h3><button class="modal-close" onclick="closeDrawer('drawer-record-history')" aria-label="关闭">✕</button></div>
+    <div style="padding:10px 20px 0;"><a class="btn ghost sm" style="display:inline-block;" onclick="toggleHistoryEmptyDemo('record')">切换空态预览</a></div>
+    <div class="drawer-body" id="record-history-body">
+      <div class="log-item">
+        <div class="log-change">销售人员：<span class="old">空</span> → <span class="new">张三</span></div>
+        <div class="log-meta">王管理员 · 2026-08-25 14:02</div>
+      </div>
+      <div class="log-item">
+        <div class="log-change">销售人员：<span class="old">张三</span> → <span class="new">张小三</span></div>
+        <div class="log-meta">王管理员 · 2026-08-26 09:10</div>
+      </div>
+      <div class="empty-state" id="empty-record-history" style="display:none; padding:32px 0;">
+        <div class="txt">该记录暂无人工修改记录</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Drawer: 规则变更历史（方案 A）============ -->
+<div class="overlay drawer-overlay" id="drawer-rule-history" onclick="backdropClose(event,'drawer-rule-history')">
+  <div class="drawer">
+    <div class="drawer-head"><h3>提成阶梯规则 · 变更历史</h3><button class="modal-close" onclick="closeDrawer('drawer-rule-history')" aria-label="关闭">✕</button></div>
+    <div style="padding:10px 20px 0;"><a class="btn ghost sm" style="display:inline-block;" onclick="toggleHistoryEmptyDemo('rule')">切换空态预览</a></div>
+    <div class="drawer-body" id="rule-history-body">
+      <div class="log-item">
+        <div class="log-change">新增档位：(100, 及以上]，单价 <span class="new">2.40</span></div>
+        <div class="log-meta">王管理员 · 2026-08-20 11:00</div>
+      </div>
+      <div class="log-item">
+        <div class="log-change">编辑档位 (50,100]：单价 <span class="old">2.00</span> → <span class="new">2.20</span></div>
+        <div class="log-meta">王管理员 · 2026-08-22 16:40</div>
+      </div>
+      <div class="empty-state" id="empty-rule-history" style="display:none; padding:32px 0;">
+        <div class="txt">暂无变更记录</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var toastRoot = document.getElementById('toast-root');
+  function toast(msg, type) {
+    var el = document.createElement('div');
+    el.className = 'toast-item' + (type ? ' ' + type : '');
+    el.textContent = msg;
+    toastRoot.appendChild(el);
+    setTimeout(function () { el.remove(); }, 2400);
+  }
+
+  function showScreen(name) {
+    document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('visible'); });
+    document.getElementById('page-' + name).classList.add('visible');
+    document.getElementById('link-nav-batch-list').classList.toggle('active', name === 'batch-list' || name === 'batch-detail');
+    document.getElementById('link-nav-rule').classList.toggle('active', name === 'rule');
+  }
+  function showBatchDetail(name, status) {
+    document.getElementById('detail-batch-name').textContent = name;
+    setBatchStatusUI(status === 'done');
+    showScreen('batch-detail');
+  }
+
+  function openModal(id) { document.getElementById(id).classList.add('visible'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('visible'); }
+  function backdropClose(e, id) { if (e.target.id === id) closeModal(id); }
+  function openDrawer(id) { document.getElementById(id).classList.add('visible'); }
+  function closeDrawer(id) { document.getElementById(id).classList.remove('visible'); }
+
+  /* ---- 批次状态标记 AC-02 ---- */
+  function setBatchStatusUI(done) {
+    var el = document.getElementById('tag-batch-status');
+    var t = document.getElementById('status-toggle-text');
+    el.classList.toggle('done', done);
+    t.textContent = done ? '已完成，点击改回进行中' : '进行中，点击标记完成';
+  }
+  function toggleBatchStatus() {
+    var done = document.getElementById('tag-batch-status').classList.contains('done');
+    setBatchStatusUI(!done);
+    toast('批次状态已更新为「' + (!done ? '已完成' : '进行中') + '」', 'success');
+  }
+
+  /* ---- 新建批次 AC-01 ---- */
+  function submitNewBatch() {
+    var name = document.getElementById('input-batch-name').value.trim();
+    if (!name) { toast('请填写批次名称', 'error'); return; }
+    closeModal('modal-new-batch');
+    document.getElementById('input-batch-name').value = '';
+    showBatchDetail(name, 'doing');
+    toast('批次「' + name + '」已创建', 'success');
+  }
+
+  /* ---- 导入 Excel AC-03 ---- */
+  function simulateUpload() {
+    document.getElementById('import-fname').style.display = 'block';
+    document.getElementById('import-fname').textContent = '已选择：7月账单.xlsx';
+  }
+  function startImport() {
+    document.getElementById('import-result').style.display = 'block';
+    toast('导入完成：成功 139 行，失败 3 行', 'success');
+  }
+
+  /* ---- 删除导入 AC-04 ---- */
+  var pendingDeleteRow = null;
+  document.querySelectorAll('.btn-delete-import').forEach(function (a) {
+    a.addEventListener('click', function () { pendingDeleteRow = a.closest('tr'); });
+  });
+  function confirmDeleteImport() {
+    if (pendingDeleteRow) pendingDeleteRow.remove();
+    closeModal('modal-confirm-delete-import');
+    toast('已删除该次导入', 'success');
+  }
+
+  /* ---- 明细行展开 / 筛选 / 回填 AC-06~08 ---- */
+  function toggleExpandRow(tr, id) {
+    var row = document.getElementById('row-' + id);
+    var open = row.style.display !== 'none';
+    document.querySelectorAll('.expand-row').forEach(function (r) { r.style.display = 'none'; });
+    row.style.display = open ? 'none' : 'table-row';
+  }
+  function saveSalesName(id) {
+    var val = document.getElementById('input-sales-name-' + id).value.trim();
+    if (!val) { toast('请填写销售人员姓名', 'error'); return; }
+    toast('已保存销售人员「' + val + '」，本次操作已留痕', 'success');
+  }
+  function startFill() {
+    toast('回填完成：接口未配置，全部记录仍为「未匹配」，请人工补录', 'info');
+  }
+  function filterRecords() {
+    var v = document.getElementById('select-fill-status-filter').value;
+    var kw = document.getElementById('input-search-record').value.trim();
+    var visibleCount = 0;
+    document.querySelectorAll('#table-record-list tbody tr.clickable-row').forEach(function (tr) {
+      var matchStatus = v === 'all' || tr.getAttribute('data-fill') === v;
+      var matchKw = !kw || tr.textContent.indexOf(kw) !== -1;
+      var show = matchStatus && matchKw;
+      tr.style.display = show ? '' : 'none';
+      if (show) visibleCount++;
+      var expandId = 'row-' + tr.getAttribute('onclick').match(/'r\d'/)[0].replace(/'/g, '');
+      var expandRow = document.getElementById(expandId);
+      if (!show && expandRow) expandRow.style.display = 'none';
+    });
+    document.getElementById('record-count-hint').textContent = '共 ' + visibleCount + ' 条，点击整行展开编辑';
+  }
+
+  /* ---- 导出 AC-15/16 ---- */
+  function doExport() {
+    toast('提成报表已生成，浏览器开始下载', 'success');
+  }
+
+  /* ---- 阶梯规则 AC-10/11/13 ---- */
+  var tierDirty = false;
+  var editingTierRow = null; // 正在编辑的 <tr>；新增档位时为 null
+  function openTierModal(source) {
+    editingTierRow = source ? source.closest('tr') : null;
+    var lower = editingTierRow ? editingTierRow.getAttribute('data-lower') : '';
+    var upper = editingTierRow ? editingTierRow.getAttribute('data-upper') : '';
+    var price = editingTierRow ? editingTierRow.querySelector('td.num').textContent.trim() : '';
+    document.getElementById('tier-modal-title').textContent = editingTierRow ? '编辑档位' : '新增档位';
+    document.getElementById('input-tier-lower').value = lower;
+    document.getElementById('input-tier-upper').value = upper;
+    document.getElementById('input-tier-price').value = price;
+    document.getElementById('field-tier-price').classList.remove('has-error');
+    tierDirty = false;
+    openModal('modal-rule-edit');
+  }
+  function markTierDirty() { tierDirty = true; }
+  function requestCloseTierModal() {
+    if (tierDirty) { openModal('modal-confirm-leave'); return; }
+    closeModal('modal-rule-edit');
+  }
+  function forceCloseTierModal() {
+    closeModal('modal-confirm-leave');
+    closeModal('modal-rule-edit');
+  }
+  function addRuleHistoryLog(text) {
+    var body = document.getElementById('rule-history-body');
+    var item = document.createElement('div');
+    item.className = 'log-item';
+    var now = new Date();
+    var stamp = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0')
+      + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+    item.innerHTML = '<div class="log-change">' + text + '</div><div class="log-meta">王管理员 · ' + stamp + '</div>';
+    body.insertBefore(item, body.firstChild);
+  }
+  function saveTier() {
+    var lowerStr = document.getElementById('input-tier-lower').value;
+    var upperStr = document.getElementById('input-tier-upper').value;
+    var priceStr = document.getElementById('input-tier-price').value;
+    if (lowerStr === '' || priceStr === '') {
+      document.getElementById('field-tier-price').classList.add('has-error');
+      toast('请填写完整的下限与单价', 'error');
+      return;
+    }
+    var lower = Number(lowerStr);
+    var upper = upperStr === '' ? Infinity : Number(upperStr);
+
+    var conflict = false;
+    document.querySelectorAll('#tbody-rule-list tr').forEach(function (tr) {
+      if (tr === editingTierRow) return; // 排除自己
+      var oLower = Number(tr.getAttribute('data-lower'));
+      var oUpperAttr = tr.getAttribute('data-upper');
+      var oUpper = oUpperAttr === '' ? Infinity : Number(oUpperAttr);
+      // 区间 (lower, upper] 与 (oLower, oUpper] 是否有重叠（空隙检测留 TRD/真实实现，原型仅演示重叠校验）
+      var overlap = lower < oUpper && oLower < upper;
+      if (overlap) conflict = true;
+    });
+
+    if (conflict) {
+      document.getElementById('field-tier-price').classList.add('has-error');
+      toast('保存失败：档位区间冲突', 'error');
+      return;
+    }
+    document.getElementById('field-tier-price').classList.remove('has-error');
+
+    var upperLabel = upperStr === '' ? '及以上' : upperStr;
+    if (editingTierRow) {
+      var oldLabel = '(' + editingTierRow.getAttribute('data-lower') + ',' + (editingTierRow.getAttribute('data-upper') || '及以上') + ']';
+      editingTierRow.setAttribute('data-lower', lowerStr);
+      editingTierRow.setAttribute('data-upper', upperStr);
+      var cells = editingTierRow.querySelectorAll('td');
+      cells[0].textContent = lowerStr;
+      cells[1].textContent = upperLabel;
+      cells[2].textContent = Number(priceStr).toFixed(2);
+      addRuleHistoryLog('编辑档位 ' + oldLabel + ' → (' + lowerStr + ',' + upperLabel + ']：单价 → <span class="new">' + Number(priceStr).toFixed(2) + '</span>');
+    } else {
+      var tbody = document.getElementById('tbody-rule-list');
+      var tr = document.createElement('tr');
+      tr.setAttribute('data-lower', lowerStr);
+      tr.setAttribute('data-upper', upperStr);
+      tr.innerHTML = '<td>' + lowerStr + '</td><td>' + upperLabel + '</td><td class="num">' + Number(priceStr).toFixed(2) + '</td>'
+        + '<td><a onclick="openTierModal(this)">编辑</a> · <a onclick="deleteTier(this)">删除</a></td>';
+      tbody.appendChild(tr);
+      addRuleHistoryLog('新增档位：(' + lowerStr + ', ' + upperLabel + ']，单价 <span class="new">' + Number(priceStr).toFixed(2) + '</span>');
+    }
+    tierDirty = false;
+    closeModal('modal-rule-edit');
+    toast('档位已保存，已记入变更历史', 'success');
+  }
+  function deleteTier(a) {
+    if (confirm('删除该档位？删除后请确认相邻档位是否需要一并调整以消除空隙。')) {
+      var tr = a.closest('tr');
+      var label = '(' + tr.getAttribute('data-lower') + ',' + (tr.getAttribute('data-upper') || '及以上') + ']';
+      tr.remove();
+      addRuleHistoryLog('删除档位：' + label);
+      toast('档位已删除，已记入变更历史', 'success');
+    }
+  }
+
+  /* ---- 空态演示切换 ---- */
+  var emptyDemoMap = {
+    'batch-list': ['table-batch-list', 'empty-batch-list'],
+    'rule': ['table-rule-list', 'empty-rule-list'],
+    'record-list': ['table-record-list', 'empty-record-list']
+  };
+  function toggleEmptyDemo(which) {
+    var ids = emptyDemoMap[which];
+    var content = document.getElementById(ids[0]);
+    var empty = document.getElementById(ids[1]);
+    var showingEmpty = empty.style.display !== 'none';
+    content.style.display = showingEmpty ? '' : 'none';
+    empty.style.display = showingEmpty ? 'none' : 'block';
+  }
+  function toggleHistoryEmptyDemo(which) {
+    var bodyId = which === 'record' ? 'record-history-body' : 'rule-history-body';
+    var emptyId = which === 'record' ? 'empty-record-history' : 'empty-rule-history';
+    var body = document.getElementById(bodyId);
+    var empty = document.getElementById(emptyId);
+    var showingEmpty = empty.style.display !== 'none';
+    Array.prototype.forEach.call(body.querySelectorAll('.log-item'), function (li) {
+      li.style.display = showingEmpty ? '' : 'none';
+    });
+    empty.style.display = showingEmpty ? 'none' : 'block';
+  }
+  function toggleRuleUnconfiguredDemo() {
+    var grid = document.getElementById('grid-commission-summary');
+    var box = document.getElementById('commission-unconfigured');
+    var showing = box.style.display !== 'none';
+    grid.style.display = showing ? 'grid' : 'none';
+    box.style.display = showing ? 'none' : 'block';
+  }
+</script>
+</body>
+</html>
