@@ -11,9 +11,9 @@
 
 | 锚点 | 实测方式 | 期望值（填写后登记） |
 |------|---------|---------------------|
-| 主色已覆盖 UI 库 | `getComputedStyle(document.documentElement).getPropertyValue('--el-color-primary')`（按本项目 UI 库主色变量名调整） | == 「一、色彩系统」`$primary` 色值 |
+| 主色已覆盖 UI 库 | `getComputedStyle(document.documentElement).getPropertyValue('--el-color-primary')`（按本项目 UI 库主色变量名调整） | == `#1677FF`（见「一、色彩系统」`$primary`） |
 | 目标视口无横向外溢 | 主要页面、目标视口宽下 `document.documentElement.scrollWidth - window.innerWidth <= 0` | ≤ 0 |
-| 关键容器尺寸 | 侧栏宽 / 顶栏高等的实测 `offsetWidth`/`offsetHeight` | == 「六、布局规范」对应 token |
+| 关键容器尺寸 | 顶栏高等的实测 `offsetWidth`/`offsetHeight` | == `56px`（见「六、布局规范」顶部导航高度） |
 
 > 锚点只覆盖**少数确定可断言**的地基不变量（主色 / 外溢 / 关键容器），不追求逐像素；逐像素与字号字重观感仍由 manual-test 人工走查。
 
@@ -25,41 +25,41 @@
 
 | 变量 | 色值 | 用途 |
 |------|------|------|
-| `$primary` | | 主按钮、选中状态、强调元素 |
-| `$primary-light` | | 选中背景、hover 状态 |
-| `$primary-dark` | | 按钮 hover |
+| `$primary` | `#1677FF` | 主按钮、选中状态、强调元素 |
+| `$primary-light` | `#E8F3FF` | 选中背景、hover 状态 |
+| `$primary-dark` | `#0E56D9` | 按钮 hover |
 
 ### 背景色
 
 | 变量 | 色值 | 用途 |
 |------|------|------|
-| `$bg-page` | | 页面背景 |
-| `$bg-card` | | 卡片背景 |
-| `$bg-hover` | | 悬停背景 |
+| `$bg-page` | `#F5F7FA` | 页面背景 |
+| `$bg-card` | `#FFFFFF` | 卡片背景 |
+| `$bg-hover` | `#F5F7FA` | 悬停背景 |
 
 ### 文字色
 
 | 变量 | 色值 | 用途 |
 |------|------|------|
-| `$text-primary` | | 主要文字 |
-| `$text-secondary` | | 次要文字 |
-| `$text-hint` | | 辅助文字、占位文字 |
+| `$text-primary` | `#1F2329` | 主要文字 |
+| `$text-secondary` | `#646A73` | 次要文字 |
+| `$text-hint` | `#8F959E` | 辅助文字、占位文字 |
 
 ### 边框色
 
 | 变量 | 色值 | 用途 |
 |------|------|------|
-| `$border-color` | | 统一边框 |
+| `$border-color` | `#E4E7ED` | 统一边框 |
 
 ### 状态色
 
 | 变量 | 色值 | 用途 |
 |------|------|------|
-| `$color-success` | | 成功 |
-| `$color-warning` | | 警告 |
-| `$color-danger` | | 危险/删除 |
-| `$color-disabled` | | 禁用/已完成 |
-| `$color-info` | | 链接、进度 |
+| `$color-success` | `#52C41A` | 成功 |
+| `$color-warning` | `#FAAD14` | 警告 |
+| `$color-danger` | `#F53F3F` | 危险/删除 |
+| `$color-disabled` | `#C9CDD4` | 禁用/已完成 |
+| `$color-info` | `#909399` | 链接、进度 |
 
 ---
 
@@ -69,8 +69,8 @@
 
 | 用途 | 字体栈 |
 |------|------|
-| 基础 | |
-| 数据/数字 | |
+| 基础 | `-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif` |
+| 数据/数字 | 同基础字体栈，附加 `font-variant-numeric: tabular-nums`（表格数字等宽对齐） |
 
 ### 字号与行高
 
@@ -102,22 +102,22 @@
 
 ## 四、圆角与阴影
 
-### 圆角
+### 圆角（硬朗风格，小圆角）
 
 | 变量 | 值 | 用途 |
 |------|----|------|
-| `$radius-sm` | | 标签、小型控件 |
-| `$radius-md` | | 卡片、按钮 |
-| `$radius-lg` | | 抽屉、弹窗 |
+| `$radius-sm` | 2px | 标签、小型控件 |
+| `$radius-md` | 4px | 卡片、按钮 |
+| `$radius-lg` | 8px | 抽屉、弹窗 |
 | `$radius-full` | 9999px | 胶囊形状 |
 
 ### 阴影
 
 | 变量 | 值 | 用途 |
 |------|----|----|
-| `$shadow-sm` | | 列表悬浮 |
-| `$shadow-md` | | 卡片 |
-| `$shadow-lg` | | 弹窗、抽屉 |
+| `$shadow-sm` | `0 1px 2px rgba(0,0,0,0.05)` | 列表悬浮 |
+| `$shadow-md` | `0 2px 8px rgba(0,0,0,0.08)` | 卡片 |
+| `$shadow-lg` | `0 4px 16px rgba(0,0,0,0.12)` | 弹窗、抽屉 |
 
 ---
 
@@ -137,18 +137,18 @@
 
 | 元素 | 值 |
 |------|-----|
-| 顶部导航高度 | |
-| 侧边栏宽度（展开） | |
-| 侧边栏宽度（收起） | |
-| 页面内容最大宽度 | |
+| 顶部导航高度 | 56px |
+| 侧边栏宽度（展开） | 不适用（V0 已定页面外壳为顶部导航 + 内容区，无侧边栏） |
+| 侧边栏宽度（收起） | 不适用 |
+| 页面内容最大宽度 | 1440px（超宽屏居中，不铺满） |
 
 ### 响应式断点
 
 | 断点 | 值 | 行为 |
 |------|-----|------|
-| Mobile | | |
-| Tablet（核心断点） | | |
-| Desktop | | |
+| Mobile | < 768px | 单列布局，弹窗/抽屉满宽 |
+| Tablet（核心断点） | 768px – 1199px | 保留核心操作，次要信息收进抽屉/折叠 |
+| Desktop | ≥ 1200px | 完整多列布局 |
 
 ### 响应式规则
 
@@ -159,21 +159,21 @@
 
 ---
 
-## 七、控件尺寸规范
+## 七、控件尺寸规范（紧凑密度——管理员高频处理大量表格数据）
 
 ### 输入框宽度
 
 | 变量 | 值 | 场景 |
 |------|----|------|
-| `$input-width-sm` | | |
-| `$input-width-md` | | |
-| `$input-width-lg` | | |
+| `$input-width-sm` | 120px | 短字段（如票数、单价） |
+| `$input-width-md` | 240px | 常规字段（如批次名称、销售姓名） |
+| `$input-width-lg` | 320px | 长字段（如筛选关键词） |
 | `$input-width-full` | 100% | 满宽 |
 
 ### 按钮高度
 
 | 变量 | 值 |
 |------|----|
-| `$btn-height-sm` | |
-| `$btn-height-md` | |
-| `$btn-height-lg` | |
+| `$btn-height-sm` | 28px |
+| `$btn-height-md` | 32px |
+| `$btn-height-lg` | 36px |
