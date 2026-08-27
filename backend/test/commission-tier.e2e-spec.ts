@@ -153,6 +153,17 @@ describe('commission-tier 阶梯规则管理 (e2e)', () => {
       expect(res.body.data.upperBound).toBeNull();
     });
 
+    it('upperBound 显式传 null（而非省略字段）同样视为"及以上"，允许保存', async () => {
+      const res = await authed('post', '/api/commission-tiers').send({
+        lowerBound: 100,
+        upperBound: null,
+        unitPrice: 5,
+      });
+
+      expect(res.status).toBe(201);
+      expect(res.body.data.upperBound).toBeNull();
+    });
+
     it('unitPrice 非正数 → 1001', async () => {
       const res = await authed('post', '/api/commission-tiers').send({
         lowerBound: 0,

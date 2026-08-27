@@ -100,22 +100,48 @@ export class PolicyRecordQueryService {
         )
       : undefined;
 
-    const toSave: PolicyRecord[] = [];
-    let matchedCount = 0;
-    for (const record of unmatchedRecords) {
-      // BE-EXT-01：第三方返回值必须先校验关键字段非 null/undefined 且类型正确才能使用；
-      // 无法识别/未命中的一律保持 unmatched，不把脏值解构进 salesName。
-      const name = mapping ? mapping[record.workOrderNo] : undefined;
-      if (typeof name === 'string' && name.trim().length > 0) {
-        record.salesName = name;
-        record.salesFillSource = 'system';
-        matchedCount += 1;
-        toSave.push(record);
-      }
-    }
+    // 逐条按 id 条件 UPDATE（而非先取实体整体 save）：在本次回填 await 第三方接口
+    // 期间，该批次里的某条记录可能已被并发的删除导入操作（连同其所属 import_file）
+    // 硬删除。若沿用「取实体 → save()」的写法，TypeORM 对数据库里已不存在的行会把
+    // save() 退化成携带原 id 的 INSERT，而这条记录的 import_file_id 外键已随之
+    // 被删，INSERT 会直接违反外键约束抛异常。update() 对不存在的行只会影响 0 行，
+    // 不会退化成插入，天然对「记录已被并发删除」免疫。同时用 Promise.allSettled
+    // 隔离每条记录的更新结果，避免其中一条异常/受影响 0 行波及同批次其余记录
+    // 本该成功落库的回填结果、或让整个请求抛出未处理异常。
+    const outcomes = await Promise.allSettled(
+      unmatchedRecords.map(async (record) => {
+        // BE-EXT-01：第三方返回值必须先校验关键字段非 null/undefined 且类型正确才能使用；
+        // 无法识别/未命中的一律保持 unmatched，不把脏值解构进 salesName。
+        const name = mapping ? mapping[record.workOrderNo] : undefined;
+        if (typeof name !== 'string' || name.trim().length === 0) {
+          return false;
+        }
+        const result = await this.policyRecordRepository.update(
+          { id: record.id },
+          { salesName: name, salesFillSource: 'system' },
+        );
+        // affected === 0：这条记录在回填过程中已被并发删除（如所属导入被撤销），
+        // 按未命中处理，不计入 matchedCount。
+        return (result.affected ?? 0) > 0;
+      }),
+    );
 
-    if (toSave.length > 0) {
-      await this.policyRecordRepository.save(toSave);
+    let matchedCount = 0;
+    for (const outcome of outcomes) {
+      if (outcome.status === 'fulfilled') {
+        if (outcome.value) {
+          matchedCount += 1;
+        }
+      } else {
+        const reason =
+          outcome.reason instanceof Error
+            ? outcome.reason.message
+            : String(outcome.reason);
+        this.logger.error(
+          `批量回填过程中单条记录更新失败，按未命中处理：batchId=${batchId}, reason=${reason}`,
+          outcome.reason instanceof Error ? outcome.reason.stack : undefined,
+        );
+      }
     }
 
     return { total, matchedCount, unmatchedCount: total - matchedCount };

@@ -327,6 +327,55 @@ describe('commission-batch 保单记录查询 + 回填 (e2e)', () => {
       expect(reloadedUnmatched!.salesFillSource).toBe('unmatched');
     });
 
+    it('回填等待第三方接口响应期间该记录被并发删除 → 该条按未命中处理，其余记录正常回填，不抛异常', async () => {
+      const batchId = await createBatch('回填-并发删除批次');
+      const survivor = await createRecord(batchId, {
+        workOrderNo: 'WO-SURVIVE',
+      });
+      const deletedDuringFill = await createRecord(batchId, {
+        workOrderNo: 'WO-DELETED',
+      });
+
+      process.env.SALES_FILL_API_URL = 'http://mock-sales-fill.local/lookup';
+      // 用 fetch mock 的实现体模拟并发时序：fill() 发起第三方调用后，在等待
+      // 响应期间，另一个请求（如 deleteImport）把 deletedDuringFill 所属的
+      // 导入连同这条记录一起硬删除——等第三方响应回来时，这条记录已经不在
+      // 数据库里了。
+      fetchSpy = jest.spyOn(global, 'fetch').mockImplementation(async () => {
+        await policyRecordRepository.delete({ id: deletedDuringFill.id });
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            'WO-SURVIVE': '张三',
+            'WO-DELETED': '李四',
+          }),
+        } as Response;
+      });
+
+      const res = await request(app.getHttpServer())
+        .post(`/api/commission-batches/${batchId}/policy-records/fill`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(201);
+      expect(res.body.data).toEqual({
+        total: 2,
+        matchedCount: 1,
+        unmatchedCount: 1,
+      });
+
+      const reloadedSurvivor = await policyRecordRepository.findOne({
+        where: { id: survivor.id },
+      });
+      expect(reloadedSurvivor!.salesName).toBe('张三');
+      expect(reloadedSurvivor!.salesFillSource).toBe('system');
+
+      const reloadedDeleted = await policyRecordRepository.findOne({
+        where: { id: deletedDuringFill.id },
+      });
+      expect(reloadedDeleted).toBeNull();
+    });
+
     it('第三方接口调用异常 → 不抛错，相关记录保持 unmatched（BE-EXT-01/BE-LOG-01）', async () => {
       const batchId = await createBatch('回填-异常批次');
       await createRecord(batchId, { workOrderNo: 'WO-ERR' });

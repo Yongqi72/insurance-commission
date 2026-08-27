@@ -224,9 +224,19 @@ export class CommissionTierService {
     return tier;
   }
 
-  /** lowerBound < upperBound（upperBound 为空视为"及以上"，跳过该项比较）。 */
+  /**
+   * lowerBound < upperBound（upperBound 为空视为"及以上"，跳过该项比较）。
+   * upperBound 未提供时既可能是省略该字段（值为 undefined），也可能是客户端
+   * 按 JSON 惯例显式传 null（class-validator 的 @IsOptional 对显式 null 同样
+   * 跳过后续校验器）——两种写法语义等价，都要跳过比较，否则 null 会被 JS 的
+   * `>=` 运算符隐式转换成 0 参与比较，把合法的开放区间请求误判为非法。
+   */
   private assertBoundsOrdered(dto: UpsertCommissionTierDto): void {
-    if (dto.upperBound !== undefined && dto.lowerBound >= dto.upperBound) {
+    if (
+      dto.upperBound !== undefined &&
+      dto.upperBound !== null &&
+      dto.lowerBound >= dto.upperBound
+    ) {
       throw new BadRequestException('下限必须小于上限');
     }
   }
