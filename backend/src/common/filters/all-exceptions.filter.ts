@@ -65,6 +65,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         return ErrorCode.NOT_FOUND;
       case HttpStatus.CONFLICT:
         return ErrorCode.CONFLICT;
+      case HttpStatus.UNPROCESSABLE_ENTITY:
+        return ErrorCode.RULE_INCOMPLETE;
       default:
         return status >= 500
           ? ErrorCode.INTERNAL_ERROR

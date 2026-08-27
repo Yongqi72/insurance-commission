@@ -2,19 +2,32 @@ import { Injectable } from '@nestjs/common';
 import { Workbook } from 'exceljs';
 import { POLICY_RECORD_COLUMNS } from './policy-record-columns';
 
-/** 导出明细行：8 列账单字段（对齐 policy-record-columns.ts，与 ExcelParser 共用同一份定义） */
+/**
+ * 导出明细行：账单共享 8 列（对齐 policy-record-columns.ts，与 ExcelParser 共用同一份定义）
+ * 之外，额外带一列「销售」——该字段来自回填/补录结果，不属于账单导入解析的范围，故不进入
+ * ExcelParser 与 ExcelBuilder 共用的 policy-record-columns.ts，仅在导出报表明细行中出现；
+ * 未匹配记录该字段传空字符串，渲染为空白单元格，行本身仍展示。
+ */
 export interface PolicyRecordExportRow {
   customerName: string;
   workOrderNo: string;
   businessType: string;
   currency: string;
   policyholder: string;
+  salesName: string;
   insuredAmount: number;
   premiumAmount: number;
   policyNo: string;
 }
 
-/** 销售人员汇总行：本组内按销售人员小计（提成汇总，由 ic-v1-006 的 calcCommission() 计算后传入） */
+/** 明细行列定义：在共享的 8 列账单字段基础上，于「投保人」之后插入报表专属的「销售」列 */
+const DETAIL_COLUMNS = [
+  ...POLICY_RECORD_COLUMNS.slice(0, 5),
+  { key: 'salesName', header: '销售' },
+  ...POLICY_RECORD_COLUMNS.slice(5),
+];
+
+/** 销售人员汇总行：本组内按销售人员小计（提成汇总，由 calcCommission() 计算后传入） */
 export interface SalesSummaryRow {
   salesName: string;
   policyCount: number;
@@ -41,10 +54,11 @@ const SUMMARY_SECTION_TITLE = '销售人员提成汇总';
 const TOTAL_SECTION_TITLE = '合计';
 
 /**
- * 提成报表 Excel 生成器：与 ExcelParser 共用 policy-record-columns.ts 的同一套 8 列定义
- * （BE-EXCEL-01）——改一处列顺序/表头，导入解析与导出生成两边同步生效。
+ * 提成报表 Excel 生成器：明细行的 8 列账单字段与 ExcelParser 共用 policy-record-columns.ts
+ * 的同一套定义（BE-EXCEL-01）——改一处列顺序/表头，导入解析与导出生成两边同步生效；
+ * 报表专属的「销售」列在此基础上单独插入，不影响该共享定义。
  * build(groups) 按传入分组数据生成多 sheet workbook，每组一个 sheet，sheet 数等于分组数；
- * 每个 sheet 依次包含：明细行（8 列）、销售人员汇总行、合计行。
+ * 每个 sheet 依次包含：明细行（9 列）、销售人员汇总行、合计行。
  */
 @Injectable()
 export class ExcelBuilder {
@@ -54,8 +68,8 @@ export class ExcelBuilder {
     groups.forEach((group) => {
       const sheet = workbook.addWorksheet(group.sheetName);
 
-      // 明细行：表头 + 数据，列顺序/表头文案来自共享列定义
-      sheet.columns = POLICY_RECORD_COLUMNS.map((column) => ({
+      // 明细行：表头 + 数据，列顺序/表头文案来自共享列定义（额外插入「销售」列）
+      sheet.columns = DETAIL_COLUMNS.map((column) => ({
         header: column.header,
         key: column.key,
         width: 18,
