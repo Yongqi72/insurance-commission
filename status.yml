@@ -68,7 +68,7 @@ tasks:
     layer: backend
     status: done
     assigned_to: yongqi.liu
-    pr: null
+    pr: 3
     parent_id: null
     depends_on: [ic-v1-001]
     delivery: 可并行
@@ -85,7 +85,7 @@ tasks:
     layer: backend
     status: done
     assigned_to: yongqi.liu
-    pr: null
+    pr: 3
     parent_id: null
     depends_on: [ic-v1-001]
     delivery: 可并行
@@ -102,7 +102,7 @@ tasks:
     layer: backend
     status: done
     assigned_to: yongqi.liu
-    pr: null
+    pr: 3
     parent_id: null
     depends_on: [ic-v1-001]
     delivery: 可并行
@@ -119,7 +119,7 @@ tasks:
     layer: backend
     status: done
     assigned_to: yongqi.liu
-    pr: null
+    pr: 3
     parent_id: null
     depends_on: [ic-v1-001]
     delivery: 可并行
