@@ -3,6 +3,8 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { CommissionBatchModule } from './commission-batch/commission-batch.module';
+import { CommissionTierModule } from './commission-tier/commission-tier.module';
 import { PolicyRecordModule } from './policy-record/policy-record.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { SuccessInterceptor } from './common/interceptors/success.interceptor';
@@ -19,6 +21,8 @@ import { buildTypeOrmOptions } from './config/typeorm.config';
     }),
     AuthModule,
     PolicyRecordModule,
+    CommissionBatchModule,
+    CommissionTierModule,
   ],
   providers: [
     // 全局鉴权卫士（SH-AUTH-01）：默认拦截全部路由，@Public() 显式 opt-out

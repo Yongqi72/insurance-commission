@@ -1,0 +1,91 @@
+{
+  "schema": "develop-review-profile/v1",
+  "task_id": "ic-v1-002",
+  "task_type": "dev-backend",
+  "layers": [
+    "backend"
+  ],
+  "source": "sprint",
+  "effective_risk": "sensitive",
+  "changed_files": [
+    "backend/src/app.module.ts",
+    "backend/src/commission-batch/commission-batch.controller.ts",
+    "backend/src/commission-batch/commission-batch.entity.ts",
+    "backend/src/commission-batch/commission-batch.module.ts",
+    "backend/src/commission-batch/commission-batch.service.ts",
+    "backend/src/commission-batch/dto/create-commission-batch.dto.ts",
+    "backend/src/commission-batch/dto/update-commission-batch-status.dto.ts",
+    "backend/test/commission-batch.e2e-spec.ts"
+  ],
+  "input_fingerprint": "6e386751ebfeab649ff7c14e28e3cd4183ad8fbaa6297e5dcded731199e23f9f",
+  "signals": {
+    "metadata_incomplete": false,
+    "unknown_layer": false,
+    "surface": "production",
+    "frontend": false,
+    "backend": true,
+    "ui": false,
+    "input": true,
+    "query": true,
+    "concurrency": true,
+    "logging": true,
+    "enforcement": true,
+    "sensitive": true
+  },
+  "selected_dimensions": [
+    {
+      "id": "contract",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "scope-and-secrets",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "test-evidence",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "comment-hygiene",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "standards",
+      "reason": "task package has relevant-standards"
+    },
+    {
+      "id": "enforcement",
+      "reason": "task/change surface contains enforcement or test/tooling signals"
+    },
+    {
+      "id": "input-provenance",
+      "reason": "backend request/API input surface is present"
+    },
+    {
+      "id": "query-performance",
+      "reason": "backend query/data-read surface is present"
+    },
+    {
+      "id": "concurrency",
+      "reason": "backend write/transaction/concurrency surface is present"
+    },
+    {
+      "id": "logging-privacy",
+      "reason": "production or logging/privacy surface is present"
+    },
+    {
+      "id": "maintainability",
+      "reason": "fixed diff contains production code"
+    },
+    {
+      "id": "sensitive-boundaries",
+      "reason": "effective risk is sensitive; profile may only add high-risk scrutiny"
+    }
+  ],
+  "omitted_dimensions": [
+    {
+      "id": "design-fidelity",
+      "reason": "task is not frontend"
+    }
+  ]
+}
