@@ -1,11 +1,7 @@
 import 'reflect-metadata';
 import { Workbook } from 'exceljs';
 import { ExcelBuilder, ExcelBuilderGroup } from './excel-builder';
-import { ExcelParser } from './excel-parser';
-import {
-  BILL_SHEET_NAME,
-  POLICY_RECORD_COLUMNS,
-} from './policy-record-columns';
+import { POLICY_RECORD_COLUMNS } from './policy-record-columns';
 
 describe('ExcelBuilder（AC6：与 ExcelParser 共用同一套列定义 + 多 sheet 生成）', () => {
   const builder = new ExcelBuilder();
@@ -20,6 +16,7 @@ describe('ExcelBuilder（AC6：与 ExcelParser 共用同一套列定义 + 多 sh
           businessType: '车险',
           currency: 'CNY',
           policyholder: '投保人甲',
+          salesName: '张三',
           insuredAmount: 100000,
           premiumAmount: 1234.56,
           policyNo: 'PN-0001',
@@ -59,17 +56,26 @@ describe('ExcelBuilder（AC6：与 ExcelParser 共用同一套列定义 + 多 sh
     expect(workbook.worksheets.map((s) => s.name)).toEqual(['车险', '寿险']);
   });
 
-  it('每个 sheet 依次包含表头 + 明细行 + 销售汇总行 + 合计行', () => {
+  it('每个 sheet 依次包含表头（8 列共享账单字段 + 报表专属「销售」列）+ 明细行 + 销售汇总行 + 合计行', () => {
     const workbook = builder.build(groups);
     const sheet = workbook.getWorksheet('车险');
     expect(sheet).toBeDefined();
     if (!sheet) return;
 
-    // 表头行：来自共享列定义的 header 文案，顺序与 POLICY_RECORD_COLUMNS 一致
+    // 表头行：共享 8 列 header 文案 + 于「投保人」之后插入的「销售」列，顺序为 AC-15 oracle 约定的
+    // 客户名称/工作单号/业务类型/币种/投保人/销售/保险金额/保费/保单号
     const headerRow = sheet.getRow(1).values as unknown[];
-    expect(headerRow.slice(1)).toEqual(
-      POLICY_RECORD_COLUMNS.map((c) => c.header),
-    );
+    expect(headerRow.slice(1)).toEqual([
+      '客户名称',
+      '工作单号',
+      '业务类型',
+      '币种',
+      '投保人',
+      '销售',
+      '保险金额',
+      '保费',
+      '保单号',
+    ]);
 
     // 明细行
     const detailRow = sheet.getRow(2).values as unknown[];
@@ -79,6 +85,7 @@ describe('ExcelBuilder（AC6：与 ExcelParser 共用同一套列定义 + 多 sh
       '车险',
       'CNY',
       '投保人甲',
+      '张三',
       100000,
       1234.56,
       'PN-0001',
@@ -102,6 +109,37 @@ describe('ExcelBuilder（AC6：与 ExcelParser 共用同一套列定义 + 多 sh
     ]);
   });
 
+  it('未匹配明细行的销售列传空字符串，渲染为空白单元格，行本身仍展示', () => {
+    const unmatchedGroup: ExcelBuilderGroup[] = [
+      {
+        sheetName: '未匹配示例',
+        detailRows: [
+          {
+            customerName: '客户乙',
+            workOrderNo: 'WO-0002',
+            businessType: '车险',
+            currency: 'CNY',
+            policyholder: '投保人乙',
+            salesName: '',
+            insuredAmount: 50000,
+            premiumAmount: 600,
+            policyNo: 'PN-0002',
+          },
+        ],
+        summaryRows: [],
+        totalRow: { policyCount: 0, commissionAmount: 0 },
+      },
+    ];
+    const workbook = builder.build(unmatchedGroup);
+    const sheet = workbook.getWorksheet('未匹配示例');
+    expect(sheet).toBeDefined();
+    if (!sheet) return;
+
+    const detailRow = sheet.getRow(2).values as unknown[];
+    // exceljs 对空字符串单元格取值为 undefined 或 null（非 undefined 索引的稀疏数组）
+    expect(detailRow[6]).toBeFalsy();
+  });
+
   it('toBuffer 生成的 Buffer 可被 exceljs 重新读取（往返一致）', async () => {
     const workbook = builder.build(groups);
     const buffer = await builder.toBuffer(workbook);
@@ -113,24 +151,9 @@ describe('ExcelBuilder（AC6：与 ExcelParser 共用同一套列定义 + 多 sh
     expect(reloaded.worksheets).toHaveLength(2);
   });
 
-  it('ExcelBuilder 生成的表头可直接被 ExcelParser 识别为「账单」sheet 并解析（列定义互通）', async () => {
-    const singleGroup: ExcelBuilderGroup[] = [
-      {
-        sheetName: BILL_SHEET_NAME,
-        detailRows: groups[0].detailRows,
-        summaryRows: [],
-        totalRow: { policyCount: 1, commissionAmount: 50 },
-      },
-    ];
-    const workbook = builder.build(singleGroup);
-    const buffer = await builder.toBuffer(workbook);
-
-    const parser = new ExcelParser();
-    const result = await parser.parse(buffer);
-
-    expect(result.ok).toBe(true);
-    if (result.ok === false) return;
-    expect(result.successRows).toHaveLength(1);
-    expect(result.successRows[0].policyNo).toBe('PN-0001');
-  });
+  // 原「ExcelBuilder 生成的表头可直接被 ExcelParser 识别为账单 sheet 并解析」用例已移除：
+  // 报表专属的「销售」列插入后，ExcelBuilder 输出的明细行变为 9 列，不再是 ExcelParser 严格按位置
+  // 解析所依赖的 8 列账单形状（BE-EXCEL-01 共享的是 8 列账单字段定义本身，不代表 ExcelBuilder
+  // 任意输出都能整体回灌 ExcelParser）；提成报表导出文件本就是终态产物，不存在被重新当账单导入
+  // 的业务场景，故不再验证/保留这一往返场景。
 });
