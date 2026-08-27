@@ -1,0 +1,90 @@
+{
+  "schema": "develop-review-profile/v1",
+  "task_id": "ic-v1-005",
+  "task_type": "dev-backend",
+  "layers": [
+    "backend"
+  ],
+  "source": "sprint",
+  "effective_risk": "sensitive",
+  "changed_files": [
+    "backend/src/app.module.ts",
+    "backend/src/commission-tier/commission-tier.controller.ts",
+    "backend/src/commission-tier/commission-tier.module.ts",
+    "backend/src/commission-tier/commission-tier.service.ts",
+    "backend/src/commission-tier/dto/upsert-commission-tier.dto.ts",
+    "backend/src/commission-tier/rule-complete.util.ts",
+    "backend/test/commission-tier.e2e-spec.ts"
+  ],
+  "input_fingerprint": "5a8d21977b9975d8cb20af4210d23b8f623315c36594fb9a6161d98391f45849",
+  "signals": {
+    "metadata_incomplete": false,
+    "unknown_layer": false,
+    "surface": "production",
+    "frontend": false,
+    "backend": true,
+    "ui": false,
+    "input": true,
+    "query": true,
+    "concurrency": true,
+    "logging": true,
+    "enforcement": true,
+    "sensitive": true
+  },
+  "selected_dimensions": [
+    {
+      "id": "contract",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "scope-and-secrets",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "test-evidence",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "comment-hygiene",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "standards",
+      "reason": "task package has relevant-standards"
+    },
+    {
+      "id": "enforcement",
+      "reason": "task/change surface contains enforcement or test/tooling signals"
+    },
+    {
+      "id": "input-provenance",
+      "reason": "backend request/API input surface is present"
+    },
+    {
+      "id": "query-performance",
+      "reason": "backend query/data-read surface is present"
+    },
+    {
+      "id": "concurrency",
+      "reason": "backend write/transaction/concurrency surface is present"
+    },
+    {
+      "id": "logging-privacy",
+      "reason": "production or logging/privacy surface is present"
+    },
+    {
+      "id": "maintainability",
+      "reason": "fixed diff contains production code"
+    },
+    {
+      "id": "sensitive-boundaries",
+      "reason": "effective risk is sensitive; profile may only add high-risk scrutiny"
+    }
+  ],
+  "omitted_dimensions": [
+    {
+      "id": "design-fidelity",
+      "reason": "task is not frontend"
+    }
+  ]
+}

@@ -29,7 +29,7 @@ export interface PageResult<T> {
 }
 
 export async function fetchPolicyRecordPage(query: PageQuery): Promise<PageResult<PolicyRecord>> {
-  const res = await request.get<ApiEnvelope<PageResult<PolicyRecord>>>('/policy-records', {
+  const res = await request.get<ApiEnvelope<PageResult<PolicyRecord>>>('/api/policy-records', {
     params: query,
   })
   return res.data.data
