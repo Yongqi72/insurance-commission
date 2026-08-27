@@ -35,7 +35,7 @@
     "backend/src/policy-record/sales-fill-log.entity.spec.ts",
     "backend/src/policy-record/sales-fill-log.entity.ts"
   ],
-  "input_fingerprint": "6c8275c082390ef5c58d96fdcc45ecdf70b476371c346212821e136022b53358",
+  "input_fingerprint": "4bb8c85e18e93194ffdac8faf876ef38f1a952434ab6c4652764c334860a7b50",
   "signals": {
     "metadata_incomplete": false,
     "unknown_layer": false,

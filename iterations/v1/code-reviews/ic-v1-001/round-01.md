@@ -102,3 +102,7 @@ findings:
 - F001、F004：均为环境驱动的 evidence-gap（沙箱无 MySQL / 无真实 OSS 凭证），非代码逻辑缺陷；均记入项目根 `backlog.md`（[欠账]），标注待有真实 MySQL / OSS 测试凭证的环境（部署/联调阶段）补验证；不进入 fix-code 整改 loop（无稳定复现的代码级反例可修）。
 - F003：记入 `backlog.md`（[欠账]），低优先级清理，不阻塞本次合并。
 - 无 `fix-code`/`fix-mechanism` 级 blocking finding，`conclusion: pass`，进入末端。
+
+## 补记（末端落 `[merged]` 前，2026-08-26）
+
+F002 的 `revise-doc` 修订了 `iterations/v1/queue/ic-v1-001.md` 的 AC2 措辞（零代码影响），发生在本轮 profile 生成**之后**；`profile-round-01.json` 冻结的 `task_normative_frontmatter_sha256`/`input_fingerprint` 因此与修订后的最终任务包文本不一致，被 `check-sprint.js --review` 判定为不匹配。核实 `selected_dimensions`/`omitted_dimensions`/`signals`/`changed_files`/`task_type`/`layers`/`source` 在修订前后逐项相同（仅措辞哈希变化），已用 `node scripts/review-profile.js`（同一组 `--risk sensitive --changed-files`）针对修订后的最终任务包文本重新生成 `profile-round-01.json`，不改变任何审查结论或维度选择。

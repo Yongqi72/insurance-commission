@@ -49,7 +49,7 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: done
+    status: merged
     assigned_to: yongqi.liu
     pr: 2
     parent_id: null
@@ -246,6 +246,28 @@ integration_tests: []
 #    # status: 待执行 / 执行中 / 通过 / 失败
 
 code_reviews:
+  - iteration: v1
+    task_id: ic-v1-001
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: iterations/v1/code-reviews/ic-v1-001
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-26T09:05:00Z
+    implementation_completed_at: 2026-08-26T09:37:26Z
+    review_started_at: 2026-08-26T09:37:26Z
+    review_completed_at: 2026-08-26T09:52:12Z
+    implementation_minutes: 33
+    review_minutes: 15
+    spec_minutes: 1
+    comment: "round-01（full）0 blocking 进 fix-code；F001（migration 未在真实 MySQL 验证）/F004（OssClient 无真实 OSS 凭证验证）为 evidence-gap 记入 backlog；F002 revise-doc 修订 AC2 oracle 措辞，verified-closed；F003（注释卫生）记入 backlog。conclusion: pass"
+    issues:
+      - { id: ic-v1-001-F001, dimension: contract/sensitive-boundaries, severity: 严重, type: evidence-gap, reachability: unknown, action: request-evidence, impact: "AC1/AC2 是本任务风险最高交付物，ic-v1-002~006 全部 blocked-by 本任务；migration 从未在真实 MySQL 执行验证", description: "沙箱无 MySQL 实例（3306 拒连），migration:run 因 ECONNREFUSED 中止" }
+      - { id: ic-v1-001-F002, dimension: contract, severity: 建议, type: contract-drift, reachability: current, action: revise-doc, impact: "无功能性后果，纯 AC 表述精度问题", description: "AC2 回滚边缘场景表述与实现有缝隙，已修订任务包措辞，verified-closed" }
+      - { id: ic-v1-001-F003, dimension: comment-hygiene, severity: 建议, type: future-risk, reachability: current, action: backlog, impact: "不影响当前行为，长期可维护性略有损耗", description: "excel-builder.ts/excel-parser.ts/migration 新增注释点名任务号，违反注释卫生规则" }
+      - { id: ic-v1-001-F004, dimension: contract/sensitive-boundaries, severity: 建议, type: evidence-gap, reachability: unknown, action: request-evidence, impact: "ic-v1-003 落地导入功能后，联调阶段会自然触达真实网络验证", description: "沙箱无真实阿里云 OSS 凭证，OssClient 只有 mock 级验证" }
   - iteration: v0
     task_id: foundation
     conclusion: 通过
