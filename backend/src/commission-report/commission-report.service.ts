@@ -62,7 +62,7 @@ const SHEET_NAME_MAX_LENGTH = 31;
 /**
  * 提成汇总与导出（TRD §接口：GET .../commission-summary、.../commission-report、
  * .../exports，PRD AC-14~AC-17）。核心计算全部经由 calcCommission()（单一权威实现），
- * 阶梯完整性判定复用 ic-v1-005 交付的 ruleComplete()，两者均不在本类重复实现。
+ * 阶梯完整性判定复用提成阶梯规则模块导出的 ruleComplete()，两者均不在本类重复实现。
  * 提成数字现查现算，不做任何计算结果的持久化快照——归档的 export_record 只记录
  * "当次导出的文件在 OSS 的位置"，不记录计算过程或计算结果本身。
  */

@@ -134,9 +134,9 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 4
     parent_id: null
     depends_on: [ic-v1-001, ic-v1-005]
     delivery: 串行
@@ -358,6 +358,28 @@ code_reviews:
     comment: "round-01（full）发现 F001（create()/update() 缺事务/行锁保护，TOCTOU 窗口，sensitive risk 下 blocking evidence-gap）→ conclusion: evidence-needed。round-02（targeted，加 dataSource.transaction() 包裹+mysql pessimistic_write 锁）独立验证事务边界完整，但发现残留假设（未钉死隔离级别，隐含依赖 MySQL 默认 REPEATABLE READ）→ F001 降级为 downgraded，conclusion 仍 evidence-needed。round-03（targeted，事务显式钉死 SERIALIZABLE）独立读 TypeORM 源码确认与服务器配置解耦，F001 verified-closed，conclusion: pass。"
     issues:
       - { id: ic-v1-005-F001, dimension: concurrency, severity: n/a, type: n/a, reachability: n/a, action: none, status: closed, impact: "round-02 指出的隐含依赖服务器默认隔离级别配置的残留问题已被结构性消除（改用 dataSource.transaction('SERIALIZABLE', ...)），不再是需真实 MySQL 环境才能证实的证据缺口", description: "commission-tier.service.ts create()/update() 最终版本：事务包裹 find→冲突校验→save→写变更日志整段 + mysql 分支 pessimistic_write 锁 + 显式 SERIALIZABLE 隔离级别，经三轮独立审查（round-01 发现→round-02 结构性验证但发现残留假设→round-03 验证该假设已被显式 SQL 语句消除）verified-closed" }
+  - iteration: v1
+    task_id: ic-v1-006
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: iterations/v1/code-reviews/ic-v1-006
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-27T09:46:33Z
+    implementation_completed_at: 2026-08-27T10:01:24Z
+    review_started_at: 2026-08-27T10:01:24Z
+    review_completed_at: 2026-08-27T10:09:20Z
+    implementation_minutes: 15
+    review_minutes: 8
+    spec_minutes: 2
+    comment: "round-01（full）0 blocking；4 条 advisory：F001（注释点名任务号，第五次重现）backlog；F002（sheet 名清洗/截断/去重分支缺测试覆盖）backlog；F003（ossKey 用 Date.now() 推导，同批次同毫秒并发导出窄窗口下可覆盖彼此 OSS 对象）backlog；F004（OSS 上传成功但 DB 插入失败产生孤儿对象，顺序按任务包 oracle 原文）backlog。conclusion: pass"
+    issues:
+      - { id: ic-v1-006-F001, dimension: comment-hygiene, severity: advisory, type: future-risk, reachability: current, action: backlog, status: closed, impact: "不影响当前行为；已连续五个任务包复现同一模式", description: "commission-report.service.ts 类级文档注释点名任务号 ic-v1-005；已在 master 追加 commit 改为纯业务语言描述" }
+      - { id: ic-v1-006-F002, dimension: test-evidence, severity: advisory, type: evidence-gap, reachability: current, action: backlog, impact: "不影响提成金额计算正确性，仅影响 sheet 显示名；该分支目前无测试兜底", description: "buildUniqueSheetName() 的非法字符替换/截断/去重三条分支无测试覆盖" }
+      - { id: ic-v1-006-F003, dimension: concurrency, severity: advisory, type: future-risk, reachability: conditional, action: backlog, impact: "narrow race：需两个并发请求恰好落在同一毫秒，真实概率极低；一旦发生较早 export_record 的下载链接会指向较晚导出的文件内容", description: "ossKey = exports/{batchId}/{Date.now()}-{fileName}，未加额外唯一性/DB 唯一约束，OSS put() 为覆盖写语义" }
+      - { id: ic-v1-006-F004, dimension: concurrency, severity: advisory, type: future-risk, reachability: conditional, action: backlog, impact: "失败时只造成 OSS 存储层面孤儿对象，客户端不会看到伪成功；顺序与任务包 oracle 原文一致，非实现者自选", description: "先 OssClient.upload() 后 exportRecordRepository.save()，两步无事务/补偿，save 失败会留下孤儿 OSS 对象" }
   - iteration: v0
     task_id: foundation
     conclusion: 通过
