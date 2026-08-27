@@ -49,13 +49,15 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: 可取
-    assigned_to: null
-    pr: null
+    status: done
+    assigned_to: yongqi.liu
+    pr: 2
     parent_id: null
     depends_on: []
     delivery: 串行
     urgency: null
+    branch: ic-v1-001
+    risk: sensitive
   - id: ic-v1-002
     iteration: v1
     sprint: 1
