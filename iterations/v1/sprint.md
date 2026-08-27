@@ -3,10 +3,10 @@
 | task-id | title | layers | 依赖 | 状态 | PR | 交付 |
 |---------|-------|--------|------|------|----|------|
 | ic-v1-001 | 后端基础设施 | backend | — | [merged] | #2 | 串行 |
-| ic-v1-002 | 批次管理与状态 | backend | ic-v1-001 | [done] | #3 | 可并行 |
-| ic-v1-003 | Excel 导入与归档 | backend | ic-v1-001 | [done] | #3 | 可并行 |
-| ic-v1-004 | 保单记录查询与回填补录 | backend | ic-v1-001 | [done] | #3 | 可并行 |
-| ic-v1-005 | 提成阶梯规则管理 | backend | ic-v1-001 | [done] | #3 | 可并行 |
+| ic-v1-002 | 批次管理与状态 | backend | ic-v1-001 | [merged] | #3 | 可并行 |
+| ic-v1-003 | Excel 导入与归档 | backend | ic-v1-001 | [merged] | #3 | 可并行 |
+| ic-v1-004 | 保单记录查询与回填补录 | backend | ic-v1-001 | [merged] | #3 | 可并行 |
+| ic-v1-005 | 提成阶梯规则管理 | backend | ic-v1-001 | [merged] | #3 | 可并行 |
 | ic-v1-006 | 提成汇总与导出 | backend | ic-v1-001, ic-v1-005 | [可取] | — | 串行 |
 | ic-v1-007 | 视觉地基包 | frontend | — | [可取] | — | 串行 |
 | ic-v1-008 | 批次列表页 | frontend | ic-v1-007, ic-v1-002 | [可取] | — | 可并行 |

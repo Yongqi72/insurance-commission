@@ -66,7 +66,7 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: done
+    status: merged
     assigned_to: yongqi.liu
     pr: 3
     parent_id: null
@@ -83,7 +83,7 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: done
+    status: merged
     assigned_to: yongqi.liu
     pr: 3
     parent_id: null
@@ -100,7 +100,7 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: done
+    status: merged
     assigned_to: yongqi.liu
     pr: 3
     parent_id: null
@@ -117,7 +117,7 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: done
+    status: merged
     assigned_to: yongqi.liu
     pr: 3
     parent_id: null
@@ -276,6 +276,86 @@ code_reviews:
       - { id: ic-v1-001-F002, dimension: contract, severity: 建议, type: contract-drift, reachability: current, action: revise-doc, impact: "无功能性后果，纯 AC 表述精度问题", description: "AC2 回滚边缘场景表述与实现有缝隙，已修订任务包措辞，verified-closed" }
       - { id: ic-v1-001-F003, dimension: comment-hygiene, severity: 建议, type: future-risk, reachability: current, action: backlog, impact: "不影响当前行为，长期可维护性略有损耗", description: "excel-builder.ts/excel-parser.ts/migration 新增注释点名任务号，违反注释卫生规则" }
       - { id: ic-v1-001-F004, dimension: contract/sensitive-boundaries, severity: 建议, type: evidence-gap, reachability: unknown, action: request-evidence, impact: "ic-v1-003 落地导入功能后，联调阶段会自然触达真实网络验证", description: "沙箱无真实阿里云 OSS 凭证，OssClient 只有 mock 级验证" }
+  - iteration: v1
+    task_id: ic-v1-002
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: iterations/v1/code-reviews/ic-v1-002
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-27T02:44:00Z
+    implementation_completed_at: 2026-08-27T02:56:00Z
+    review_started_at: 2026-08-27T02:56:00Z
+    review_completed_at: 2026-08-27T03:10:00Z
+    implementation_minutes: 12
+    review_minutes: 14
+    spec_minutes: 1
+    comment: "round-01（full）0 blocking；F001（commission-batch.entity.ts 主键 type 'bigint'→'int' 越界改动，已独立复现验证对生产 MySQL schema/运行时行为均无影响）advisory/backlog，verified-closed；F002（注释卫生，与 ic-v1-001-F003 同根）advisory/backlog。conclusion: pass"
+    issues:
+      - { id: ic-v1-002-F001, dimension: sensitive-boundaries, severity: advisory, type: scope-gap, reachability: unreachable, action: backlog, impact: "对生产 MySQL schema 与 JS 运行时行为均无影响，唯一影响是让 sqlite synchronize 建表与全量 e2e/本地开发得以跑通", description: "commission-batch.entity.ts 不在任务包 files: 清单内却被修改（PrimaryColumn.type 'bigint'→'int'），已用隔离 worktree 双向反例独立验证安全" }
+      - { id: ic-v1-002-F002, dimension: comment-hygiene, severity: advisory, type: future-risk, reachability: current, action: backlog, impact: "不影响当前行为，长期可维护性略有损耗", description: "commission-batch.entity.ts/create-commission-batch.dto.ts 运行时注释点名任务号，与 ic-v1-001-F003 同类问题" }
+  - iteration: v1
+    task_id: ic-v1-003
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: iterations/v1/code-reviews/ic-v1-003
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-27T02:44:00Z
+    implementation_completed_at: 2026-08-27T03:11:00Z
+    review_started_at: 2026-08-27T03:11:00Z
+    review_completed_at: 2026-08-27T03:26:00Z
+    implementation_minutes: 27
+    review_minutes: 15
+    spec_minutes: 1
+    comment: "round-01（full）0 blocking；F001（运行时注释点名任务号，第三次重现同一模式）advisory/backlog；F002（未装 @types/multer，条件性未来风险）advisory/backlog。conclusion: pass"
+    issues:
+      - { id: ic-v1-003-F001, dimension: comment-hygiene, severity: advisory, type: future-risk, reachability: current, action: backlog, impact: "不影响当前行为；已连续三个任务包复现同一模式", description: "commission-batch.module.ts 运行时注释同时点名 ic-v1-002/ic-v1-003 两个任务号" }
+      - { id: ic-v1-003-F002, dimension: maintainability, severity: advisory, type: future-risk, reachability: conditional, action: backlog, impact: "当前不影响编译与运行；若后续收紧 noImplicitAny 会编译失败", description: "未装 @types/multer，靠 tsconfig noImplicitAny:false 与手写最小接口兜底" }
+  - iteration: v1
+    task_id: ic-v1-004
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: iterations/v1/code-reviews/ic-v1-004
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-26T20:30:00Z
+    implementation_completed_at: 2026-08-26T20:30:00Z
+    review_started_at: 2026-08-26T20:30:00Z
+    review_completed_at: 2026-08-26T21:05:00Z
+    implementation_minutes: 0
+    review_minutes: 35
+    spec_minutes: 2
+    comment: "round-01（full）0 blocking；F001（policy-record.module.ts 越界改动，已独立反例验证技术必要）advisory/backlog，verified-closed；F002（运行时注释点名任务号，第四次重现）advisory/backlog；F003（keyword+fillStatus 组合缺 e2e 用例，代码本身经探针验证正确）advisory/backlog，verified-closed。conclusion: pass"
+    issues:
+      - { id: ic-v1-004-F001, dimension: scope-and-secrets, severity: advisory, type: scope-gap, reachability: current, action: backlog, impact: "改动本身安全必要；问题在于 files 清单外改动未在 deviations 声明", description: "policy-record.module.ts 新增 SalesFillLog 仓储注册，隔离 worktree 反例证实技术上不可省略" }
+      - { id: ic-v1-004-F002, dimension: comment-hygiene, severity: advisory, type: future-risk, reachability: current, action: backlog, impact: "不影响当前行为；已连续四个任务包复现同一模式", description: "commission-batch.module.ts/policy-record.e2e-spec.ts 运行时注释点名任务号" }
+      - { id: ic-v1-004-F003, dimension: test-evidence, severity: advisory, type: contract-drift, reachability: unreachable, action: backlog, impact: "代码层面无缺陷，已用独立探针验证；风险在于未来重构无回归测试捕获", description: "keyword 与 fillStatus 组合筛选缺少同时传入两参数的 e2e 用例" }
+  - iteration: v1
+    task_id: ic-v1-005
+    conclusion: 通过
+    rounds: 3
+    code_rounds: 3
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: iterations/v1/code-reviews/ic-v1-005
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-27T02:44:30Z
+    implementation_completed_at: 2026-08-27T03:55:00Z
+    review_started_at: 2026-08-27T03:55:00Z
+    review_completed_at: 2026-08-27T05:22:00Z
+    implementation_minutes: 71
+    review_minutes: 87
+    spec_minutes: 2
+    comment: "round-01（full）发现 F001（create()/update() 缺事务/行锁保护，TOCTOU 窗口，sensitive risk 下 blocking evidence-gap）→ conclusion: evidence-needed。round-02（targeted，加 dataSource.transaction() 包裹+mysql pessimistic_write 锁）独立验证事务边界完整，但发现残留假设（未钉死隔离级别，隐含依赖 MySQL 默认 REPEATABLE READ）→ F001 降级为 downgraded，conclusion 仍 evidence-needed。round-03（targeted，事务显式钉死 SERIALIZABLE）独立读 TypeORM 源码确认与服务器配置解耦，F001 verified-closed，conclusion: pass。"
+    issues:
+      - { id: ic-v1-005-F001, dimension: concurrency, severity: n/a, type: n/a, reachability: n/a, action: none, status: closed, impact: "round-02 指出的隐含依赖服务器默认隔离级别配置的残留问题已被结构性消除（改用 dataSource.transaction('SERIALIZABLE', ...)），不再是需真实 MySQL 环境才能证实的证据缺口", description: "commission-tier.service.ts create()/update() 最终版本：事务包裹 find→冲突校验→save→写变更日志整段 + mysql 分支 pessimistic_write 锁 + 显式 SERIALIZABLE 隔离级别，经三轮独立审查（round-01 发现→round-02 结构性验证但发现残留假设→round-03 验证该假设已被显式 SQL 语句消除）verified-closed" }
   - iteration: v0
     task_id: foundation
     conclusion: 通过

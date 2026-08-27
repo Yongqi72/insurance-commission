@@ -7,7 +7,7 @@ completed_at: 2026-08-27T02:44:30Z
 base_ref: 5852fcdd3b72d9cec55568419fac86e321d7b275
 base_tree: e31be08da0d12234fb8a2c7fb3de4bf860248ce8
 result: pass
-spec_minutes: 1
+spec_minutes: 2
 ---
 
 ## 核对结果
