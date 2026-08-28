@@ -1,0 +1,3 @@
+backend/fixtures/*.xlsx
+backend/downloads/*
+!backend/downloads/.gitkeep
