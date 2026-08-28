@@ -41,7 +41,14 @@
     "no-descending-specificity": null,
     "scss/at-rule-no-unknown": null,
     "import-notation": null,
-    "selector-class-pattern": "^[a-z][a-z0-9-]*(__[a-z0-9-]+)?(--[a-z0-9-]+)?$"
+    "selector-class-pattern": "^[a-z][a-z0-9-]*(__[a-z0-9-]+)?(--[a-z0-9-]+)?$",
+    "selector-pseudo-class-no-unknown": [
+      true,
+      {
+        "ignorePseudoClasses": ["deep"],
+        "message": "Vue scoped 样式 :deep() 穿透选择器（FE-EP-04 要求的 Element Plus 组件宽度设置方式），非未知伪类"
+      }
+    ]
   },
   "overrides": [
     {
