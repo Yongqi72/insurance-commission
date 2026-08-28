@@ -12,6 +12,7 @@ import {
   PolicyRecordExportRow,
 } from '../common/excel/excel-builder';
 import { OssClient } from '../common/oss/oss-client';
+import { buildDatedOssKey } from '../common/oss/oss-key.util';
 import { CommissionBatch } from '../commission-batch/commission-batch.entity';
 import { CommissionTier } from '../commission-tier/commission-tier.entity';
 import { ruleComplete } from '../commission-tier/rule-complete.util';
@@ -158,7 +159,7 @@ export class CommissionReportService {
 
     // 生成的 buffer 先上传归档（BE-EXT-02 统一经 OssClient），再落一条可追溯的导出记录；
     // 提成数字本身不落库，落库的只有「文件归档位置 + 导出时间」。
-    const ossKey = `exports/${batchId}/${Date.now()}-${fileName}`;
+    const ossKey = buildDatedOssKey('export', fileName);
     await this.ossClient.upload(buffer, ossKey);
     await this.exportRecordRepository.save(
       this.exportRecordRepository.create({
