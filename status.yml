@@ -279,6 +279,23 @@ tasks:
     urgency: null
     branch: ic-b-001
     risk: standard
+  - id: ic-b-002
+    iteration: null
+    sprint: null
+    source: optimization
+    title: 清理运行时注释任务号 + files 清单补录
+    type: develop
+    discipline: dev-backend
+    layer: backend
+    status: taken-by
+    assigned_to: yongqi.liu
+    pr: null
+    parent_id: null
+    depends_on: []
+    delivery: 串行
+    urgency: null
+    branch: ic-b-002
+    risk: standard
 # 每条（写 queue 任务包处同步追加）：
 #  - id: {缩写}-v{N}-001     # B 类为 {缩写}-b-001
 #    iteration: v1           # 属哪期；B 类(bug/optimization)为 null
