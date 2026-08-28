@@ -23,8 +23,9 @@
         <PolicyRecordTable :batch-id="batchId" />
       </div>
 
-      <!-- ic-v1-011：在此挂载 <CommissionSummaryPanel :batch-id="batchId" />（提成汇总卡片/导出/导出历史） -->
-      <div id="commission-summary-panel-mount" />
+      <div id="commission-summary-panel-mount">
+        <CommissionSummaryPanel :batch-id="batchId" :batch-name="batch?.name" />
+      </div>
     </DataStateWrapper>
 
     <div v-if="status === 'error' && isNotFound" class="batch-detail__not-found-action">
@@ -40,6 +41,7 @@ import axios from 'axios'
 import DataStateWrapper from '@/components/DataStateWrapper.vue'
 import ImportPanel from '@/components/ImportPanel.vue'
 import PolicyRecordTable from '@/components/PolicyRecordTable.vue'
+import CommissionSummaryPanel from '@/components/CommissionSummaryPanel.vue'
 import { fetchBatchDetail, updateBatchStatus, type CommissionBatch, type CommissionBatchStatus } from '@/api/commission-batch'
 import { ErrorCode } from '@/types/enums'
 import type { ApiEnvelope } from '@/api/request'

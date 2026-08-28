@@ -10,6 +10,8 @@ export const ErrorCode = {
   NOT_FOUND: 1004,
   CONFLICT: 1005,
   THIRD_PARTY_FAILED: 2001,
+  /** 提成阶梯规则不完整，无法计算/导出（standards-shared.md SH-API-02；后端 error-code.enum.ts 已有此码，此处补齐前端登记）。 */
+  RULE_INCOMPLETE: 2002,
   INTERNAL_ERROR: 5000,
 } as const
 
