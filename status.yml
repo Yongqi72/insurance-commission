@@ -296,7 +296,12 @@ tasks:
 #    delivery: 可并行         # 串行 / 可并行 / null
 #    urgency: null           # hotfix / null
 
-integration_tests: []
+integration_tests:
+  - { iteration: v1, index: 1, description: "批次创建+导入(含逐行容错)+OSS归档+状态切换不锁定+文件级失败负例", status: 通过, failure_reason: null }
+  - { iteration: v1, index: 2, description: "删除某次导入撤销，关联保单记录移除，OSS原文件保留", status: 通过, failure_reason: null }
+  - { iteration: v1, index: 3, description: "开始回填(第三方未配置全部unmatched)+人工补录留痕+覆盖修改+回填状态筛选", status: 通过, failure_reason: null }
+  - { iteration: v1, index: 4, description: "阶梯规则区间冲突拒绝+完整性判定(不完整→完整)+变更历史", status: 通过, failure_reason: null }
+  - { iteration: v1, index: 5, description: "提成汇总实时计算(局部票数定档+未匹配不计入)+导出Excel(按投保人分sheet)+OSS归档+导出历史重新下载", status: 通过, failure_reason: null }
 # 每条（generate-integration-tests 创建/更新）：
 #  - { iteration: v1, index: 1, description: ..., status: 待执行, failure_reason: null }
 #    # status: 待执行 / 执行中 / 通过 / 失败
