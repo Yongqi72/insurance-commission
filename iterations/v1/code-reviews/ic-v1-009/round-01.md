@@ -12,8 +12,8 @@ reviewed_head: 324727919bb6bfb4b38f13f7b8cf7b9f9c796265
 diff_sha256: 1578181babc7592bced5891501d00adbf753d5c699e4097057f9144ea3ccc49f
 changed_files: [frontend/src/api/commission-batch.ts, frontend/src/components/ImportPanel.vue, frontend/src/router/index.ts, frontend/src/views/BatchDetailView.vue]
 started_at: 2026-08-28T02:07:48Z
-completed_at: 2026-08-28T02:52:00Z
-elapsed_minutes: 45
+completed_at: 2026-08-28T02:20:28Z
+elapsed_minutes: 13
 escalate_to_full: false
 conclusion: pass
 ---

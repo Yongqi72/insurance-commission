@@ -7,13 +7,13 @@ review_profile: iterations/v1/code-reviews/ic-v1-009/profile-round-01.json
 prior_report: iterations/v1/code-reviews/ic-v1-009/round-01.md
 target_finding_ids: [ic-v1-009-F001, ic-v1-009-F004, ic-v1-009-F005, ic-v1-009-F006]
 base_ref: 27ce803208fbbde016daa77791e4b9059abf7c23
-reviewed_base: 15b938d3f032184133f0412a29fb63912fa4cb08
+reviewed_base: 324727919bb6bfb4b38f13f7b8cf7b9f9c796265
 reviewed_head: 646a3dba3e6fcbeb930844549208283e72c65075
 diff_sha256: c4b34786eb87084088f5e5a26f30614fbb2f338366c92fc44beb077c3bc0fda9
 changed_files: [frontend/src/api/commission-batch.ts, frontend/src/components/ImportPanel.vue, frontend/src/router/index.ts, frontend/src/views/BatchDetailView.vue]
 started_at: 2026-08-28T02:22:42Z
-completed_at: 2026-08-28T02:35:00Z
-elapsed_minutes: 13
+completed_at: 2026-08-28T02:26:41Z
+elapsed_minutes: 4
 escalate_to_full: false
 conclusion: pass
 ---

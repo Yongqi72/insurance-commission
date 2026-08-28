@@ -7,7 +7,7 @@ review_profile: iterations/v1/code-reviews/ic-v1-008/profile-round-01.json
 prior_report: iterations/v1/code-reviews/ic-v1-008/round-01.md
 target_finding_ids: [ic-v1-008-F001]
 base_ref: 27ce803208fbbde016daa77791e4b9059abf7c23
-reviewed_base: f5a48911d1a3e3b6e045ef5d3da0911ea0dbca6b
+reviewed_base: d67447495cf865d1b68f7301398b50d8a3ed0f3a
 reviewed_head: 15b938d3f032184133f0412a29fb63912fa4cb08
 diff_sha256: 2f373998e1c49736c589af251fbfb1ea1efeabd097f8a3b6ca71287b512d07c7
 changed_files:
@@ -16,7 +16,7 @@ changed_files:
   - frontend/src/router/index.ts
   - frontend/src/views/BatchListView.vue
 started_at: 2026-08-28T01:52:26Z
-completed_at: 2026-08-28T01:56:00Z
+completed_at: 2026-08-28T01:56:10Z
 elapsed_minutes: 4
 escalate_to_full: false
 conclusion: pass

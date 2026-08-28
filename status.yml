@@ -168,9 +168,9 @@ tasks:
     type: develop
     discipline: dev-frontend
     layer: frontend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 6
     parent_id: null
     depends_on: [ic-v1-007, ic-v1-002]
     delivery: 可并行
@@ -185,9 +185,9 @@ tasks:
     type: develop
     discipline: dev-frontend
     layer: frontend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 6
     parent_id: null
     depends_on: [ic-v1-007, ic-v1-003]
     delivery: 可并行
@@ -232,9 +232,9 @@ tasks:
     type: develop
     discipline: dev-frontend
     layer: frontend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 6
     parent_id: null
     depends_on: [ic-v1-007, ic-v1-005]
     delivery: 可并行
@@ -429,6 +429,73 @@ code_reviews:
     issues:
       - { id: ic-v1-007-F001, dimension: comment-hygiene, severity: advisory, type: future-risk, reachability: current, action: backlog, status: closed, impact: "不影响当前行为；已连续六个任务包复现同一模式", description: "variables.scss 头部新增注释点名任务号 ic-v1-007；已在 master 追加 commit 改为不点名任务号的纯业务语言描述" }
       - { id: ic-v1-007-F002, dimension: scope-and-secrets, severity: advisory, type: scope-gap, reachability: current, action: backlog, status: closed, impact: "改动本身安全必要且已验证正确，问题仅在于任务包 files 清单遗漏该既有引用文件", description: "LoginView.vue 不在任务包 files 清单内，被改动一行（$font-size-lg→$fs-body，值不变），独立审查验证范围精确、若不改会导致编译失败" }
+  - iteration: v1
+    task_id: ic-v1-008
+    conclusion: 通过
+    rounds: 2
+    code_rounds: 2
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: iterations/v1/code-reviews/ic-v1-008
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-28T01:31:06Z
+    implementation_completed_at: 2026-08-28T01:40:01Z
+    review_started_at: 2026-08-28T01:40:01Z
+    review_completed_at: 2026-08-28T01:56:10Z
+    implementation_minutes: 9
+    review_minutes: 17
+    spec_minutes: 2
+    comment: "round-01（full）1 条 blocking：F001（任务包 context/do-not 明确要求的 batch-detail 占位路由缺失，router.push 被 reject，AC-01/行点击跳转不可达）→ conclusion: revise；round-02（targeted，补齐占位路由）verified-closed，conclusion: pass。4 条 advisory（F002 #empty-batch-list 锚点缺失/F003 FE-RESPONSIVE-03 系统性未覆盖/F004 弹窗宽度样板重复/F005 updatedAt 类型偏宽）路由 backlog"
+    issues:
+      - { id: ic-v1-008-F001, dimension: contract, severity: blocking, type: behavior-bug, reachability: current, action: fix-code, status: closed, impact: "用户新建批次提交成功或点击列表行均无法跳转详情页，AC-01 与行点击 AC 不可达", description: "router/index.ts 缺少任务包要求的 batch-detail 占位路由，router.push({name:'batch-detail'}) 返回 rejected promise；已补齐占位路由（component 为空模板），round-02 独立复现验证路由可正常解析" }
+      - { id: ic-v1-008-F002, dimension: design-fidelity, severity: advisory, type: future-risk, reachability: conditional, action: global-gap-review, impact: "当前不可观察；若未来联调脚本按 prototype-map.md 字面断言 #empty-batch-list 会同时在批次列表/保单记录列表两页落空", description: "prototype-map.md 登记的 #empty-batch-list 锚点未落地，空态委托给不开放自定义 id 的共享组件 DataStateWrapper.vue，系统性缺口非本任务独有" }
+      - { id: ic-v1-008-F003, dimension: standards, severity: advisory, type: behavior-bug, reachability: current, action: global-gap-review, impact: "iOS Safari 聚焦输入框可能触发系统自动放大页面，体验劣化非崩溃", description: "FE-RESPONSIVE-03（移动端输入框字号≥16px）系统性未覆盖，新增 #input-batch-name 与更早的 LoginView.vue 均受影响" }
+      - { id: ic-v1-008-F004, dimension: maintainability, severity: advisory, type: future-risk, reachability: conditional, action: backlog, impact: "当前只一份实现无重复；ic-v1-009/011 后续各自新增 el-dialog 若重复手写会形成维护成本", description: "BatchListView.vue 新增的 matchMedia 驱动响应式弹窗宽度样板代码，是本仓库第一个 el-dialog，建议第二处落地时提炼共享 composable" }
+      - { id: ic-v1-008-F005, dimension: contract, severity: advisory, type: contract-drift, reachability: unreachable, action: downgrade-claim, impact: "无可观察行为影响，字段未被读取，纯静态类型层面偏宽", description: "CommissionBatch.updatedAt 声明为必有字段，但 trd.md 响应体未包含该字段" }
+  - iteration: v1
+    task_id: ic-v1-009
+    conclusion: 通过
+    rounds: 2
+    code_rounds: 2
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: iterations/v1/code-reviews/ic-v1-009
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-28T01:56:10Z
+    implementation_completed_at: 2026-08-28T02:07:48Z
+    review_started_at: 2026-08-28T02:07:48Z
+    review_completed_at: 2026-08-28T02:26:41Z
+    implementation_minutes: 12
+    review_minutes: 19
+    spec_minutes: 2
+    comment: "round-01（full）0 blocking，6 条 advisory，conclusion: pass；其中 F001（注释点名任务号，第7次复现）/F004（删除成功后未按 oracle 重新 GET 拉取列表）/F005（.batch-detail__status-dot 硬编码 8px）/F006（ElMessageBox 移动端宽度被 max-width:420px 钳制）已顺手直接修复，round-02（targeted）4 项均 verified-closed，conclusion: pass。F002（eslint globals 系统性缺口）/F003（响应式弹窗样板重复，与 ic-v1-008-F004 同根）路由 backlog"
+    issues:
+      - { id: ic-v1-009-F001, dimension: comment-hygiene, severity: advisory, type: future-risk, reachability: current, action: revise-doc, status: closed, impact: "不影响当前行为；已连续七个任务包复现同一模式", description: "ImportPanel.vue/BatchDetailView.vue 两处非契约强制的注释点名任务号 ic-v1-010/ic-v1-011，已改写为业务语言描述" }
+      - { id: ic-v1-009-F002, dimension: enforcement, severity: advisory, type: enforcement-claim, reachability: current, action: global-gap-review, impact: "当前无功能性影响；未来每个新增浏览器全局类型调用点都需重复补 disable 注释", description: "frontend/eslint.config.js globals 未登记 File/FormData/Event/HTMLInputElement 等浏览器内置全局类型" }
+      - { id: ic-v1-009-F003, dimension: maintainability, severity: advisory, type: future-risk, reachability: current, action: backlog, impact: "已知重复被再次实现，第三处（ic-v1-011）大概率继续复制", description: "ImportPanel.vue 复制了 BatchListView.vue 字节级相同的响应式弹窗宽度样板代码，backlog 已预判但本次未提炼 composable" }
+      - { id: ic-v1-009-F004, dimension: contract, severity: advisory, type: contract-drift, reachability: current, action: fix-code, status: closed, impact: "当前单管理员场景数据结果等价，但字面不满足 oracle 删除后重新拉取的要求", description: "handleDeleteImport 成功分支原只做本地 filter 未调用 GET 重新拉取，已改为 await loadImports()，round-02 验证生效" }
+      - { id: ic-v1-009-F005, dimension: standards, severity: advisory, type: contract-drift, reachability: current, action: fix-code, status: closed, impact: "视觉数值本身正确，纯粹未过 token 中转的规范执行缺口", description: ".batch-detail__status-dot 硬编码 8px 字面值，已改引用 $space-sm，round-02 验证值不变" }
+      - { id: ic-v1-009-F006, dimension: design-fidelity, severity: advisory, type: contract-drift, reachability: current, action: fix-code, status: closed, impact: "442px~768px 视口区间删除确认弹窗未真正收窄到 95vw（被钳制在 420px），不影响可用性", description: "ElMessageBox 自定义宽度被 .el-message-box 默认 max-width:420px 钳制，已在同一 media query 追加 max-width 覆盖，round-02 验证生效" }
+  - iteration: v1
+    task_id: ic-v1-012
+    conclusion: 通过
+    rounds: 2
+    code_rounds: 2
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: iterations/v1/code-reviews/ic-v1-012
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-28T02:26:41Z
+    implementation_completed_at: 2026-08-28T02:37:02Z
+    review_started_at: 2026-08-28T02:37:02Z
+    review_completed_at: 2026-08-28T02:54:09Z
+    implementation_minutes: 11
+    review_minutes: 18
+    spec_minutes: 2
+    comment: "round-01（full，sensitive risk 不降档）1 条 blocking：F001（AC-11 要求 1005/1001 只做字段级展示，但共享 request.ts 拦截器无条件弹全局 toast，两者同时触发）→ conclusion: revise；round-02（targeted，新增按错误码抑制的 axios 请求级配置 suppressToastForCodes，仅对本任务新增/编辑接口生效）verified-closed，conclusion: pass。F002（注释点名 backlog 编号）同轮一并修复 verified-closed。sensitive-boundaries 维度核实：前端校验仅体验层，后端独立复核；变更历史为真实审计视图"
+    issues:
+      - { id: ic-v1-012-F001, dimension: contract, severity: blocking, type: behavior-bug, reachability: current, action: fix-mechanism, status: closed, impact: "每次新增/编辑档位命中区间冲突或字段非法值时，用户同时看到全局 toast 与字段级错误，字面违反 AC-11 明确指示", description: "共享 request.ts 响应拦截器无条件对所有非2xx错误弹 ElMessage.error，与 CommissionTierEditModal.vue 的 #error-tier-conflict 字段级展示同时触发；已新增 suppressToastForCodes 按错误码抑制配置，仅 createCommissionTier/updateCommissionTier 对 1001/1005 生效，其余调用方/错误码不受影响，round-02 独立验证生效且未影响其他错误反馈" }
+      - { id: ic-v1-012-F002, dimension: comment-hygiene, severity: advisory, type: future-risk, reachability: current, action: revise-doc, status: closed, impact: "backlog.md 条目未来清理/编号变更后会变成脱离上下文的死引用", description: "useResponsiveDialogWidth.ts 注释点名 backlog finding 编号 ic-v1-008-F004/ic-v1-009-F003，已改写为不点名编号的业务语言描述" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
