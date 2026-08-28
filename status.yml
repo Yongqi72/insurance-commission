@@ -283,13 +283,13 @@ tasks:
     iteration: null
     sprint: null
     source: optimization
-    title: 清理运行时注释任务号 + files 清单补录
+    title: 清理运行时注释里的任务号
     type: develop
     discipline: dev-backend
     layer: backend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 11
     parent_id: null
     depends_on: []
     delivery: 串行
@@ -637,6 +637,24 @@ code_reviews:
     issues:
       - { id: ic-b-001-F001, dimension: test-evidence, severity: advisory, type: evidence-gap, reachability: current, action: backlog, impact: "不影响当前行为正确性（已独立验证）；回归无法被自动化测试拦截", description: "buildDatedOssKey() 是 common/ 目录下唯一没有配套 .spec.ts 的带逻辑文件" }
       - { id: ic-b-001-F002, dimension: concurrency, severity: advisory, type: future-risk, reachability: conditional, action: backlog, impact: "narrow race，需两个不同批次同名且同一毫秒导出；一旦发生较早批次的 export_record 会指向被覆盖的文件内容", description: "AC3 要求移除 key 中 batchId 是碰撞域扩大的直接原因，非实现偏离；与 ic-v1-006-F003 同根同类" }
+  - iteration: null
+    task_id: ic-b-002
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-002
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-28T07:11:30Z
+    implementation_completed_at: 2026-08-28T07:25:33Z
+    review_started_at: 2026-08-28T07:25:33Z
+    review_completed_at: 2026-08-28T07:28:28Z
+    implementation_minutes: 15
+    review_minutes: 3
+    spec_minutes: 2
+    comment: "范围在实现中期收窄：原计划一并把 ic-v1-002-F001/ic-v1-004-F001 两处 files 清单遗漏补录进对应已合并任务包，编辑后 check-sprint.js --review 报 input_fingerprint 不一致（已合并任务包内容是历史审查指纹的固定输入，事后编辑即判定为篡改），故撤销该部分编辑，本包收窄为仅注释清理；round-01（full）0 blocking 0 advisory → conclusion: pass"
+    issues: []
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
