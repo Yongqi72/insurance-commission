@@ -48,7 +48,7 @@ const HEADER_ROW_COUNT = 1;
  * 账单 Excel 解析器：读「账单」sheet，跳过表头后按 policy-record-columns.ts 定义的
  * 8 列顺序逐行取值（纯位置解析，不按表头文字匹配，见该文件顶部注释）。
  * 单行失败不中断其余行处理；文件级失败（无法解析 / 未找到「账单」sheet）与行级失败分开表达，
- * 供上层（ic-v1-003 Controller）分别映射到 TRD 错误码 1001 的不同 msg 文本。
+ * 供上层 Controller 分别映射到 TRD 错误码 1001 的不同 msg 文本。
  */
 @Injectable()
 export class ExcelParser {

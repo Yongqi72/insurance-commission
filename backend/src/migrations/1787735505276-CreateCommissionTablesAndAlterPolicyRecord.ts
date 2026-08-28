@@ -10,7 +10,7 @@ import {
 
 /**
  * V1 基础设施 migration：新建 6 张提成相关表 + 变更 policy_record 结构
- * （TRD §数据库设计，ic-v1-001）。替代 V0 遗留的 synchronize 建表方式（BE-DB-03）。
+ * （TRD §数据库设计）。替代 V0 遗留的 synchronize 建表方式（BE-DB-03）。
  *
  * policy_record 处理策略：本项目此前从未在真实 MySQL 库上跑过（仅 sqlite 走 synchronize，
  * 见 typeorm.config.ts），本 migration 是全库首个正式 migration。up() 按目标库是否已存在
@@ -147,7 +147,7 @@ export class CreateCommissionTablesAndAlterPolicyRecord1787735505276 implements 
             columnNames: ['policy_record_id'],
             referencedTableName: 'policy_record',
             referencedColumnNames: ['id'],
-            // 供 ic-v1-003 硬删除导入时不留孤儿日志（AC1 明确要求，区别于其余外键的 RESTRICT）
+            // 硬删除导入时不留孤儿日志（区别于其余外键的 RESTRICT）
             onDelete: 'CASCADE',
           }),
         ],

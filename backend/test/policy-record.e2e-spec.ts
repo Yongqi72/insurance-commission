@@ -9,7 +9,7 @@ import { PolicyRecord } from '../src/policy-record/policy-record.entity';
 /**
  * 标杆穿透切片 e2e：登录 → 带 token 查保单记录列表 → 验证响应信封 + 分页结构；
  * 以及未登录访问 / 登录失败 / 校验失败三条错误路径，覆盖 SH-API-01/02、SH-AUTH-01。
- * 本期（ic-v1-004）Controller 路径由 `policy-records` 改为 `api/policy-records`
+ * Controller 路径由 `policy-records` 改为 `api/policy-records`
  * （TRD 全篇 `/api/` 前缀约定），路径断言同步更新；并补充人工补录 + 补录历史用例
  * （PRD AC-08/AC-09，TRD §接口：PATCH .../sales-name、GET .../sales-fill-logs）。
  */
