@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ExcelParser } from '../common/excel/excel-parser';
 import { OssClient } from '../common/oss/oss-client';
+import { buildDatedOssKey } from '../common/oss/oss-key.util';
 import { PolicyRecord } from '../policy-record/policy-record.entity';
 import { CommissionBatch } from './commission-batch.entity';
 import { ImportFile } from './import-file.entity';
@@ -77,7 +78,7 @@ export class ImportService {
 
     // 归档先于解析（BE-EXT-02 统一经 OssClient 调用）：解析失败场景要求已上传的原文件不删除，
     // 故不论后续解析成功与否，本次上传的原始文件都先写入 OSS。
-    const ossKey = `imports/${batchId}/${Date.now()}-${fileName}`;
+    const ossKey = buildDatedOssKey('upload', fileName);
     await this.ossClient.upload(file.buffer, ossKey);
 
     const parseResult = await this.excelParser.parse(file.buffer);
