@@ -113,3 +113,63 @@ findings:
       （非零调用方、非两包互甩、非必需终态不可达），仅记录供参考。
     action: backlog
 ```
+
+## 第二轮复核（SEAM-F001 消解确认）
+
+- 复核日期：2026-08-28
+- 复核对象：ic-v1-013 合并后的 master（`7eba0e6 chore(sprint): ic-v1-013 标记 [merged]，PR #9`）
+- 复核范围：仅 SEAM-F001 是否真正消解；不重跑五类全量扫描（第一轮 `reusables.md`/`backlog.md`/跨包字段/V0 退役结论仍然有效）。SEAM-F002 非本轮对象，原样保留于上方 Findings，不做任何改动。
+
+### 自读输入
+- 本文件第一轮 SEAM-F001 原始证据（见上方 Findings SEAM-F001 条目）
+- `iterations/v1/queue/ic-v1-013.md`（声称改动：`ImportPanel.vue` 导入成功分支补 `emit('records-changed')`；`PolicyRecordTable.vue` 补录保存成功分支 emit `sales-name-changed` + `defineExpose({ refresh: loadData })`；`CommissionSummaryPanel.vue` `defineExpose({ refresh: loadSummary })`；`BatchDetailView.vue` 持有两个子组件模板 ref，监听两个事件并编排调用）
+- `status.yml` 中 `task_id: ic-v1-013` 的 code_reviews 记录：round-01（full）0 blocking + 1 建议级（注释文案累积任务号，round-02 已改为业务语言收敛），conclusion 均为「通过」——本轮不采信该结论，独立重新走查源码
+
+### 独立验证（不采信任务包/审查报告自述，直接读 master 代码）
+
+逐点核对第一轮证据链中标记为"零消费方/仅 watch batchId"的具体断言，现状：
+
+1. **`ImportPanel.vue`**：`handleStartImport`（第 155-171 行）成功分支在 `await loadImports()` 之后新增 `emit('records-changed')`（第 165 行）——此前只有 `handleDeleteImport` 的删除成功分支（第 194 行）会 emit，导入成功分支此次补齐，两条路径现在都会广播。
+2. **`PolicyRecordTable.vue`**：`handleSaveSalesName`（第 280-304 行）成功分支在 `ElMessage.success('保存成功')` 之后新增 `emit('sales-name-changed')`（第 298 行）。文件末尾新增 `defineExpose({ refresh: loadData })`（第 332 行），`refresh` 直接复用既有 `loadData`，未重新实现一份加载逻辑。
+3. **`CommissionSummaryPanel.vue`**：文件末尾新增 `defineExpose({ refresh: loadSummary })`（第 130 行），`loadSummary`（第 85-95 行）内部确实发起 `fetchCommissionSummary(props.batchId)` 即 `GET .../commission-summary`——`refresh()` 调用会真实触发一次现查现算请求，不是空调用。
+4. **`BatchDetailView.vue`**：模板中 `<ImportPanel :batch-id="batchId" @records-changed="handleRecordsChanged" />`（第 20 行）与 `<PolicyRecordTable ref="policyRecordTableRef" :batch-id="batchId" @sales-name-changed="handleSalesNameChanged" />`（第 23-27 行）均已正确绑定监听（此前 grep 全仓 `records-changed` 零消费方的状态已改变）。脚本区持有 `policyRecordTableRef`/`commissionSummaryRef` 两个模板 ref（第 68-69 行）；`handleRecordsChanged`（第 111-114 行）同时调用 `policyRecordTableRef.value?.refresh()` 与 `commissionSummaryRef.value?.refresh()`；`handleSalesNameChanged`（第 117-119 行）只调用 `commissionSummaryRef.value?.refresh()`（明细表本地已在 `handleSaveSalesName` 内直接更新该行数据，不需要整表重拉，属有意的最小化设计，非遗漏）。两个处理函数均未触发整页 `loadDetail()` 重新加载，符合 ic-v1-013 AC oracle「不触发整页重新加载」的要求。
+
+### 可执行验证
+```
+cd frontend && npm run build       # vue-tsc -b && vite build，全绿，无报错
+npm run lint:check                 # eslint . 全绿，0 输出
+npm run stylelint:check            # 全绿，0 输出
+```
+`git show --stat 4498b7d`：改动范围与 `ic-v1-013.md` 的 `files` 声明完全一致（4 个源码文件 + 审查产物目录），无越界改动。
+
+### 组合终态可达性判断
+
+对照第一轮 impact 描述的用户路径逐条复演：
+- 人工补录销售人员保存成功 → `sales-name-changed` → `BatchDetailView` → `CommissionSummaryPanel.refresh()` → 重新 `GET .../commission-summary`：**链路完整，可达**。
+- 导入 Excel 成功 → `records-changed` → `BatchDetailView` → 同时 `PolicyRecordTable.refresh()`（重拉明细列表）+ `CommissionSummaryPanel.refresh()`（重拉汇总）：**链路完整，可达**。
+- 删除导入成功 → 同上 `records-changed` 广播 → 明细表与汇总卡片均重新拉取，第一轮 impact 中额外指出的"删除导入后明细表不会自动移除已硬删除的行"一并被 `PolicyRecordTable.refresh()` 覆盖解决：**链路完整，可达**。
+
+三个兄弟组件仍未互相直接引用（`do-not` 约束遵守），未引入 Pinia store 或新的共享响应式结构，桥接方式与任务包声明的"宿主转发事件 + defineExpose(refresh)"一致，架构侵入面最小。
+
+### 组合视角新增接缝扫描（顺带检查）
+- 事件名 `records-changed`/`sales-name-changed` 各自仅一处 emit 定义、一处消费绑定，未见第二套同名机制或重复定义。
+- `refresh` 方法名在两个组件中各自独立 `defineExpose`，未见跨组件耦合或互相 import。
+- 未发现新的死代码：`records-changed` 现有两个真实消费路径（不再是预留接口零消费），`sales-name-changed` 为本次新增且唯一消费路径已绑定。
+- 未发现新的"两包互相甩锅"：本次改动由同一任务包（ic-v1-013）一次性打通三个既有组件的通信桥接，责任边界清晰（宿主编排，子组件只负责 emit 与 expose）。
+- 未见共享类型第二定义或跨包字段新问题（本次改动不涉及类型定义/接口字段，仅事件与方法桥接）。
+
+### 结论
+
+SEAM-F001 描述的"批次详情页三个兄弟组件互不通信，人工补录/导入/删除导入后提成汇总卡片不会实时刷新"组合终态不可达问题，经独立代码验证（非采信任务包自述），确认已被 ic-v1-013 完整消解，三条声明路径（补录→汇总刷新；导入→明细+汇总刷新；删除导入→明细+汇总刷新）均链路完整、真实可达，且未在过程中引入新的接缝缺陷。
+
+```yaml
+seam-f001-recheck:
+  id: SEAM-F001
+  status: verified-closed
+  verified_at: 2026-08-28
+  verified_against: 7eba0e6
+  method: independent-code-read + build/lint/stylelint green + diff-scope check
+  new_seams_introduced: none
+```
+
+**v1 sprint global seam review 最终判定**：SEAM-F001 verified-closed；Findings 中不再有 open 的 `severity: blocking` 项。SEAM-F002（advisory，`action: backlog`）按第一轮结论留存于 backlog，不构成 blocking gap。本期 global seam review 可判定为无 open blocking finding。
