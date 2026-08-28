@@ -2,4 +2,4 @@
 
 | task-id | target-source | urgency | title | 状态 | 日期 |
 |---------|--------------|---------|-------|------|------|
-| ic-b-001 | optimization | normal | OSS 归档路径改为按日期分层 | 可取 | 2026-08-28 |
+| ic-b-001 | optimization | normal | OSS 归档路径改为按日期分层 | taken-by | 2026-08-28 |
