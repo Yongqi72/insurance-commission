@@ -14,6 +14,7 @@
 | ic-v1-010 | 批次详情·明细回填补录 | frontend | ic-v1-007, ic-v1-009, ic-v1-004 | [merged] | #7 | 串行 |
 | ic-v1-011 | 批次详情·汇总导出历史 | frontend | ic-v1-007, ic-v1-009, ic-v1-006 | [merged] | #8 | 串行 |
 | ic-v1-012 | 提成阶梯规则页 | frontend | ic-v1-007, ic-v1-005 | [merged] | #6 | 可并行 |
+| ic-v1-013 | 批次详情页·跨区块数据变更联动刷新（补缝） | frontend | ic-v1-009, ic-v1-010, ic-v1-011 | [可取] | — | 串行 |
 
 ## 依赖说明
 
@@ -28,3 +29,4 @@
 - ic-v1-010（串行）blocked-by ic-v1-009：往 ic-v1-009 建的 `BatchDetailView` 骨架挂载点插入组件，骨架必须先合并；额外 blocked-by ic-v1-004：保单记录查询/回填/补录接口由其交付
 - ic-v1-011（串行）blocked-by ic-v1-009：同上，往骨架挂载点插组件；额外 blocked-by ic-v1-006：提成汇总/导出接口由其交付
 - ic-v1-012（可并行）blocked-by ic-v1-005（可并行）：阶梯规则接口由其交付
+- ic-v1-013（串行）blocked-by ic-v1-009、ic-v1-010、ic-v1-011：global seam review SEAM-F001 补缝任务，打通三个已交付兄弟组件（ImportPanel/PolicyRecordTable/CommissionSummaryPanel）间的数据变更联动刷新
