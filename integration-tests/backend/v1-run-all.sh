@@ -61,7 +61,7 @@ login() {
     -d "{\"username\":\"$ADMIN_USERNAME\",\"password\":\"$ADMIN_PASSWORD\"}" -w '\n%{http_code}')"
   code="$(echo "$raw" | tail -n1)"
   body="$(echo "$raw" | sed '$d')"
-  if [ "$code" != "200" ]; then
+  if [ "$code" != "200" ] && [ "$code" != "201" ]; then
     echo "❌ 登录失败，HTTP $code，body=$body"
     exit 1
   fi
@@ -91,7 +91,7 @@ flow1() {
 
   step "上传含 3 条合法+2 条非法行的 Excel"
   upload_file "$batchId" "$FIXTURES_DIR/mixed-valid-invalid.xlsx"
-  assert_eq "导入接口 HTTP 200（含 OSS 归档，未抛错即证明 OSS 上传成功）" "$RESP_CODE" "200"
+  assert_eq "导入接口 HTTP 201（含 OSS 归档，未抛错即证明 OSS 上传成功）" "$RESP_CODE" "201"
   assert_eq "成功行数=3" "$(echo "$RESP_BODY" | jq -r '.data.successCount')" "3"
   assert_eq "失败行数=2" "$(echo "$RESP_BODY" | jq -r '.data.failCount')" "2"
   local failReasons; failReasons="$(echo "$RESP_BODY" | jq -r '.data.failRows | length')"
@@ -105,16 +105,16 @@ flow1() {
 
   step "文件级失败负例：损坏文件"
   upload_file "$batchId" "$FIXTURES_DIR/corrupt.xlsx"
-  if [ "$RESP_CODE" == "200" ]; then
-    fail "损坏文件预期不应 200，实际 200，body=$RESP_BODY"
+  if [ "$RESP_CODE" == "201" ]; then
+    fail "损坏文件预期不应成功，实际 201，body=$RESP_BODY"
   else
     pass "损坏文件被拒绝（HTTP $RESP_CODE）"
   fi
 
   step "文件级失败负例：找不到「账单」sheet"
   upload_file "$batchId" "$FIXTURES_DIR/wrong-sheet-name.xlsx"
-  if [ "$RESP_CODE" == "200" ]; then
-    fail "错误 sheet 名预期不应 200，实际 200，body=$RESP_BODY"
+  if [ "$RESP_CODE" == "201" ]; then
+    fail "错误 sheet 名预期不应成功，实际 201，body=$RESP_BODY"
   else
     pass "找不到账单 sheet 被拒绝（HTTP $RESP_CODE）"
   fi
@@ -126,7 +126,7 @@ flow1() {
   step "状态切换后仍可继续导入（不锁定）"
   # 复用 second-import.xlsx 验证 done 状态下导入接口仍可用
   upload_file "$batchId" "$FIXTURES_DIR/second-import.xlsx"
-  assert_eq "已完成状态下导入仍返回 200" "$RESP_CODE" "200"
+  assert_eq "已完成状态下导入仍返回 201" "$RESP_CODE" "201"
 
   echo "$batchId" > /tmp/it-flow1-batch-id.txt
 }
@@ -175,7 +175,7 @@ flow3() {
 
   step "触发开始回填（第三方接口未配置）"
   call POST "/api/commission-batches/$batchId/policy-records/fill" ""
-  assert_eq "回填接口 HTTP 200（未匹配不是失败）" "$RESP_CODE" "200"
+  assert_eq "回填接口 HTTP 201（未匹配不是失败）" "$RESP_CODE" "201"
   assert_eq "matchedCount=0" "$(echo "$RESP_BODY" | jq -r '.data.matchedCount')" "0"
   assert_eq "unmatchedCount=3" "$(echo "$RESP_BODY" | jq -r '.data.unmatchedCount')" "3"
 
@@ -226,12 +226,12 @@ flow4() {
 
   step "新增档位 (0,50]=2元"
   call POST /api/commission-tiers '{"lowerBound":0,"upperBound":50,"unitPrice":2}'
-  assert_eq "新增成功 HTTP 200" "$RESP_CODE" "200"
+  assert_eq "新增成功 HTTP 201" "$RESP_CODE" "201"
 
   step "尝试新增重叠档位 (30,80]=2.5元，应被拒绝"
   call POST /api/commission-tiers '{"lowerBound":30,"upperBound":80,"unitPrice":2.5}'
-  if [ "$RESP_CODE" == "200" ]; then
-    fail "重叠档位预期被拒绝，实际 200"
+  if [ "$RESP_CODE" == "201" ]; then
+    fail "重叠档位预期被拒绝，实际 201"
   else
     local code; code="$(echo "$RESP_BODY" | jq -r '.code')"
     assert_eq "重叠档位返回错误码 1005（CONFLICT）" "$code" "1005"
@@ -243,7 +243,7 @@ flow4() {
 
   step "新增补齐档位 (50,+∞)=2.4元（upperBound 留空）"
   call POST /api/commission-tiers '{"lowerBound":50,"unitPrice":2.4}'
-  assert_eq "补齐档位成功 HTTP 200" "$RESP_CODE" "200"
+  assert_eq "补齐档位成功 HTTP 201" "$RESP_CODE" "201"
 
   step "此时表完整（0 起点，覆盖到无穷，相邻首尾相接）"
   call GET "/api/commission-tiers"
