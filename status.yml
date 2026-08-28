@@ -313,6 +313,23 @@ tasks:
     urgency: high
     branch: ic-b-003
     risk: sensitive
+  - id: ic-b-005
+    iteration: null
+    sprint: null
+    source: bug
+    title: 修复保单记录关键词搜索的 LIKE 通配符转义缺失 + 补测试覆盖
+    type: develop
+    discipline: dev-backend
+    layer: backend
+    status: taken-by
+    assigned_to: yongqi.liu
+    pr: null
+    parent_id: null
+    depends_on: []
+    delivery: 串行
+    urgency: normal
+    branch: ic-b-005
+    risk: standard
 # 每条（写 queue 任务包处同步追加）：
 #  - id: {缩写}-v{N}-001     # B 类为 {缩写}-b-001
 #    iteration: v1           # 属哪期；B 类(bug/optimization)为 null
