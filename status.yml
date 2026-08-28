@@ -421,7 +421,7 @@ code_reviews:
     spec_minutes: 1
     comment: "round-01（full）0 blocking；2 条 advisory：F001（variables.scss 头部注释点名任务号，第 6 次同类复现）backlog；F002（LoginView.vue 不在 files 清单但被同步改名一行，独立验证为技术必要的最小化同步，根因是任务包 files 枚举遗漏）backlog，verified-closed。conclusion: pass"
     issues:
-      - { id: ic-v1-007-F001, dimension: comment-hygiene, severity: advisory, type: future-risk, reachability: current, action: backlog, impact: "不影响当前行为；已连续六个任务包复现同一模式", description: "variables.scss 头部新增注释点名任务号 ic-v1-007" }
+      - { id: ic-v1-007-F001, dimension: comment-hygiene, severity: advisory, type: future-risk, reachability: current, action: backlog, status: closed, impact: "不影响当前行为；已连续六个任务包复现同一模式", description: "variables.scss 头部新增注释点名任务号 ic-v1-007；已在 master 追加 commit 改为不点名任务号的纯业务语言描述" }
       - { id: ic-v1-007-F002, dimension: scope-and-secrets, severity: advisory, type: scope-gap, reachability: current, action: backlog, status: closed, impact: "改动本身安全必要且已验证正确，问题仅在于任务包 files 清单遗漏该既有引用文件", description: "LoginView.vue 不在任务包 files 清单内，被改动一行（$font-size-lg→$fs-body，值不变），独立审查验证范围精确、若不改会导致编译失败" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
