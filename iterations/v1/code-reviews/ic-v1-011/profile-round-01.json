@@ -1,0 +1,89 @@
+{
+  "schema": "develop-review-profile/v1",
+  "task_id": "ic-v1-011",
+  "task_type": "dev-frontend",
+  "layers": [
+    "frontend"
+  ],
+  "source": "sprint",
+  "effective_risk": "sensitive",
+  "changed_files": [
+    "frontend/src/api/commission-report.ts",
+    "frontend/src/api/request.ts",
+    "frontend/src/components/CommissionSummaryPanel.vue",
+    "frontend/src/components/ExportHistoryDrawer.vue",
+    "frontend/src/types/enums.ts",
+    "frontend/src/views/BatchDetailView.vue"
+  ],
+  "input_fingerprint": "1c56308d7c625b41ad9e222ae971364add482c519afc264219584a2002e8096d",
+  "signals": {
+    "metadata_incomplete": false,
+    "unknown_layer": false,
+    "surface": "production",
+    "frontend": true,
+    "backend": false,
+    "ui": true,
+    "input": false,
+    "query": false,
+    "concurrency": false,
+    "logging": true,
+    "enforcement": true,
+    "sensitive": true
+  },
+  "selected_dimensions": [
+    {
+      "id": "contract",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "scope-and-secrets",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "test-evidence",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "comment-hygiene",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "standards",
+      "reason": "task package has relevant-standards"
+    },
+    {
+      "id": "enforcement",
+      "reason": "task/change surface contains enforcement or test/tooling signals"
+    },
+    {
+      "id": "design-fidelity",
+      "reason": "frontend UI/design surface is present"
+    },
+    {
+      "id": "logging-privacy",
+      "reason": "production or logging/privacy surface is present"
+    },
+    {
+      "id": "maintainability",
+      "reason": "fixed diff contains production code"
+    },
+    {
+      "id": "sensitive-boundaries",
+      "reason": "effective risk is sensitive; profile may only add high-risk scrutiny"
+    }
+  ],
+  "omitted_dimensions": [
+    {
+      "id": "input-provenance",
+      "reason": "task is not backend"
+    },
+    {
+      "id": "query-performance",
+      "reason": "task is not backend"
+    },
+    {
+      "id": "concurrency",
+      "reason": "task is not backend"
+    }
+  ]
+}
