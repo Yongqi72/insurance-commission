@@ -202,13 +202,15 @@ tasks:
     type: develop
     discipline: dev-frontend
     layer: frontend
-    status: 可取
-    assigned_to: null
+    status: taken-by
+    assigned_to: yongqi.liu
     pr: null
     parent_id: null
     depends_on: [ic-v1-007, ic-v1-009, ic-v1-004]
     delivery: 串行
     urgency: null
+    branch: ic-v1-010
+    risk: sensitive
   - id: ic-v1-011
     iteration: v1
     sprint: 1
