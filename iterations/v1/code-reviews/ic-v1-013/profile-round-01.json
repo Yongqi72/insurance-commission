@@ -1,0 +1,87 @@
+{
+  "schema": "develop-review-profile/v1",
+  "task_id": "ic-v1-013",
+  "task_type": "dev-frontend",
+  "layers": [
+    "frontend"
+  ],
+  "source": "sprint",
+  "effective_risk": "standard",
+  "changed_files": [
+    "frontend/src/components/CommissionSummaryPanel.vue",
+    "frontend/src/components/ImportPanel.vue",
+    "frontend/src/components/PolicyRecordTable.vue",
+    "frontend/src/views/BatchDetailView.vue"
+  ],
+  "input_fingerprint": "5751c4af1fd9232c06350de0296ef4a0c8420854afdb2ae743f7f8d244c6a3ae",
+  "signals": {
+    "metadata_incomplete": false,
+    "unknown_layer": false,
+    "surface": "production",
+    "frontend": true,
+    "backend": false,
+    "ui": true,
+    "input": false,
+    "query": false,
+    "concurrency": false,
+    "logging": true,
+    "enforcement": true,
+    "sensitive": false
+  },
+  "selected_dimensions": [
+    {
+      "id": "contract",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "scope-and-secrets",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "test-evidence",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "comment-hygiene",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "standards",
+      "reason": "task package has relevant-standards"
+    },
+    {
+      "id": "enforcement",
+      "reason": "task/change surface contains enforcement or test/tooling signals"
+    },
+    {
+      "id": "design-fidelity",
+      "reason": "frontend UI/design surface is present"
+    },
+    {
+      "id": "logging-privacy",
+      "reason": "production or logging/privacy surface is present"
+    },
+    {
+      "id": "maintainability",
+      "reason": "fixed diff contains production code"
+    }
+  ],
+  "omitted_dimensions": [
+    {
+      "id": "input-provenance",
+      "reason": "task is not backend"
+    },
+    {
+      "id": "query-performance",
+      "reason": "task is not backend"
+    },
+    {
+      "id": "concurrency",
+      "reason": "task is not backend"
+    },
+    {
+      "id": "sensitive-boundaries",
+      "reason": "effective risk is standard"
+    }
+  ]
+}

@@ -135,6 +135,12 @@ type Status = 'loading' | 'empty' | 'error' | 'success'
 
 const props = defineProps<{ batchId: string }>()
 
+/**
+ * 人工补录销售人员保存成功后对外广播，供宿主 BatchDetailView.vue 转发给
+ * CommissionSummaryPanel 触发其重新拉取提成汇总。
+ */
+const emit = defineEmits<{ 'sales-name-changed': [] }>()
+
 // AC-07：value 严格对齐后端 salesFillSource 枚举字面值，禁止空字符串作 value（FE-EP-04）；
 // 默认选中"全部"，选中 all 时 loadData() 不透传 fillStatus 参数。
 const FILL_STATUS_OPTIONS: Array<{ label: string; value: 'all' | SalesFillSource }> = [
@@ -289,6 +295,7 @@ async function handleSaveSalesName(row: PolicyRecord) {
     }
     ElMessage.success('保存成功')
     tableRef.value?.toggleRowExpansion(row, false)
+    emit('sales-name-changed')
   } catch {
     // 失败已由 api/request.ts 响应拦截器统一 ElMessage.error 透传后端 msg（如 1001 salesName 为空，FE-ASYNC-01），不重复弹窗
   } finally {
@@ -319,6 +326,10 @@ onBeforeUnmount(() => {
     clearTimeout(searchDebounceTimer)
   }
 })
+
+// 供宿主 BatchDetailView.vue 在收到兄弟组件的记录变更信号后触发本表刷新；
+// 直接复用既有 loadData，不重新实现一份加载逻辑，也不重置展开编辑态（loadData 本身不涉及该状态）。
+defineExpose({ refresh: loadData })
 </script>
 
 <style scoped lang="scss">

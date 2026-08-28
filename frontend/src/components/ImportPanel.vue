@@ -93,8 +93,8 @@ type Status = 'loading' | 'empty' | 'error' | 'success'
 const props = defineProps<{ batchId: string }>()
 
 /**
- * 删除导入后对外广播"记录变更信号"：导入记录的增删会影响该批次下已回填的保单记录，
- * 供页面上关注这批数据的其他区块按需监听后触发各自的刷新；本包不预先绑定具体消费逻辑，属预留接口。
+ * 导入成功 / 删除导入后对外广播"记录变更信号"：导入记录的增删会影响该批次下已回填的保单记录，
+ * 由宿主 BatchDetailView.vue 监听后转发给提成汇总卡片 / 保单记录明细表触发各自的刷新。
  */
 const emit = defineEmits<{ 'records-changed': [] }>()
 
@@ -162,6 +162,7 @@ async function handleStartImport() {
     // ElMessage.error 透传后端 msg（FE-ASYNC-01），此处 catch 分支不写入结果区。
     importResult.value = await importExcel(props.batchId, selectedFile.value)
     await loadImports()
+    emit('records-changed')
   } catch {
     // 已由拦截器提示，不重复弹窗
   } finally {
