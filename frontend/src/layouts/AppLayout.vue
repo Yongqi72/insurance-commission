@@ -36,20 +36,20 @@ function handleLogout() {
     align-items: center;
     justify-content: space-between;
     height: $layout-header-height;
-    padding: 0 $space-5;
+    padding: 0 $space-lg;
     background-color: $bg-card;
     border-bottom: 1px solid $border-color;
   }
 
   &__title {
-    font-size: $font-size-lg;
+    font-size: $fs-body;
     font-weight: 600;
     color: $text-primary;
   }
 
   &__content {
     flex: 1;
-    padding: $space-5;
+    padding: $space-lg;
   }
 }
 </style>
