@@ -1,6 +1,6 @@
 import request from './request'
 import type { ApiEnvelope } from './request'
-import type { PageQuery, PageResult } from './policy-record'
+import type { PageQuery, PageResult, PolicyRecord, SalesFillSource } from './policy-record'
 
 export type CommissionBatchStatus = 'doing' | 'done'
 
@@ -98,4 +98,41 @@ export async function importExcel(id: string, file: File): Promise<ImportExcelRe
  */
 export async function deleteImport(id: string, importId: string): Promise<void> {
   await request.delete<ApiEnvelope<null>>(`/api/commission-batches/${id}/imports/${importId}`)
+}
+
+export interface PolicyRecordQuery extends PageQuery {
+  /** 对工作单号/保单号/客户名称做模糊匹配，可选。 */
+  keyword?: string
+  /** 回填状态精确筛选，可选；不传即不筛选（对应筛选器的"全部"选项，AC-07）。 */
+  fillStatus?: SalesFillSource
+}
+
+export interface FillResult {
+  total: number
+  matchedCount: number
+  unmatchedCount: number
+}
+
+/**
+ * 查询批次维度的保单记录明细（TRD §接口：GET .../policy-records，满足 AC-05、AC-07）。
+ * 后端已按 createdAt 升序返回，前端不再排序；keyword/fillStatus 复合生效。
+ */
+export async function fetchBatchPolicyRecords(
+  id: string,
+  query: PolicyRecordQuery,
+): Promise<PageResult<PolicyRecord>> {
+  const res = await request.get<ApiEnvelope<PageResult<PolicyRecord>>>(
+    `/api/commission-batches/${id}/policy-records`,
+    { params: query },
+  )
+  return res.data.data
+}
+
+/**
+ * 触发批次内未匹配保单记录的销售人员回填（TRD §接口：POST .../policy-records/fill，满足 AC-06）。
+ * 第三方接口地址本期未配置/调用失败均不算业务错误，操作本身按成功处理，返回统计供前端提示文案。
+ */
+export async function triggerSalesFill(id: string): Promise<FillResult> {
+  const res = await request.post<ApiEnvelope<FillResult>>(`/api/commission-batches/${id}/policy-records/fill`)
+  return res.data.data
 }
