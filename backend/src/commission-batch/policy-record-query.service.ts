@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Like, Repository } from 'typeorm';
@@ -6,6 +6,7 @@ import { PageResultDto } from '../common/dto/page-result.dto';
 import { PolicyRecord } from '../policy-record/policy-record.entity';
 import { CommissionBatch } from './commission-batch.entity';
 import { QueryPolicyRecordDto } from './dto/query-policy-record.dto';
+import { ensureBatchExists } from './ensure-batch-exists.util';
 
 /** 第三方回填接口调用超时阈值（TRD §接口：POST .../policy-records/fill，5s） */
 const FILL_TIMEOUT_MS = 5000;
@@ -44,7 +45,7 @@ export class PolicyRecordQueryService {
     batchId: string,
     query: QueryPolicyRecordDto,
   ): Promise<PageResultDto<PolicyRecord>> {
-    await this.ensureBatchExists(batchId);
+    await ensureBatchExists(this.commissionBatchRepository, batchId);
 
     const { page, pageSize, keyword, fillStatus } = query;
     const baseWhere: FindOptionsWhere<PolicyRecord> = {
@@ -81,7 +82,7 @@ export class PolicyRecordQueryService {
    * 调用异常/返回结构不符预期一律按未命中处理，操作本身视为成功完成，不抛错。
    */
   async fill(batchId: string): Promise<FillResultDto> {
-    await this.ensureBatchExists(batchId);
+    await ensureBatchExists(this.commissionBatchRepository, batchId);
 
     const unmatchedRecords = await this.policyRecordRepository.find({
       where: { importBatchId: batchId, salesFillSource: 'unmatched' },
@@ -190,15 +191,6 @@ export class PolicyRecordQueryService {
       return undefined;
     } finally {
       clearTimeout(timer);
-    }
-  }
-
-  private async ensureBatchExists(batchId: string): Promise<void> {
-    const batch = await this.commissionBatchRepository.findOne({
-      where: { id: batchId },
-    });
-    if (!batch) {
-      throw new NotFoundException('批次不存在');
     }
   }
 }

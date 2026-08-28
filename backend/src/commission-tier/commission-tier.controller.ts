@@ -9,6 +9,7 @@ import {
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { extractOperator } from '../common/utils/extract-operator.util';
 import { CommissionTier } from './commission-tier.entity';
 import {
   ChangeLogItemDto,
@@ -42,10 +43,7 @@ export class CommissionTierController {
     @Body() dto: UpsertCommissionTierDto,
     @Req() request: Request,
   ): Promise<CommissionTier> {
-    return this.commissionTierService.create(
-      dto,
-      this.extractOperator(request),
-    );
+    return this.commissionTierService.create(dto, extractOperator(request));
   }
 
   @Patch(':id')
@@ -54,21 +52,11 @@ export class CommissionTierController {
     @Body() dto: UpsertCommissionTierDto,
     @Req() request: Request,
   ): Promise<CommissionTier> {
-    return this.commissionTierService.update(
-      id,
-      dto,
-      this.extractOperator(request),
-    );
+    return this.commissionTierService.update(id, dto, extractOperator(request));
   }
 
   @Delete(':id')
   remove(@Param('id') id: string, @Req() request: Request): Promise<void> {
-    return this.commissionTierService.remove(id, this.extractOperator(request));
-  }
-
-  /** 操作人取自当前登录管理员（JwtAuthGuard 校验通过后挂载的 request.user）。 */
-  private extractOperator(request: Request): string {
-    const user = (request as Request & { user?: { username?: string } }).user;
-    return user?.username ?? 'unknown';
+    return this.commissionTierService.remove(id, extractOperator(request));
   }
 }
