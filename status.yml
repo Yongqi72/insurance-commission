@@ -270,9 +270,9 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 10
     parent_id: null
     depends_on: []
     delivery: 串行
@@ -593,6 +593,26 @@ code_reviews:
     comment: "补缝任务（global seam review SEAM-F001）。round-01（full）0 blocking，1 条 advisory（F001：5 处新增注释点名任务号，第 N 次同类复现）→ conclusion: pass；顺手直接修复，round-02（targeted）verified-closed，conclusion: pass。逐行独立追溯三条 AC 的事件触发链与 loadData/resetExpandState 全文，确认联动刷新无副作用"
     issues:
       - { id: ic-v1-013-F001, dimension: comment-hygiene, severity: 建议, type: scope-gap, reachability: current, action: fix-code, status: closed, impact: "不影响当前行为；运行时注释累积任务号导致长期可读语境流失", description: "CommissionSummaryPanel.vue/ImportPanel.vue/PolicyRecordTable.vue(x2)/BatchDetailView.vue 共 5 处新增注释点名任务号 ic-v1-013，已改写为业务语言描述，round-02 验证仅改注释文字未触及代码逻辑" }
+  - iteration: null
+    task_id: ic-b-001
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-001
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-28T06:11:22Z
+    implementation_completed_at: 2026-08-28T06:14:39Z
+    review_started_at: 2026-08-28T06:14:39Z
+    review_completed_at: 2026-08-28T06:20:00Z
+    implementation_minutes: 4
+    review_minutes: 6
+    spec_minutes: 1
+    comment: "round-01（full）0 blocking，2 条 advisory（F001：buildDatedOssKey 零补位逻辑无配套单测；F002：移除 key 中 batchId 后跨批次同名同毫秒导出碰撞域扩大，与 ic-v1-006-F003 同根）→ conclusion: pass。5 组边界日期（含单位数月/日）独立验证零补位逻辑正确，与用户给出的示例逐字符一致"
+    issues:
+      - { id: ic-b-001-F001, dimension: test-evidence, severity: advisory, type: evidence-gap, reachability: current, action: backlog, impact: "不影响当前行为正确性（已独立验证）；回归无法被自动化测试拦截", description: "buildDatedOssKey() 是 common/ 目录下唯一没有配套 .spec.ts 的带逻辑文件" }
+      - { id: ic-b-001-F002, dimension: concurrency, severity: advisory, type: future-risk, reachability: conditional, action: backlog, impact: "narrow race，需两个不同批次同名且同一毫秒导出；一旦发生较早批次的 export_record 会指向被覆盖的文件内容", description: "AC3 要求移除 key 中 batchId 是碰撞域扩大的直接原因，非实现偏离；与 ic-v1-006-F003 同根同类" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
