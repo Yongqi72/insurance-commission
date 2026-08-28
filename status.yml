@@ -253,9 +253,9 @@ tasks:
     type: develop
     discipline: dev-frontend
     layer: frontend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 9
     parent_id: null
     depends_on: [ic-v1-009, ic-v1-010, ic-v1-011]
     delivery: 串行
@@ -557,6 +557,25 @@ code_reviews:
       - { id: ic-v1-011-F001, dimension: sensitive-boundaries, severity: blocking, type: behavior-bug, reachability: current, action: fix-code, status: closed, impact: "token 失效场景下导出请求绕开全局登出跳转机制，用户停留在已失效会话页面，需自行刷新才会被带回登录页；不造成额外数据泄露", description: "request.ts 响应拦截器为 blob 请求新增的旁路在 handleBusinessError() 之前短路，跳过 401 登出逻辑；已改为基于同步可读的 HTTP status(401) 判断并执行等价登出+跳转，round-02 独立验证生效且不影响非 401 blob 错误与成功响应" }
       - { id: ic-v1-011-F002, dimension: comment-hygiene, severity: advisory, type: future-risk, reachability: current, action: revise-doc, status: closed, impact: "不影响当前行为", description: "request.ts/enums.ts 新增注释点名任务号 ic-v1-011，已改写为业务语言描述" }
       - { id: ic-v1-011-F003, dimension: maintainability, severity: advisory, type: future-risk, reachability: current, action: backlog, status: closed, impact: "每次打开批次详情页多产生一次可避免的重复请求，非功能性缺陷", description: "CommissionSummaryPanel.vue 为拿导出兜底文件名独立重复请求批次详情，与父组件 BatchDetailView.vue 已有数据重复；已改为 batchName prop 传递，不再独立请求" }
+  - iteration: v1
+    task_id: ic-v1-013
+    conclusion: 通过
+    rounds: 2
+    code_rounds: 2
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: iterations/v1/code-reviews/ic-v1-013
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-28T05:18:28Z
+    implementation_completed_at: 2026-08-28T05:21:12Z
+    review_started_at: 2026-08-28T05:21:12Z
+    review_completed_at: 2026-08-28T05:30:45Z
+    implementation_minutes: 3
+    review_minutes: 10
+    spec_minutes: 2
+    comment: "补缝任务（global seam review SEAM-F001）。round-01（full）0 blocking，1 条 advisory（F001：5 处新增注释点名任务号，第 N 次同类复现）→ conclusion: pass；顺手直接修复，round-02（targeted）verified-closed，conclusion: pass。逐行独立追溯三条 AC 的事件触发链与 loadData/resetExpandState 全文，确认联动刷新无副作用"
+    issues:
+      - { id: ic-v1-013-F001, dimension: comment-hygiene, severity: 建议, type: scope-gap, reachability: current, action: fix-code, status: closed, impact: "不影响当前行为；运行时注释累积任务号导致长期可读语境流失", description: "CommissionSummaryPanel.vue/ImportPanel.vue/PolicyRecordTable.vue(x2)/BatchDetailView.vue 共 5 处新增注释点名任务号 ic-v1-013，已改写为业务语言描述，round-02 验证仅改注释文字未触及代码逻辑" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
