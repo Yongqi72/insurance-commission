@@ -124,6 +124,10 @@ watch(
 onMounted(() => {
   loadSummary()
 })
+
+// 供宿主 BatchDetailView.vue 在收到兄弟组件（导入/删除导入/人工补录销售人员）的记录变更
+// 信号后触发本卡片刷新；直接复用既有 loadSummary，不重新实现一份加载逻辑。
+defineExpose({ refresh: loadSummary })
 </script>
 
 <style scoped lang="scss">

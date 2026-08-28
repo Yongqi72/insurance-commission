@@ -17,14 +17,18 @@
         </div>
       </div>
 
-      <ImportPanel :batch-id="batchId" />
+      <ImportPanel :batch-id="batchId" @records-changed="handleRecordsChanged" />
 
       <div id="policy-record-panel-mount">
-        <PolicyRecordTable :batch-id="batchId" />
+        <PolicyRecordTable
+          ref="policyRecordTableRef"
+          :batch-id="batchId"
+          @sales-name-changed="handleSalesNameChanged"
+        />
       </div>
 
       <div id="commission-summary-panel-mount">
-        <CommissionSummaryPanel :batch-id="batchId" :batch-name="batch?.name" />
+        <CommissionSummaryPanel ref="commissionSummaryRef" :batch-id="batchId" :batch-name="batch?.name" />
       </div>
     </DataStateWrapper>
 
@@ -58,6 +62,11 @@ const status = ref<Status>('loading')
 const errorMessage = ref('')
 const isNotFound = ref(false)
 const batch = ref<CommissionBatch | null>(null)
+
+// 三个兄弟组件互不直接引用彼此，由本宿主组件持有模板 ref，
+// 转发"记录变更"信号并调用对方 defineExpose 出的 refresh()，不引入 Pinia store。
+const policyRecordTableRef = ref<InstanceType<typeof PolicyRecordTable>>()
+const commissionSummaryRef = ref<InstanceType<typeof CommissionSummaryPanel>>()
 
 const statusToggleLabel = computed(() => {
   if (!batch.value) {
@@ -96,6 +105,17 @@ async function handleToggleStatus() {
 
 function goToBatchList() {
   router.push({ name: 'batch-list' })
+}
+
+// 导入 / 删除导入成功：明细表与提成汇总卡片均需反映记录集合变化（不整页 loadDetail 重新加载）
+function handleRecordsChanged() {
+  policyRecordTableRef.value?.refresh()
+  commissionSummaryRef.value?.refresh()
+}
+
+// 人工补录销售人员保存成功：仅提成汇总卡片需要重新现查现算，明细表已在自身保存流程里更新了本地行数据
+function handleSalesNameChanged() {
+  commissionSummaryRef.value?.refresh()
 }
 
 watch(batchId, () => loadDetail())
