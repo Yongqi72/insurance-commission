@@ -1,3 +1,5 @@
 backend/fixtures/*.xlsx
 backend/downloads/*
 !backend/downloads/.gitkeep
+frontend/node_modules/
+frontend/error-screenshot.png

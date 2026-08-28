@@ -302,6 +302,8 @@ integration_tests:
   - { iteration: v1, index: 3, description: "开始回填(第三方未配置全部unmatched)+人工补录留痕+覆盖修改+回填状态筛选", status: 通过, failure_reason: null }
   - { iteration: v1, index: 4, description: "阶梯规则区间冲突拒绝+完整性判定(不完整→完整)+变更历史", status: 通过, failure_reason: null }
   - { iteration: v1, index: 5, description: "提成汇总实时计算(局部票数定档+未匹配不计入)+导出Excel(按投保人分sheet)+OSS归档+导出历史重新下载", status: 通过, failure_reason: null }
+  - { iteration: v1, index: 6, description: "前端(Playwright替代pinchtab)：登录→批次列表新建→状态切换→导入Excel→明细搜索→回填筛选→人工补录+提成汇总联动刷新(ic-v1-013回归)→修改历史→导出+导出历史→阶梯规则冲突提示+未保存离开确认→变更历史，共11场景30项断言", status: 通过, failure_reason: null }
+  - { iteration: v1, index: 7, description: "前端视觉冒烟断言：主色覆盖--el-color-primary、视口无横向外溢、顶栏高度56px（design.md §〇）", status: 通过, failure_reason: null }
 # 每条（generate-integration-tests 创建/更新）：
 #  - { iteration: v1, index: 1, description: ..., status: 待执行, failure_reason: null }
 #    # status: 待执行 / 执行中 / 通过 / 失败

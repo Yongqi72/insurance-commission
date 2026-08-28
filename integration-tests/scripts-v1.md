@@ -16,4 +16,8 @@
 
 ## 前端
 
-（轻量档暂未生成；Step 4.5 视觉基线判定后按需补充）
+脚本：`integration-tests/frontend/v1-run-all.js`（用法：`node v1-run-all.js`；依赖 `integration-tests/frontend/package.json` 的 `playwright`，浏览器二进制经 `npx playwright install chromium` 装好）
+
+**技术选型说明**：CLAUDE.md 列出的 `/pinchtab` 个人工具在本次联调会话的可调用技能清单中实际不可用（未注册），环境亦无其他浏览器自动化能力；已用 Playwright + Chromium 补齐（沙箱环境需在 `chromium.launch()` 显式传 `proxy: { server: <系统代理>, bypass: 'localhost,127.0.0.1' }`，否则本地页面与外部站点均无法访问——`proxy: 'direct://'` 在此沙箱下会整体断网，只有"代理+localhost bypass"这一种组合能同时保证本地/外部可达）。
+
+覆盖场景（11 组主线 + 1 组视觉冒烟，共 30 项断言）：登录 → 批次列表新建批次跳转详情 → 状态切换不锁定 → 导入 Excel 含容错 → 明细搜索 → 回填状态筛选 → **人工补录销售人员 + 提成汇总卡片无需刷新页面即联动更新（ic-v1-013 回归验证）** → 查看补录修改历史 → 导出 Excel + 查看导出历史 → 提成阶梯规则新增/区间冲突字段级提示/未保存离开确认 → 规则变更历史；视觉冒烟：主色覆盖 `--el-color-primary`、视口无横向外溢、顶栏高度 56px（design.md §〇）。
