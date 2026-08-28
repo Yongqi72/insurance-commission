@@ -7,7 +7,7 @@ review_profile: iterations/v1/code-reviews/ic-v1-011/profile-round-01.json
 prior_report: iterations/v1/code-reviews/ic-v1-011/round-01.md
 target_finding_ids: [ic-v1-011-F001, ic-v1-011-F002, ic-v1-011-F003]
 base_ref: 1d52013aa7123faa650ba5e4faea8367d10596bb
-reviewed_base: 258119a320c5ce13cde48dd486fd4a9dd9f3ce76
+reviewed_base: 31674bbd0bf72c4be62e01f7f172cdc8065a3ac7
 reviewed_head: 4d85ece576b3e46dae5199b39ca82fc3ba45feb3
 diff_sha256: 12f76e4b38ca5fdeaf4b940bb54c618ec64a5b7343ff47a6d5f2e7eb195af6f6
 changed_files:

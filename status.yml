@@ -219,9 +219,9 @@ tasks:
     type: develop
     discipline: dev-frontend
     layer: frontend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 8
     parent_id: null
     depends_on: [ic-v1-007, ic-v1-009, ic-v1-006]
     delivery: 串行
@@ -519,6 +519,27 @@ code_reviews:
     comment: "round-01（full，sensitive risk 不降档）0 blocking，1 条 advisory（F001：展开行视觉与 prototype.html 两处非阻断差异——多渲染展开箭头列、展开面板未设背景色，均不影响功能性 oracle）→ conclusion: pass。两处清单外偏离（.stylelintrc.json 新增 :deep 白名单支持 FE-EP-04 要求的 el-input/el-select wrapper 方式、PolicyRecordHistoryDrawer.vue 的 workOrderNo prop）均独立核实为有正当理由，非违规。sensitive-boundaries 重点核实：审计日志同事务无条件写入、operator 取自 JWT 不可伪造、覆盖已回填记录是后端既定设计非前端引入的绕过"
     issues:
       - { id: ic-v1-010-F001, dimension: design-fidelity, severity: advisory, type: contract-drift, reachability: current, action: backlog, impact: "纯视觉呈现差异，不影响任何 AC 功能性 oracle", description: "PolicyRecordTable.vue 展开行多渲染一列可点击箭头图标、展开面板未设 background-color:$bg-hover，与 prototype.html 结构不完全一致；design.md 本身未规范此细节，留待 manual-test 人工走查确认" }
+  - iteration: v1
+    task_id: ic-v1-011
+    conclusion: 通过
+    rounds: 2
+    code_rounds: 2
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: iterations/v1/code-reviews/ic-v1-011
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-28T04:32:12Z
+    implementation_completed_at: 2026-08-28T04:45:20Z
+    review_started_at: 2026-08-28T04:45:20Z
+    review_completed_at: 2026-08-28T04:58:46Z
+    implementation_minutes: 14
+    review_minutes: 14
+    spec_minutes: 2
+    comment: "round-01（full，sensitive risk 不降档）1 条 blocking：F001（blob 导出请求命中 401 时因 responseType 旁路跳过 handleBusinessError，绕开全局登出跳转，与其余请求路径行为不一致）→ conclusion: revise；round-02（targeted，blob 错误分支新增基于 HTTP status 的 401 判断，命中时执行等价登出+跳转）verified-closed，conclusion: pass。F002（注释点名任务号）/F003（CommissionSummaryPanel.vue 重复请求批次详情）同轮一并直接修复 verified-closed。两处清单外偏离（request.ts blob 旁路、enums.ts 补齐 RULE_INCOMPLETE=2002）均独立核实为必要配套改动。sensitive-boundaries 核实：金额展示/导出均为后端计算结果的忠实转发，前端无二次计算"
+    issues:
+      - { id: ic-v1-011-F001, dimension: sensitive-boundaries, severity: blocking, type: behavior-bug, reachability: current, action: fix-code, status: closed, impact: "token 失效场景下导出请求绕开全局登出跳转机制，用户停留在已失效会话页面，需自行刷新才会被带回登录页；不造成额外数据泄露", description: "request.ts 响应拦截器为 blob 请求新增的旁路在 handleBusinessError() 之前短路，跳过 401 登出逻辑；已改为基于同步可读的 HTTP status(401) 判断并执行等价登出+跳转，round-02 独立验证生效且不影响非 401 blob 错误与成功响应" }
+      - { id: ic-v1-011-F002, dimension: comment-hygiene, severity: advisory, type: future-risk, reachability: current, action: revise-doc, status: closed, impact: "不影响当前行为", description: "request.ts/enums.ts 新增注释点名任务号 ic-v1-011，已改写为业务语言描述" }
+      - { id: ic-v1-011-F003, dimension: maintainability, severity: advisory, type: future-risk, reachability: current, action: backlog, status: closed, impact: "每次打开批次详情页多产生一次可避免的重复请求，非功能性缺陷", description: "CommissionSummaryPanel.vue 为拿导出兜底文件名独立重复请求批次详情，与父组件 BatchDetailView.vue 已有数据重复；已改为 batchName prop 传递，不再独立请求" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}

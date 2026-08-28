@@ -12,7 +12,7 @@
 | ic-v1-008 | 批次列表页 | frontend | ic-v1-007, ic-v1-002 | [merged] | #6 | 可并行 |
 | ic-v1-009 | 批次详情页骨架+导入区 | frontend | ic-v1-007, ic-v1-003 | [merged] | #6 | 可并行 |
 | ic-v1-010 | 批次详情·明细回填补录 | frontend | ic-v1-007, ic-v1-009, ic-v1-004 | [merged] | #7 | 串行 |
-| ic-v1-011 | 批次详情·汇总导出历史 | frontend | ic-v1-007, ic-v1-009, ic-v1-006 | [taken-by: yongqi.liu] | — | 串行 |
+| ic-v1-011 | 批次详情·汇总导出历史 | frontend | ic-v1-007, ic-v1-009, ic-v1-006 | [merged] | #8 | 串行 |
 | ic-v1-012 | 提成阶梯规则页 | frontend | ic-v1-007, ic-v1-005 | [merged] | #6 | 可并行 |
 
 ## 依赖说明
