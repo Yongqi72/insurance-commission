@@ -14,6 +14,13 @@ export interface ApiEnvelope<T> {
   data: T
 }
 
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    /** 命中这些业务错误码时跳过响应拦截器的全局 toast，交由调用方自行做字段级展示（AC-11）。 */
+    suppressToastForCodes?: number[]
+  }
+}
+
 const request = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000',
   timeout: 15000,
@@ -39,7 +46,7 @@ request.interceptors.response.use(
   (error: AxiosError<ApiEnvelope<unknown>>) => {
     const envelope = error.response?.data
     if (envelope) {
-      handleBusinessError(envelope)
+      handleBusinessError(envelope, error.config?.suppressToastForCodes)
     } else {
       ElMessage.error('网络异常，请稍后重试')
     }
@@ -47,11 +54,14 @@ request.interceptors.response.use(
   },
 )
 
-function handleBusinessError(envelope: ApiEnvelope<unknown>): void {
+function handleBusinessError(envelope: ApiEnvelope<unknown>, suppressToastForCodes?: number[]): void {
   if (envelope.code === ErrorCode.UNAUTHORIZED) {
     localStorage.removeItem(TOKEN_KEY)
     ElMessage.error(envelope.msg || '登录状态已失效，请重新登录')
     router.push('/login')
+    return
+  }
+  if (suppressToastForCodes?.includes(envelope.code)) {
     return
   }
   ElMessage.error(envelope.msg || '请求失败')

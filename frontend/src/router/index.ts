@@ -27,6 +27,21 @@ const router = createRouter({
           name: 'policy-record-list',
           component: () => import('@/views/PolicyRecordListView.vue'),
         },
+        {
+          path: 'commission-batches',
+          name: 'batch-list',
+          component: () => import('@/views/BatchListView.vue'),
+        },
+        {
+          path: 'commission-batches/:id',
+          name: 'batch-detail',
+          component: () => import('@/views/BatchDetailView.vue'),
+        },
+        {
+          path: 'commission-tiers',
+          name: 'commission-tier',
+          component: () => import('@/views/CommissionTierView.vue'),
+        },
       ],
     },
   ],
