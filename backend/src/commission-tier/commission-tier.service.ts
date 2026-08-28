@@ -160,16 +160,20 @@ export class CommissionTierService {
   }
 
   async remove(id: string, operator: string): Promise<void> {
-    const existing = await this.findOneOrFail(id);
-    const before = toSnapshot(existing);
-    await this.commissionTierRepository.remove(existing);
-    await this.writeChangeLog(
-      this.changeLogRepository.manager,
-      'delete',
-      operator,
-      before,
-      null,
-    );
+    // 同 create()/update()：删除与写变更日志包进一个事务，避免中途崩溃出现
+    // "档位已删但无变更日志"的不一致状态；删除操作无并发冲突校验可言，
+    // 隔离级别沿用 SERIALIZABLE 只是为了与另两个方法保持一致，非本操作必需。
+    await this.dataSource.transaction('SERIALIZABLE', async (manager) => {
+      const existing = await manager.findOne(CommissionTier, {
+        where: { id },
+      });
+      if (!existing) {
+        throw new NotFoundException('阶梯档位不存在');
+      }
+      const before = toSnapshot(existing);
+      await manager.remove(existing);
+      await this.writeChangeLog(manager, 'delete', operator, before, null);
+    });
   }
 
   /**
@@ -212,16 +216,6 @@ export class CommissionTierService {
       beforeSnapshot: parseSnapshot(log.beforeSnapshot),
       afterSnapshot: parseSnapshot(log.afterSnapshot),
     }));
-  }
-
-  private async findOneOrFail(id: string): Promise<CommissionTier> {
-    const tier = await this.commissionTierRepository.findOne({
-      where: { id },
-    });
-    if (!tier) {
-      throw new NotFoundException('阶梯档位不存在');
-    }
-    return tier;
   }
 
   /**
