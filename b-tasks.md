@@ -4,4 +4,4 @@
 |---------|--------------|---------|-------|------|------|
 | ic-b-001 | optimization | normal | OSS 归档路径改为按日期分层 | merged（PR#10） | 2026-08-28 |
 | ic-b-002 | optimization | normal | 清理运行时注释里的任务号 | merged（PR#11） | 2026-08-28 |
-| ic-b-003 | bug | high | 修复 migration down() 在真实 MySQL 上无法回滚的 bug | taken-by | 2026-08-28 |
+| ic-b-003 | bug | high | 修复 migration down() 在真实 MySQL 上无法回滚的 bug | merged（PR#12） | 2026-08-28 |

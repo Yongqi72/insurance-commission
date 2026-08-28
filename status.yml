@@ -304,9 +304,9 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 12
     parent_id: null
     depends_on: []
     delivery: 串行
@@ -672,6 +672,26 @@ code_reviews:
     spec_minutes: 2
     comment: "范围在实现中期收窄：原计划一并把 ic-v1-002-F001/ic-v1-004-F001 两处 files 清单遗漏补录进对应已合并任务包，编辑后 check-sprint.js --review 报 input_fingerprint 不一致（已合并任务包内容是历史审查指纹的固定输入，事后编辑即判定为篡改），故撤销该部分编辑，本包收窄为仅注释清理；round-01（full）0 blocking 0 advisory → conclusion: pass"
     issues: []
+  - iteration: null
+    task_id: ic-b-003
+    conclusion: 通过
+    rounds: 2
+    code_rounds: 2
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-003
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-28T08:59:23Z
+    implementation_completed_at: 2026-08-28T09:01:00Z
+    review_started_at: 2026-08-28T09:01:29Z
+    review_completed_at: 2026-08-28T09:24:15Z
+    implementation_minutes: 2
+    review_minutes: 23
+    spec_minutes: 2
+    comment: "真实 MySQL 8.0.36 首次验证 migration:run/revert 时当场发现并修复的 bug：revertPolicyRecordV1Shape() 用 createUniqueConstraint() 恢复唯一约束，mysql 驱动不支持该 API；round-01（full）0 blocking 之外发现 1 条阻断级 evidence-gap（F001：V1 允许 policy_no/work_order_no 重复，回滚重建唯一索引若遇真实重复数据会失败且因 MySQL 不支持事务性 DDL 停在半回滚状态）→ conclusion: evidence-needed；针对 F001 新增 assertNoDuplicatesForRevert() 前置校验（放在 down() 最开头，任何 DDL 之前），round-02（因新增方法改动面变大，按 full 重新全量审查）verified-closed F001，新发现 2 条建议级（F002 测试覆盖缺口、F003 TOCTOU 并发窗口）转 backlog → conclusion: pass。真实 MySQL 上分别验证了空库路径、已有 V0 表路径的 run→revert 全链路，以及故意注入重复数据后 guard 拦截效果，验证用数据库已清理"
+    issues:
+      - { id: ic-b-003-F002, dimension: test-evidence, severity: advisory, type: evidence-gap, reachability: current, action: backlog, impact: "当前无回归风险（已通过 build/lint 全绿人工验证），但 down() 分支今后若被误改无自动化防线拦截", description: "全仓无任何自动化测试覆盖 migration 的 down()（sqlite 测试路径不走 migration，mysql-only CLI 路径不进 CI）" }
+      - { id: ic-b-003-F003, dimension: concurrency, severity: advisory, type: future-risk, reachability: conditional, action: backlog, impact: "unknown；若生产运维流程未强制 revert 期间停写，窄并发窗口内理论上仍可复现半回滚状态", description: "assertNoDuplicatesForRevert 检查通过后到 ADD UNIQUE INDEX 实际执行前存在 TOCTOU 窗口，期间另一连接插入重复值仍会触发原始失败模式" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
