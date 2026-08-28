@@ -82,8 +82,8 @@ onMounted(loadData)
 
 .policy-record-list {
   &__title {
-    margin: 0 0 $space-4;
-    font-size: $font-size-xl;
+    margin: 0 0 $space-md;
+    font-size: $fs-h2;
     color: $text-primary;
   }
 
@@ -95,7 +95,7 @@ onMounted(loadData)
   &__pagination {
     display: flex;
     justify-content: flex-end;
-    margin-top: $space-4;
+    margin-top: $space-md;
   }
 }
 </style>

@@ -93,7 +93,7 @@ async function handleSubmit() {
   }
 
   &__title {
-    font-size: $font-size-lg;
+    font-size: $fs-body;
     font-weight: 600;
     color: $text-primary;
   }

@@ -1,47 +1,101 @@
-// 视觉 token 占位值（V0 走骨架，foundation.md 视觉地基机械级：禁裸值 + 单一样式入口）。
-// 真值由 draft-ux 依据 design.md 正式定稿前，以下为合理占位色/尺寸，不代表最终视觉规格。
+// 视觉 token 真值（design.md 定稿，唯一权威来源）。
+// V0 走骨架期占位值（$primary: #2563eb 等）已于 ic-v1-007 全部替换为 design.md 正式规格。
 
-// ------ 色彩系统 ------
-$primary: #2563eb;
-$primary-light: #dbeafe;
-$primary-dark: #1d4ed8;
+// ------ 一、色彩系统 ------
+
+// 主色
+$primary: #1677ff;
+$primary-light: #e8f3ff;
+$primary-dark: #0e56d9;
+
+// 背景色
 $bg-page: #f5f7fa;
 $bg-card: #fff;
-$bg-hover: #f0f4fa;
+$bg-hover: #f5f7fa;
+
+// 文字色
 $text-primary: #1f2329;
-$text-secondary: #5f6368;
-$text-hint: #9aa1a9;
+$text-secondary: #646a73;
+$text-hint: #8f959e;
+
+// 边框色
 $border-color: #e4e7ed;
-$color-success: #16a34a;
-$color-warning: #d97706;
-$color-danger: #dc2626;
-$color-disabled: #c0c4cc;
-$color-info: #2563eb;
 
-// ------ 间距 ------
-$space-1: 4px;
-$space-2: 8px;
-$space-3: 12px;
-$space-4: 16px;
-$space-5: 24px;
-$space-6: 32px;
+// 状态色
+$color-success: #52c41a;
+$color-warning: #faad14;
+$color-danger: #f53f3f;
+$color-danger-dark: #d9342f;
+$color-disabled: #c9cdd4;
+$color-info: #909399;
 
-// ------ 圆角 / 阴影 ------
-$radius-sm: 4px;
-$radius-md: 8px;
-$shadow-card: 0 1px 4px rgb(0 0 0 / 8%);
+// 状态标签（浅底深字，标签/徽标类小面积状态展示用；大面积按钮/图标仍用上方状态色本体）
+$color-warning-bg: #fff3d6;
+$color-warning-text: #92600a;
+$color-success-bg: #e4f7de;
+$color-success-text: #2c7a16;
 
-// ------ 字体 ------
-$font-size-sm: 12px;
-$font-size-base: 14px;
-$font-size-lg: 16px;
-$font-size-xl: 20px;
+// ------ 二、字体系统 ------
+// 字号声明须引用以下六级之一，禁止另造字号字面值。
 
-// ------ 过渡 ------
-$transition-fast: 0.15s;
+$fs-h1: 32px;
+$lh-h1: 1.4;
+$fw-h1: 700;
+$fs-h2: 24px;
+$lh-h2: 1.5;
+$fw-h2: 700;
+$fs-h3: 18px;
+$lh-h3: 1.6;
+$fw-h3: 500;
+$fs-body: 16px;
+$lh-body: 1.8;
+$fw-body: 400;
+$fs-caption: 14px;
+$lh-caption: 1.6;
+$fw-caption: 400;
+$fs-small: 12px;
+$lh-small: 1.5;
+$fw-small: 400;
 
-// ------ 布局关键容器 ------
+// ------ 三、间距系统（8px 网格） ------
+// 禁止使用以下列表之外的间距值。
+
+$space-xs: 4px;
+$space-sm: 8px;
+$space-md: 16px;
+$space-lg: 24px;
+$space-xl: 32px;
+$space-xxl: 48px;
+
+// ------ 四、圆角与阴影 ------
+
+$radius-sm: 2px;
+$radius-md: 4px;
+$radius-lg: 8px;
+$radius-full: 9999px;
+$shadow-sm: 0 1px 2px rgb(0 0 0 / 5%);
+$shadow-md: 0 2px 8px rgb(0 0 0 / 8%);
+$shadow-lg: 0 4px 16px rgb(0 0 0 / 12%);
+
+// ------ 五、过渡动效 ------
+
+$transition-fast: 0.2s ease;
+$transition-base: 0.3s ease;
+$transition-slow: 0.4s ease-out;
+
+// ------ 六、布局规范 ------
+
 $layout-header-height: 56px;
-
-// ------ 响应式断点 ------
+$content-max-width: 1440px;
 $breakpoint-mobile: 768px;
+$breakpoint-tablet: 1200px;
+
+// ------ 七、控件尺寸规范 ------
+
+$input-width-sm: 120px;
+$input-width-md: 240px;
+$input-width-lg: 320px;
+$input-width-full: 100%;
+$btn-height-sm: 28px;
+$btn-height-md: 32px;
+$btn-height-lg: 36px;
