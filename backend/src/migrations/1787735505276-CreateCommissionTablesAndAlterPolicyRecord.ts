@@ -5,7 +5,6 @@ import {
   TableColumn,
   TableForeignKey,
   TableIndex,
-  TableUnique,
 } from 'typeorm';
 
 /**
@@ -266,6 +265,12 @@ export class CreateCommissionTablesAndAlterPolicyRecord1787735505276 implements 
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    // 先做全程唯一的前置校验（V1 允许 policy_no/work_order_no 重复，回滚要恢复唯一索引，
+    // MySQL 不支持事务性 DDL、任何一步失败都不会自动撤销前面已执行的 DDL——故必须在
+    // 删除任何表之前就确认可以走完全程，而不是走到最后一步才失败留下半回滚状态）。
+    await this.assertNoDuplicatesForRevert(queryRunner, 'policy_no');
+    await this.assertNoDuplicatesForRevert(queryRunner, 'work_order_no');
+
     // 逆序撤销：先删有外键指向 commission_batch/policy_record 的子表，
     // 最后处理 policy_record 自身的增量与 commission_batch。
     await queryRunner.dropTable('export_record', true);
@@ -478,20 +483,38 @@ export class CreateCommissionTablesAndAlterPolicyRecord1787735505276 implements 
       'premium_amount',
     ]);
 
-    await queryRunner.createUniqueConstraint(
+    await queryRunner.createIndex(
       'policy_record',
-      new TableUnique({
+      new TableIndex({
         name: 'UQ_policy_record_policy_no',
         columnNames: ['policy_no'],
+        isUnique: true,
       }),
     );
-    await queryRunner.createUniqueConstraint(
+    await queryRunner.createIndex(
       'policy_record',
-      new TableUnique({
+      new TableIndex({
         name: 'UQ_policy_record_work_order_no',
         columnNames: ['work_order_no'],
+        isUnique: true,
       }),
     );
+  }
+
+  private async assertNoDuplicatesForRevert(
+    queryRunner: QueryRunner,
+    columnName: 'policy_no' | 'work_order_no',
+  ): Promise<void> {
+    const duplicates: Array<Record<string, unknown>> = await queryRunner.query(
+      `SELECT \`${columnName}\` AS value, COUNT(*) AS count FROM \`policy_record\` GROUP BY \`${columnName}\` HAVING COUNT(*) > 1 LIMIT 1`,
+    );
+    if (duplicates.length > 0) {
+      throw new Error(
+        `无法回滚：policy_record.${columnName} 存在重复值 "${String(
+          duplicates[0].value,
+        )}"（V1 明确允许该列重复，回滚需要恢复唯一索引）。请先人工核对/清理重复数据后再执行 migration:revert。`,
+      );
+    }
   }
 
   /**
