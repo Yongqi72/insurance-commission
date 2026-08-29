@@ -52,9 +52,9 @@
 > - `SqlDbServiceUrl` 的端口须与目标服务器上 falservice 实际端口一致
 >   （站点不在 80 端口时须显式带端口，如 `http://127.0.0.1:8085/falservice/sqldbservice.asmx`）。
 >
-> 查询 SQL 已由任务发起人提供并落地到 `BuildSalesSql`：按 `job_no` 从 `m_job` 查出
-> `sales` 编码，经 `d_user` 翻译为销售姓名（结果列 `job_no`/`sales_name`）。
-> 若后续内部库表结构变化，仅需调整该函数内的 SELECT 语句。
+> 查询 SQL 已由任务发起人提供并落地到 `BuildSalesSql`：`m_job` 内连接 `d_user`
+> （`m_job.sales = d_user.user_code`）取销售姓名，且只查 `booking_date` 近一年内的数据
+> （结果列 `job_no`/`sales_name`）。若后续内部库表结构变化，仅需调整该函数内的 SELECT 语句。
 
 ## IIS 部署步骤（挂到现有外网可访问网站下，作为子应用）
 
