@@ -44,6 +44,10 @@
           class="import-panel__file-input"
           @change="handleFileChange"
         />
+        <label for="input-file-import" class="import-panel__upload-label">
+          <el-icon><UploadFilled /></el-icon>
+          <span>{{ selectedFile ? '重新选择文件' : '点击选择 Excel 文件' }}</span>
+        </label>
         <p class="import-panel__upload-hint">仅解析文件中名为「账单」的 sheet</p>
         <p v-if="selectedFile" class="import-panel__file-name">已选择：{{ selectedFile.name }}</p>
       </div>
@@ -78,6 +82,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { UploadFilled } from '@element-plus/icons-vue'
 import DataStateWrapper from '@/components/DataStateWrapper.vue'
 import {
   deleteImport,
@@ -227,10 +232,32 @@ onMounted(() => {
     background-color: $bg-page;
   }
 
+  // 原生 <input type="file"> 各浏览器渲染的默认外观（如 "Choose File" 按钮）与其余
+  // Element Plus 风格化控件观感不一致；视觉上隐藏但保留于文档流可交互（非 display:none，
+  // 保证 Playwright/集成测试仍可用 setInputFiles 定位并赋值），改用下方 label 触发选择。
   &__file-input {
-    width: 100%;
-    font-size: $fs-body;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  &__upload-label {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-xs;
     cursor: pointer;
+    color: $primary;
+    font-size: $fs-caption;
+
+    .el-icon {
+      font-size: $fs-h1;
+    }
+
+    &:hover {
+      color: $primary-dark;
+    }
   }
 
   &__upload-hint {
