@@ -2,5 +2,7 @@
 lib/
 bin/
 obj/
+# 发布产物目录（含替换过真实密钥的 Web.config），禁止入库
+publish/
 *.user
 .vs/

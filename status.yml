@@ -372,7 +372,7 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: done
+    status: merged
     assigned_to: 朱敏
     pr: 16
     parent_id: null
