@@ -1,0 +1,6 @@
+# Fcl.WSOP.dll / Fcl.WSOP.lic 由开发者从本机 FalCode 环境手工复制到 lib/，不随仓库提交
+lib/
+bin/
+obj/
+*.user
+.vs/
