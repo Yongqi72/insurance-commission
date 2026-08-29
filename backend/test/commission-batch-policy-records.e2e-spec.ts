@@ -431,12 +431,12 @@ describe('commission-batch 保单记录查询 + 回填 (e2e)', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(201);
-      expect((capturedInit?.headers as Record<string, string>)['X-Fill-Token']).toBe(
-        'e2e-secret-token',
-      );
-      expect((capturedInit?.headers as Record<string, string>)['Content-Type']).toBe(
-        'application/json',
-      );
+      expect(
+        (capturedInit?.headers as Record<string, string>)['X-Fill-Token'],
+      ).toBe('e2e-secret-token');
+      expect(
+        (capturedInit?.headers as Record<string, string>)['Content-Type'],
+      ).toBe('application/json');
 
       // 未配置密钥时不携带该请求头，其余行为不变（换新批次保证有未匹配记录可触发第三方调用）
       delete process.env.SALES_FILL_API_TOKEN;
