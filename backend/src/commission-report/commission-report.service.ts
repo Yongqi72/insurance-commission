@@ -156,13 +156,20 @@ export class CommissionReportService {
     // 提成数字本身不落库，落库的只有「文件归档位置 + 导出时间」。
     const ossKey = buildDatedOssKey('export', fileName);
     await this.ossClient.upload(buffer, ossKey);
-    await this.exportRecordRepository.save(
-      this.exportRecordRepository.create({
-        batchId,
-        ossKey,
-        exportedAt: new Date(),
-      }),
-    );
+    try {
+      await this.exportRecordRepository.save(
+        this.exportRecordRepository.create({
+          batchId,
+          ossKey,
+          exportedAt: new Date(),
+        }),
+      );
+    } catch (error) {
+      // 落库失败时清理刚上传的对象，避免 OSS 留下无对应 export_record 的孤儿文件；
+      // 清理为尽力而为（OssClient.delete 内部已吞掉清理失败），原始错误照常向上抛出。
+      await this.ossClient.delete(ossKey);
+      throw error;
+    }
 
     return { buffer, fileName };
   }

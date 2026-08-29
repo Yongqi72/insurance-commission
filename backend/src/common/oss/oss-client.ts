@@ -74,6 +74,24 @@ export class OssClient {
   }
 
   /**
+   * 删除已上传的对象（补偿用途：如 upload() 成功后落库失败，调用方可据此清理孤儿对象，
+   * 避免 OSS 里留下无对应业务记录的文件）。删除失败仅记录日志、不抛错——调用方通常处在
+   * 自身错误处理路径中，不应再让清理动作本身的失败掩盖原始错误或中断响应。
+   * @param key 待删除的对象 key
+   */
+  async delete(key: string): Promise<void> {
+    const client = this.getClient();
+    try {
+      await client.delete(key);
+    } catch (error) {
+      this.logger.error(
+        `OSS 删除孤儿对象失败：key=${key}, error=${(error as Error).message}`,
+        (error as Error).stack,
+      );
+    }
+  }
+
+  /**
    * 为已归档的对象生成可下载的签名 URL。
    * @param ossKey 对象 key（upload 返回值 / 落库的 oss_key）
    * @param expiresSeconds 签名有效期（秒），默认 1 小时

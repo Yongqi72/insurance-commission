@@ -68,15 +68,18 @@ describe('commission-report 提成汇总与导出 (e2e)', () => {
   let token: string;
   let ossUploadMock: jest.Mock;
   let ossGetSignedUrlMock: jest.Mock;
+  let ossDeleteMock: jest.Mock;
 
   beforeAll(async () => {
     ossUploadMock = jest.fn().mockResolvedValue('mock-oss-key');
     ossGetSignedUrlMock = jest
       .fn()
       .mockResolvedValue('https://mock-oss.example.com/signed-url');
+    ossDeleteMock = jest.fn().mockResolvedValue(undefined);
     const mockOssClient = {
       upload: ossUploadMock,
       getSignedUrl: ossGetSignedUrlMock,
+      delete: ossDeleteMock,
     };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -119,6 +122,7 @@ describe('commission-report 提成汇总与导出 (e2e)', () => {
   beforeEach(async () => {
     ossUploadMock.mockClear();
     ossGetSignedUrlMock.mockClear();
+    ossDeleteMock.mockClear();
     // 阶梯规则表为全局表（不按批次隔离），各用例互相独立地定义自己需要的档位组合，
     // 每个用例开始前先清空，避免上一个用例遗留的档位与本用例新增档位叠加成
     // 意料之外的重叠/不完整状态（同 commission-tier.e2e-spec.ts 的隔离写法）。
@@ -355,6 +359,34 @@ describe('commission-report 提成汇总与导出 (e2e)', () => {
         /^bill\/export\/\d{4}\/\d{6}\/\d{8}\//,
       );
       expect(await exportRecordRepository.count()).toBe(beforeCount + 1);
+    });
+
+    it('exportRecordRepository.save() 失败时清理刚上传的孤儿 OSS 对象，且原始错误仍向上抛出', async () => {
+      const batchId = await createBatch('提成导出测试批次-孤儿对象清理');
+      await createTier(0, 50, 2);
+      await createTier(50, null, 2.2);
+      await createRecords(batchId, 10, {
+        salesName: '张三',
+        salesFillSource: 'system',
+      });
+
+      const saveError = new Error('模拟落库失败');
+      const saveSpy = jest
+        .spyOn(exportRecordRepository, 'save')
+        .mockRejectedValueOnce(saveError);
+
+      const res = await authed(
+        'get',
+        `/api/commission-batches/${batchId}/commission-report`,
+      );
+
+      expect(res.status).toBe(500);
+      expect(ossUploadMock).toHaveBeenCalledTimes(1);
+      const uploadedKey = ossUploadMock.mock.calls[0][1] as string;
+      expect(ossDeleteMock).toHaveBeenCalledTimes(1);
+      expect(ossDeleteMock.mock.calls[0][0]).toBe(uploadedKey);
+
+      saveSpy.mockRestore();
     });
 
     it('AC-16：未匹配记录明细行仍展示（销售列留空），销售汇总表为空表+合计0', async () => {
