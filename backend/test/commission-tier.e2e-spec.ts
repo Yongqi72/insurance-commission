@@ -2,7 +2,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import * as request from 'supertest';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { AppModule } from '../src/app.module';
 import { CommissionTierChangeLog } from '../src/commission-tier/commission-tier-change-log.entity';
 import { CommissionTier } from '../src/commission-tier/commission-tier.entity';
@@ -405,6 +405,46 @@ describe('commission-tier 阶梯规则管理 (e2e)', () => {
 
       expect(res.status).toBe(404);
       expect(res.body.code).toBe(1004);
+    });
+
+    it('写变更日志步骤失败时整个事务回滚，档位删除也不生效（失败注入验证原子性）', async () => {
+      const createRes = await authed('post', '/api/commission-tiers').send({
+        lowerBound: 0,
+        upperBound: 50,
+        unitPrice: 2,
+      });
+      const id = createRes.body.data.id as string;
+
+      const saveError = new Error('模拟写变更日志失败');
+      // 先捕获原始实现引用，mock 内部对非目标实体委托回原始实现，避免 mock 替换后
+      // 通过 EntityManager.prototype.save 拿到的是 mock 自身导致无限递归。
+      const originalSave = EntityManager.prototype.save as (
+        ...args: unknown[]
+      ) => Promise<unknown>;
+      const saveSpy = jest
+        .spyOn(EntityManager.prototype, 'save')
+        .mockImplementation(function (this: EntityManager, ...args: unknown[]) {
+          const target = args[0];
+          if (target instanceof CommissionTierChangeLog) {
+            return Promise.reject(saveError);
+          }
+          return originalSave.apply(this, args);
+        });
+
+      const res = await authed('delete', `/api/commission-tiers/${id}`);
+      expect(res.status).toBe(500);
+
+      saveSpy.mockRestore();
+
+      // 档位应仍然存在（DELETE 语句随事务回滚未生效），且没有产生任何变更日志
+      const listRes = await authed('get', '/api/commission-tiers');
+      expect(listRes.body.data.tiers).toHaveLength(1);
+      expect(listRes.body.data.tiers[0].id).toBe(id);
+
+      // 只有该档位创建时的 create 日志，删除事务整体回滚，没有额外产生 delete 日志
+      const logsRes = await authed('get', '/api/commission-tiers/change-logs');
+      expect(logsRes.body.data).toHaveLength(1);
+      expect(logsRes.body.data[0].operationType).toBe('create');
     });
   });
 
