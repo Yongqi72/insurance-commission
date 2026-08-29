@@ -37,4 +37,28 @@
 
 - 正式部署：同一套发布文件挂到现成外网网站做 IIS 子应用（步骤见 `sales-fill-api/README.md`），后端 `.env` 的 `SALES_FILL_API_URL` 换成正式域名
 - 完整业务流程（导入→回填）依赖 OSS 凭证，留待正式环境验证
-- PR #16 独立审查中；测试数据仅存在于本地开发库 `backend/data/dev.sqlite`
+- PR #16 已合并（2026-08-29）；测试数据仅存在于本地开发库 `backend/data/dev.sqlite`
+
+---
+
+## 补充留痕 · service 模式（服务器无法直连场景）· 2026-08-29
+
+### 背景
+
+服务器无法直连内部库，接口程序增加 `DbAccessMode` 开关：`direct`（本机直连）/
+`service`（经 Fcl.WSOP 的 `sqldbservice.asmx` 中转，用法与 FalCode `Main.vb` 一致）。
+
+### 验证结果
+
+| # | 测试 | 结果 |
+|---|------|------|
+| 1 | 直调诊断：`sqldbop(服务地址)` 构造 + `Init(用户, 加密密码, 序列号)` + `GetTable` | ✅ 全通（抓到并修复缺失依赖 `Fcl.DataWork.dll`，缺失时接口 500） |
+| 2 | 接口 POST（service 模式）+ 服务库真实单号 | ✅ 200 `{"80003":"操作"}`，中文正常 |
+| 3 | 本机 `falservice` 指向库与业务库对比 | ⚠️ 本机服务连的是演示库（`m_job` 仅 803 行），查不到业务单号——属本机服务配置问题，非接口问题 |
+
+### 结论与前置确认
+
+- 接口代码在两种模式下均验证通过；正式服务器 `falservice` 指向业务库已由任务发起人确认（2026-08-29），正式部署后可直接查到真实数据
+- 发布产物清单补充 `Fcl.DataWork.dll`（service 模式运行时必需），已同步 `lib/`、`publish/bin/`、README
+- 相关提交：service 模式与开关（`ba5f57f`）、配置值 Trim 容错（`a188c86`）、依赖清单（`f164e3e`）
+
