@@ -30,14 +30,19 @@
    - `Fcl.WSOP.lic`（授权文件，部署时要放进站点 `bin/`）
 2. VS2015 打开 `SalesFillApi.sln`，编译应通过（生成 `bin/SalesFillApi.dll`）
 
-## 部署前必改的两个占位项
+## 部署前必改的占位项
 
 | 位置 | 占位内容 | 替换为 |
 |---|---|---|
 | `Web.config` → `FillApiToken` | `change-me-to-a-random-token` | 高强度随机串（与后端 `SALES_FILL_API_TOKEN` 环境变量同值） |
-| `Web.config` → `InternalDbConnectionString` | `127.0.0.1/change-me` | 内部 SQL Server 真实地址、账号（仅 SELECT 权限）、库名 |
+| `Web.config` → `DbAccessMode` | `direct` | 服务器部署改为 `service`（本机直连开发保持 `direct`） |
+| direct 模式：`InternalDbConnectionString` | `127.0.0.1/change-me` | 内部 SQL Server 真实地址、账号（仅 SELECT 权限）、库名 |
+| service 模式：`SqlDbServiceUrl` / `SqlDbServiceUser` / `SqlDbServicePassword` / `SqlDbServiceSerial` | `change-me` | 环境的真实服务地址与凭据（与 FalCode `sqldbop(服务地址)` + `Init(用户, 加密密码, 序列号)` 用法一致） |
 
 > 占位密钥带 `change-me` 前缀时接口会一律返回 401，属预期防呆行为。
+>
+> 数据访问双模式：本机开发直连内部库（`direct`）；服务器无法直连时切换 `service`，
+> 经 Fcl.WSOP 的 `sqldbservice.asmx` 中转查库，查询逻辑与返回契约不变。
 >
 > 查询 SQL 已由任务发起人提供并落地到 `BuildSalesSql`：按 `job_no` 从 `m_job` 查出
 > `sales` 编码，经 `d_user` 翻译为销售姓名（结果列 `job_no`/`sales_name`）。
