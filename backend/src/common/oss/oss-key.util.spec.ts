@@ -1,6 +1,10 @@
 import { buildDatedOssKey } from './oss-key.util';
 
-function buildRegex(prefix: string, timestamp: number, fileName: string): RegExp {
+function buildRegex(
+  prefix: string,
+  timestamp: number,
+  fileName: string,
+): RegExp {
   const escapedFileName = fileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`^${prefix}/${timestamp}-[0-9a-f]{8}-${escapedFileName}$`);
 }
@@ -44,7 +48,11 @@ describe('buildDatedOssKey', () => {
   it('category=export 时写入 export 段', () => {
     const now = new Date(2026, 5, 15);
     expect(buildDatedOssKey('export', '报表.xlsx', now)).toMatch(
-      buildRegex('bill/export/2026/202606/20260615', now.getTime(), '报表.xlsx'),
+      buildRegex(
+        'bill/export/2026/202606/20260615',
+        now.getTime(),
+        '报表.xlsx',
+      ),
     );
   });
 
