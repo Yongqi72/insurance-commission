@@ -1,0 +1,92 @@
+{
+  "schema": "develop-review-profile/v1",
+  "task_id": "ic-b-006",
+  "task_type": "dev-backend",
+  "layers": [
+    "backend"
+  ],
+  "source": "",
+  "effective_risk": "standard",
+  "changed_files": [
+    "backend/package-lock.json",
+    "backend/package.json",
+    "backend/src/commission-batch/ensure-batch-exists.util.ts",
+    "backend/src/commission-batch/import.controller.ts",
+    "backend/src/commission-batch/import.service.ts",
+    "backend/src/commission-batch/policy-record-query.service.ts",
+    "backend/src/commission-report/commission-report.service.ts",
+    "backend/src/commission-tier/commission-tier.controller.ts",
+    "backend/src/common/utils/extract-operator.util.ts",
+    "backend/src/policy-record/policy-record.controller.ts"
+  ],
+  "input_fingerprint": "9c9376ae464e3c55e3741759d8329a06c264aa7a0c00c34378fff4876329b87f",
+  "signals": {
+    "metadata_incomplete": true,
+    "unknown_layer": false,
+    "surface": "production",
+    "frontend": false,
+    "backend": true,
+    "ui": false,
+    "input": true,
+    "query": true,
+    "concurrency": true,
+    "logging": true,
+    "enforcement": true,
+    "sensitive": false
+  },
+  "selected_dimensions": [
+    {
+      "id": "contract",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "scope-and-secrets",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "test-evidence",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "comment-hygiene",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "standards",
+      "reason": "fail-safe: task metadata is incomplete"
+    },
+    {
+      "id": "enforcement",
+      "reason": "fail-safe: task metadata is incomplete"
+    },
+    {
+      "id": "design-fidelity",
+      "reason": "fail-safe: frontend applicability is unresolved"
+    },
+    {
+      "id": "input-provenance",
+      "reason": "fail-safe: backend input applicability is unresolved"
+    },
+    {
+      "id": "query-performance",
+      "reason": "fail-safe: backend query applicability is unresolved"
+    },
+    {
+      "id": "concurrency",
+      "reason": "fail-safe: backend concurrency applicability is unresolved"
+    },
+    {
+      "id": "logging-privacy",
+      "reason": "fail-safe: task metadata is incomplete"
+    },
+    {
+      "id": "maintainability",
+      "reason": "fail-safe: changed surface is unresolved"
+    },
+    {
+      "id": "sensitive-boundaries",
+      "reason": "fail-safe: task metadata is incomplete"
+    }
+  ],
+  "omitted_dimensions": []
+}

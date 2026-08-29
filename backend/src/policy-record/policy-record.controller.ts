@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { PageResultDto } from '../common/dto/page-result.dto';
+import { extractOperator } from '../common/utils/extract-operator.util';
 import { QueryPolicyRecordDto } from './dto/query-policy-record.dto';
 import { UpdateSalesNameDto } from './dto/update-sales-name.dto';
 import { PolicyRecord } from './policy-record.entity';
@@ -43,18 +44,12 @@ export class PolicyRecordController {
     return this.policyRecordService.updateSalesName(
       id,
       dto,
-      this.extractOperator(request),
+      extractOperator(request),
     );
   }
 
   @Get(':id/sales-fill-logs')
   findSalesFillLogs(@Param('id') id: string): Promise<SalesFillLogItemDto[]> {
     return this.policyRecordService.findSalesFillLogs(id);
-  }
-
-  /** 操作人取自当前登录管理员（JwtAuthGuard 校验通过后挂载的 request.user，见该 Guard 注释）。 */
-  private extractOperator(request: Request): string {
-    const user = (request as Request & { user?: { username?: string } }).user;
-    return user?.username ?? 'unknown';
   }
 }

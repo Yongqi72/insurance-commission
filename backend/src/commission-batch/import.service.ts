@@ -11,11 +11,12 @@ import { OssClient } from '../common/oss/oss-client';
 import { buildDatedOssKey } from '../common/oss/oss-key.util';
 import { PolicyRecord } from '../policy-record/policy-record.entity';
 import { CommissionBatch } from './commission-batch.entity';
+import { ensureBatchExists } from './ensure-batch-exists.util';
 import { ImportFile } from './import-file.entity';
 
 /**
- * multer 内存存储产出的上传文件最小形状（本仓未安装 `@types/multer`，见 import.controller.ts
- * 顶部注释；仅声明本包实际用到的字段，不依赖全局 `Express.Multer.File` 类型）。
+ * multer 内存存储产出的上传文件最小形状：仅声明本包实际用到的字段，
+ * 不依赖完整的 `Express.Multer.File` 类型。
  */
 export interface UploadedExcelFile {
   originalname: string;
@@ -65,7 +66,7 @@ export class ImportService {
     batchId: string,
     file: UploadedExcelFile | undefined,
   ): Promise<ImportExcelResultDto> {
-    await this.ensureBatchExists(batchId);
+    await ensureBatchExists(this.commissionBatchRepository, batchId);
 
     if (!file) {
       throw new BadRequestException('文件不能为空');
@@ -143,7 +144,7 @@ export class ImportService {
   }
 
   async listImports(batchId: string): Promise<ImportFileListItemDto[]> {
-    await this.ensureBatchExists(batchId);
+    await ensureBatchExists(this.commissionBatchRepository, batchId);
 
     const imports = await this.importFileRepository.find({
       where: { batchId },
@@ -172,14 +173,5 @@ export class ImportService {
       await manager.delete(PolicyRecord, { importFileId: importId });
       await manager.delete(ImportFile, { id: importId });
     });
-  }
-
-  private async ensureBatchExists(batchId: string): Promise<void> {
-    const batch = await this.commissionBatchRepository.findOne({
-      where: { id: batchId },
-    });
-    if (!batch) {
-      throw new NotFoundException('批次不存在');
-    }
   }
 }

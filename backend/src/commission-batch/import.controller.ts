@@ -29,8 +29,6 @@ const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
  * 截获（BE-LAYER-02 已核对全局无同路径冲突）。
  * 未标注 @Public()：走全局鉴权 Guard 默认受保护路径（SH-AUTH-01）。
  * 只做接收转发，业务逻辑全部在 ImportService（BE-LAYER-01）。
- * 本仓未安装 `@types/multer`：`multer` 模块无声明文件，但 tsconfig `noImplicitAny: false`
- * 下该导入按隐式 any 处理，不触发 TS7016 编译错误，可直接 `import { memoryStorage }`。
  */
 @Controller('api/commission-batches/:batchId/imports')
 export class ImportController {

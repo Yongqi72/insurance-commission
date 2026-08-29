@@ -1,9 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -14,6 +9,7 @@ import {
 import { OssClient } from '../common/oss/oss-client';
 import { buildDatedOssKey } from '../common/oss/oss-key.util';
 import { CommissionBatch } from '../commission-batch/commission-batch.entity';
+import { ensureBatchExists } from '../commission-batch/ensure-batch-exists.util';
 import { CommissionTier } from '../commission-tier/commission-tier.entity';
 import { ruleComplete } from '../commission-tier/rule-complete.util';
 import { PolicyRecord } from '../policy-record/policy-record.entity';
@@ -83,7 +79,7 @@ export class CommissionReportService {
   ) {}
 
   async getSummary(batchId: string): Promise<CommissionSummaryResultDto> {
-    await this.ensureBatchExists(batchId);
+    await ensureBatchExists(this.commissionBatchRepository, batchId);
 
     const tiers = await this.loadTiers();
     if (!ruleComplete(tiers)) {
@@ -105,7 +101,10 @@ export class CommissionReportService {
   }
 
   async exportReport(batchId: string): Promise<CommissionReportFileDto> {
-    const batch = await this.ensureBatchExists(batchId);
+    const batch = await ensureBatchExists(
+      this.commissionBatchRepository,
+      batchId,
+    );
 
     const tiers = await this.loadTiers();
     if (!ruleComplete(tiers)) {
@@ -173,7 +172,7 @@ export class CommissionReportService {
   }
 
   async listExports(batchId: string): Promise<ExportListItemDto[]> {
-    await this.ensureBatchExists(batchId);
+    await ensureBatchExists(this.commissionBatchRepository, batchId);
 
     const exportRecords = await this.exportRecordRepository.find({
       where: { batchId },
@@ -187,16 +186,6 @@ export class CommissionReportService {
         downloadUrl: await this.ossClient.getSignedUrl(record.ossKey),
       })),
     );
-  }
-
-  private async ensureBatchExists(batchId: string): Promise<CommissionBatch> {
-    const batch = await this.commissionBatchRepository.findOne({
-      where: { id: batchId },
-    });
-    if (!batch) {
-      throw new NotFoundException('批次不存在');
-    }
-    return batch;
   }
 
   private async loadTiers(): Promise<CommissionTier[]> {
