@@ -24,12 +24,13 @@
 
 ## 开发准备（一次性）
 
-1. 从 `F:\Qoder\Projects\FalCode\Fal\bin\Debug` 复制以下文件到本项目 `lib/` 目录（`lib/` 已在 .gitignore，不入库）：
-   - `Fcl.WSOP.dll`（数据访问组件）
-   - `Fcl.DataAccess.dll`（`SqlBuilder` 所在程序集，编译必需）
-   - `Fcl.WSOP.lic`（授权文件，部署时要放进站点 `bin/`）
-   - `Fcl.DataWork.dll`（service 模式运行时必需，可从 `F:\FalService\bin` 复制；direct 模式不需要）
-2. VS2015 打开 `SalesFillApi.sln`，编译应通过（生成 `bin/SalesFillApi.dll`）
+1. 从 `D:\Projects\Tools` 复制以下配套版本组件到本项目 `lib/` 目录（`lib/` 已在 .gitignore，不入库）：
+   - `Fcl.WSOP.dll`（8.2.1.0，数据访问组件）
+   - `Fcl.DataAccess.dll`（8.3.0.0，`SqlBuilder` 所在程序集，编译必需）
+   - `Fcl.DataWork.dll`（8.3.2.0，service 模式运行时必需）
+   - 注意：不要从 FalCode 的 `Fal\bin\Debug` 取，版本不配套会导致服务器运行异常
+2. `Fcl.WSOP.lic`（授权文件，部署时要放进站点 `bin/`）从 `F:\Qoder\Projects\FalCode\Fal\bin\Debug` 复制
+3. VS2015 打开 `SalesFillApi.sln`，编译应通过（生成 `bin/SalesFillApi.dll`）
 
 ## 部署前必改的占位项
 
