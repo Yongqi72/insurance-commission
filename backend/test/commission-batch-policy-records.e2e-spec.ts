@@ -49,6 +49,7 @@ describe('commission-batch 保单记录查询 + 回填 (e2e)', () => {
 
   afterEach(() => {
     delete process.env.SALES_FILL_API_URL;
+    delete process.env.SALES_FILL_API_TOKEN;
     fetchSpy?.mockRestore();
   });
 
@@ -405,6 +406,51 @@ describe('commission-batch 保单记录查询 + 回填 (e2e)', () => {
       expect(reloadedMatched!.salesFillSource).toBe('system');
       expect(reloadedUnmatched!.salesName).toBeNull();
       expect(reloadedUnmatched!.salesFillSource).toBe('unmatched');
+    });
+
+    it('配置 SALES_FILL_API_TOKEN 时第三方调用携带 X-Fill-Token 请求头，未配置时不携带', async () => {
+      const batchId = await createBatch('回填-密钥透传批次');
+      await createRecord(batchId, { workOrderNo: 'WO-TOKEN' });
+
+      process.env.SALES_FILL_API_URL = 'http://mock-sales-fill.local/lookup';
+      process.env.SALES_FILL_API_TOKEN = 'e2e-secret-token';
+      let capturedInit: RequestInit | undefined;
+      fetchSpy = jest
+        .spyOn(global, 'fetch')
+        .mockImplementation(async (_url: any, init?: any) => {
+          capturedInit = init;
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({ 'WO-TOKEN': '张三' }),
+          } as Response;
+        });
+
+      const res = await request(app.getHttpServer())
+        .post(`/api/commission-batches/${batchId}/policy-records/fill`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(201);
+      expect((capturedInit?.headers as Record<string, string>)['X-Fill-Token']).toBe(
+        'e2e-secret-token',
+      );
+      expect((capturedInit?.headers as Record<string, string>)['Content-Type']).toBe(
+        'application/json',
+      );
+
+      // 未配置密钥时不携带该请求头，其余行为不变（换新批次保证有未匹配记录可触发第三方调用）
+      delete process.env.SALES_FILL_API_TOKEN;
+      const batchId2 = await createBatch('回填-未配密钥批次');
+      await createRecord(batchId2, { workOrderNo: 'WO-NO-TOKEN' });
+      capturedInit = undefined;
+      const res2 = await request(app.getHttpServer())
+        .post(`/api/commission-batches/${batchId2}/policy-records/fill`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res2.status).toBe(201);
+      expect(
+        (capturedInit?.headers as Record<string, string>)['X-Fill-Token'],
+      ).toBeUndefined();
     });
 
     it('回填等待第三方接口响应期间该记录被并发删除 → 该条按未命中处理，其余记录正常回填，不抛异常', async () => {
