@@ -11,6 +11,7 @@
       :status="status"
       :error-message="errorMessage"
       empty-text="该记录暂无人工修改记录"
+      empty-id="empty-record-history"
       @retry="loadLogs"
     >
       <div id="record-history-body" class="policy-record-history-drawer__body">

@@ -2,7 +2,13 @@
   <div class="policy-record-list">
     <h2 class="policy-record-list__title">保单记录</h2>
 
-    <DataStateWrapper :status="status" :error-message="errorMessage" empty-text="暂无保单记录" @retry="loadData">
+    <DataStateWrapper
+      :status="status"
+      :error-message="errorMessage"
+      empty-text="暂无保单记录"
+      empty-id="empty-record-list"
+      @retry="loadData"
+    >
       <div class="policy-record-list__table-wrapper">
         <el-table :data="list" border stripe>
           <el-table-column prop="customerName" label="客户名称" min-width="140" />

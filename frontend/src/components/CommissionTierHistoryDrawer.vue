@@ -1,6 +1,12 @@
 <template>
   <el-drawer id="drawer-rule-history" v-model="visible" title="提成阶梯规则 · 变更历史" direction="rtl" :size="drawerSize" @open="loadLogs">
-    <DataStateWrapper :status="status" :error-message="errorMessage" empty-text="暂无变更记录" @retry="loadLogs">
+    <DataStateWrapper
+      :status="status"
+      :error-message="errorMessage"
+      empty-text="暂无变更记录"
+      empty-id="empty-rule-history"
+      @retry="loadLogs"
+    >
       <div id="rule-history-body" class="commission-tier-history-drawer__body">
         <div v-for="(log, index) in logs" :key="index" class="commission-tier-history-drawer__item">
           <div class="commission-tier-history-drawer__change">{{ describeLog(log) }}</div>

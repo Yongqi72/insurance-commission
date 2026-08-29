@@ -18,7 +18,13 @@
       :closable="false"
     />
 
-    <DataStateWrapper :status="status" :error-message="errorMessage" empty-text="暂未配置提成规则" @retry="loadTiers">
+    <DataStateWrapper
+      :status="status"
+      :error-message="errorMessage"
+      empty-text="暂未配置提成规则"
+      empty-id="empty-rule-list"
+      @retry="loadTiers"
+    >
       <div class="commission-tier-view__table-wrapper">
         <el-table id="table-rule-list" :data="tiers" border stripe row-key="id">
           <el-table-column label="下限（票）" width="120">

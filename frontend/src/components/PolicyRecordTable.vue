@@ -46,7 +46,7 @@
           @row-click="handleRowClick"
           @expand-change="handleExpandChange"
         >
-          <el-table-column type="expand">
+          <el-table-column type="expand" width="1" class-name="policy-record-table__expand-column">
             <template #default="{ row }: { row: PolicyRecord }">
               <div class="policy-record-table__expand-panel">
                 <div class="policy-record-table__field">
@@ -382,12 +382,25 @@ defineExpose({ refresh: loadData })
     margin-top: $space-md;
   }
 
+  // FE-EP-04：禁止直接用 style/class 改 Element Plus 内部结构，改用外层选择器 + :deep()。
+  // prototype.html 表头固定 9 列，无独立展开列——row-click 本身已能触发展开/收起
+  // （见 handleRowClick），此处只是把 Element Plus 强制要求的 type="expand" 列在视觉上
+  // 收窄到不可见，不影响功能，只对齐视觉呈现。
+  :deep(.policy-record-table__expand-column) {
+    padding: 0;
+
+    .cell {
+      display: none;
+    }
+  }
+
   &__expand-panel {
     display: flex;
     align-items: flex-end;
     flex-wrap: wrap;
     gap: $space-md;
     padding: $space-sm;
+    background-color: $bg-hover;
   }
 
   &__field {

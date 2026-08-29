@@ -5,7 +5,13 @@
       <el-button id="btn-new-batch" type="primary" @click="openCreateDialog">+ 新建批次</el-button>
     </div>
 
-    <DataStateWrapper :status="status" :error-message="errorMessage" empty-text="暂无批次，请新建" @retry="loadData">
+    <DataStateWrapper
+      :status="status"
+      :error-message="errorMessage"
+      empty-text="暂无批次，请新建"
+      empty-id="empty-batch-list"
+      @retry="loadData"
+    >
       <div class="batch-list__table-wrapper">
         <el-table id="table-batch-list" :data="list" border stripe row-key="id" @row-click="handleRowClick">
           <el-table-column prop="name" label="批次名称" min-width="200" />

@@ -14,7 +14,12 @@
       </template>
     </el-result>
 
-    <el-empty v-else-if="status === 'empty'" :description="emptyText" class="data-state-wrapper__empty" />
+    <el-empty
+      v-else-if="status === 'empty'"
+      :id="emptyId"
+      :description="emptyText"
+      class="data-state-wrapper__empty"
+    />
 
     <slot v-else />
   </div>
@@ -31,10 +36,13 @@ withDefaults(
     status: 'loading' | 'empty' | 'error' | 'success'
     errorMessage?: string
     emptyText?: string
+    /** 透传给空态 el-empty 的具名锚点 id（prototype-map.md 登记的 #empty-xxx 系列），不传则不设置 id。 */
+    emptyId?: string
   }>(),
   {
     errorMessage: '',
     emptyText: '暂无数据',
+    emptyId: undefined,
   },
 )
 
