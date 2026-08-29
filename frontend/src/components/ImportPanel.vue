@@ -76,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import DataStateWrapper from '@/components/DataStateWrapper.vue'
 import {
@@ -86,6 +86,7 @@ import {
   type ImportExcelResult,
   type ImportRecord,
 } from '@/api/commission-batch'
+import { useResponsiveDialogWidth } from '@/composables/useResponsiveDialogWidth'
 import { formatDateTime } from '@/utils/format'
 
 type Status = 'loading' | 'empty' | 'error' | 'success'
@@ -98,14 +99,7 @@ const props = defineProps<{ batchId: string }>()
  */
 const emit = defineEmits<{ 'records-changed': [] }>()
 
-// design.md §六 响应式断点：Mobile < 768px 时弹窗改 95vw（FE-RESPONSIVE-01）
-const MOBILE_BREAKPOINT_QUERY = '(max-width: 768px)'
-const dialogWidth = ref('480px')
-let mobileMediaQuery: ReturnType<typeof window.matchMedia> | undefined
-
-function syncDialogWidth() {
-  dialogWidth.value = mobileMediaQuery?.matches ? '95vw' : '480px'
-}
+const dialogWidth = useResponsiveDialogWidth('480px')
 
 const status = ref<Status>('loading')
 const errorMessage = ref('')
@@ -113,10 +107,8 @@ const list = ref<ImportRecord[]>([])
 
 const importDialogVisible = ref(false)
 const importing = ref(false)
-// eslint-disable-next-line no-undef -- File/HTMLInputElement 为浏览器内置全局类型，eslint.config.js globals 未登记
 const selectedFile = ref<File | null>(null)
 const importResult = ref<ImportExcelResult | null>(null)
-// eslint-disable-next-line no-undef
 const fileInputRef = ref<HTMLInputElement>()
 
 async function loadImports() {
@@ -144,9 +136,7 @@ function handleImportDialogClosed() {
   loadImports()
 }
 
-// eslint-disable-next-line no-undef -- Event/HTMLInputElement 为浏览器内置全局类型，eslint.config.js globals 未登记
 function handleFileChange(event: Event) {
-  // eslint-disable-next-line no-undef
   const target = event.target as HTMLInputElement
   selectedFile.value = target.files?.[0] ?? null
   importResult.value = null
@@ -204,13 +194,6 @@ watch(
 
 onMounted(() => {
   loadImports()
-  mobileMediaQuery = window.matchMedia(MOBILE_BREAKPOINT_QUERY)
-  syncDialogWidth()
-  mobileMediaQuery.addEventListener('change', syncDialogWidth)
-})
-
-onBeforeUnmount(() => {
-  mobileMediaQuery?.removeEventListener('change', syncDialogWidth)
 })
 </script>
 

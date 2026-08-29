@@ -74,25 +74,19 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import DataStateWrapper from '@/components/DataStateWrapper.vue'
 import { createBatch, fetchBatchPage, type CommissionBatch, type CommissionBatchStatus } from '@/api/commission-batch'
+import { useResponsiveDialogWidth } from '@/composables/useResponsiveDialogWidth'
 import { formatDateTime } from '@/utils/format'
 
 type Status = 'loading' | 'empty' | 'error' | 'success'
 
 const router = useRouter()
 
-// design.md §六 响应式断点：Mobile < 768px 时弹窗改 95vw（FE-RESPONSIVE-01）
-const MOBILE_BREAKPOINT_QUERY = '(max-width: 768px)'
-const dialogWidth = ref('480px')
-let mobileMediaQuery: ReturnType<typeof window.matchMedia> | undefined
-
-function syncDialogWidth() {
-  dialogWidth.value = mobileMediaQuery?.matches ? '95vw' : '480px'
-}
+const dialogWidth = useResponsiveDialogWidth('480px')
 
 const status = ref<Status>('loading')
 const errorMessage = ref('')
@@ -165,13 +159,6 @@ async function handleSubmit() {
 
 onMounted(() => {
   loadData()
-  mobileMediaQuery = window.matchMedia(MOBILE_BREAKPOINT_QUERY)
-  syncDialogWidth()
-  mobileMediaQuery.addEventListener('change', syncDialogWidth)
-})
-
-onBeforeUnmount(() => {
-  mobileMediaQuery?.removeEventListener('change', syncDialogWidth)
 })
 </script>
 
