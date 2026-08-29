@@ -200,6 +200,27 @@ Public Class SalesFillHandler
     End Sub
 
     Private Sub LogError(ByVal lsMessage As String, ByVal ex As Exception)
+        ' 事件日志依赖源注册与权限，部署环境常常写不进（异常会被静默吞掉，排错无线索）；
+        ' 故主通道改为站点内日志文件 App_Data/salesfill-err.log（App_Data 写不进时退到站点根目录），事件日志仅作尽力而为的副通道
+        Dim lsText As String = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " " + lsMessage + "：" + ex.ToString() + vbCrLf
+        Try
+            Dim lsDir As String = System.Web.Hosting.HostingEnvironment.MapPath("~/App_Data")
+            If Not String.IsNullOrEmpty(lsDir) Then
+                If Not IO.Directory.Exists(lsDir) Then
+                    IO.Directory.CreateDirectory(lsDir)
+                End If
+                IO.File.AppendAllText(IO.Path.Combine(lsDir, "salesfill-err.log"), lsText)
+            End If
+        Catch
+            Try
+                Dim lsRoot As String = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath
+                If Not String.IsNullOrEmpty(lsRoot) Then
+                    IO.File.AppendAllText(IO.Path.Combine(lsRoot, "salesfill-err.log"), lsText)
+                End If
+            Catch
+                ' 日志写入失败不影响响应
+            End Try
+        End Try
         Try
             EventLog.WriteEntry("SalesFillApi", lsMessage + "：" + ex.ToString(), EventLogEntryType.Error)
         Catch

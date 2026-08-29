@@ -24,12 +24,13 @@
 
 ## 开发准备（一次性）
 
-1. 从 `F:\Qoder\Projects\FalCode\Fal\bin\Debug` 复制以下文件到本项目 `lib/` 目录（`lib/` 已在 .gitignore，不入库）：
-   - `Fcl.WSOP.dll`（数据访问组件）
-   - `Fcl.DataAccess.dll`（`SqlBuilder` 所在程序集，编译必需）
-   - `Fcl.WSOP.lic`（授权文件，部署时要放进站点 `bin/`）
-   - `Fcl.DataWork.dll`（service 模式运行时必需，可从 `F:\FalService\bin` 复制；direct 模式不需要）
-2. VS2015 打开 `SalesFillApi.sln`，编译应通过（生成 `bin/SalesFillApi.dll`）
+1. 从 `D:\Projects\Tools` 复制以下配套版本组件到本项目 `lib/` 目录（`lib/` 已在 .gitignore，不入库）：
+   - `Fcl.WSOP.dll`（8.2.1.0，数据访问组件）
+   - `Fcl.DataAccess.dll`（8.3.0.0，`SqlBuilder` 所在程序集，编译必需）
+   - `Fcl.DataWork.dll`（8.3.2.0，service 模式运行时必需）
+   - 注意：不要从 FalCode 的 `Fal\bin\Debug` 取，版本不配套会导致服务器运行异常
+2. `Fcl.WSOP.lic`（授权文件，部署时要放进站点 `bin/`）从 `F:\Qoder\Projects\FalCode\Fal\bin\Debug` 复制
+3. VS2015 打开 `SalesFillApi.sln`，编译应通过（生成 `bin/SalesFillApi.dll`）
 
 ## 部署前必改的占位项
 
@@ -44,6 +45,12 @@
 >
 > 数据访问双模式：本机开发直连内部库（`direct`）；服务器无法直连时切换 `service`，
 > 经 Fcl.WSOP 的 `sqldbservice.asmx` 中转查库，查询逻辑与返回契约不变。
+>
+> **service 模式两项按环境取值，不能跨机器照抄**：
+> - `SqlDbServiceSerial`（序列号）按机器绑定，须用**目标服务器** falservice 的序列号
+>   （拿本机的去服务器用会报"序列号验证失败"）；
+> - `SqlDbServiceUrl` 的端口须与目标服务器上 falservice 实际端口一致
+>   （站点不在 80 端口时须显式带端口，如 `http://127.0.0.1:8085/falservice/sqldbservice.asmx`）。
 >
 > 查询 SQL 已由任务发起人提供并落地到 `BuildSalesSql`：按 `job_no` 从 `m_job` 查出
 > `sales` 编码，经 `d_user` 翻译为销售姓名（结果列 `job_no`/`sales_name`）。

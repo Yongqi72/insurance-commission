@@ -62,3 +62,17 @@
 - 发布产物清单补充 `Fcl.DataWork.dll`（service 模式运行时必需），已同步 `lib/`、`publish/bin/`、README
 - 相关提交：service 模式与开关（`ba5f57f`）、配置值 Trim 容错（`a188c86`）、依赖清单（`f164e3e`）
 
+### 服务器部署联调（2026-08-29 当日完成）
+
+- 服务器子应用：`http://192.168.0.11:8085/salesfill/SalesFill.ashx`（物理路径 `D:\WCCS\SalesFill`）
+- 排查过程与修复：
+  1. 组件版本不配套 → 统一改从 `D:\Projects\Tools` 取（`f254d02`）
+  2. 服务器 IIS 把 400/401/500 的响应体替换成 IIS 默认错误页，误导排查 →
+     Web.config 加 `<httpErrors existingResponse="PassThrough"/>` 保留契约错误体（`5c542a0`）
+  3. 事件日志部署环境写不进导致异常被静默吞掉 → LogError 改落盘
+     `App_Data/salesfill-err.log`（`5c542a0`），服务器排错直接读该文件
+  4. `SqlDbServiceUrl` 默认 80 端口与服务器实际端口（8085）不符 → 配置显式带端口
+  5. `SqlDbServiceSerial` 序列号按机器绑定，本机序列号在服务器报"序列号验证失败" →
+     换服务器专属序列号后全通
+- 最终冒烟：GET→405、错误密钥→401、正确密钥+真实单号→200 返回真实姓名，三用例全过
+

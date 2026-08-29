@@ -41,6 +41,10 @@
       <HintPath>lib\Fcl.DataAccess.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Fcl.DataWork">
+      <HintPath>lib\Fcl.DataWork.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Fcl.WSOP">
       <HintPath>lib\Fcl.WSOP.dll</HintPath>
       <Private>True</Private>
