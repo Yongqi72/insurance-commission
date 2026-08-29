@@ -21,8 +21,17 @@ function escapeLikeKeyword(value: string): string {
   return value.replace(/[\\%_]/g, (char) => `${LIKE_ESCAPE_CHAR}${char}`);
 }
 
-/** 第三方回填接口调用超时阈值（TRD §接口：POST .../policy-records/fill，5s） */
-const FILL_TIMEOUT_MS = 5000;
+/**
+ * 第三方回填接口调用超时阈值。约定 SLA 是 5s，但 2026-08-29 全量测试实测发现该接口
+ * 命中真实数据时偶发（约一成概率）极慢——同一批工作单号原地重测两次均耗时
+ * 16~18s，换一批内容或稍后重试又恢复到 1~3s，怀疑是 service 模式经
+ * sqldbservice.asmx 中转时连接偶尔冷启动，或内部库侧偶发负载/锁等待，属于第三方
+ * 服务侧的间歇性问题，不是这批工作单号数量或内容本身导致的确定性规律。
+ * 用户明确要求本系统侧先兼容这种情况，不等第三方修复：放宽到留有安全余量的
+ * 30s（实测最慢 17.67s），避免真实命中的记录被我们自己的超时误判成"未匹配"这种
+ * 静默假阴性——错误地判成慢比错误地判成查不到的后果轻得多。
+ */
+const FILL_TIMEOUT_MS = 30000;
 
 export interface FillResultDto {
   total: number;
@@ -223,7 +232,7 @@ export class PolicyRecordQueryService {
   }
 
   /**
-   * 调用第三方回填接口：超时（5s）/网络异常/HTTP 非成功状态码/返回体非对象结构
+   * 调用第三方回填接口：超时（见 FILL_TIMEOUT_MS）/网络异常/HTTP 非成功状态码/返回体非对象结构
    * 一律返回 undefined（按未命中处理），异常经 Logger 记录具体原因，不裸吞（BE-LOG-01）。
    * apiToken 已配置时经请求头 X-Fill-Token 携带，与服务端校验密钥匹配；未配置则不携带，
    * 其余行为与无密钥场景完全一致。
