@@ -38,3 +38,12 @@ body {
   --el-color-primary-dark-2: #{$primary-dark};
   --el-border-radius-base: #{$radius-sm};
 }
+
+// FE-RESPONSIVE-03：移动端（<768px，design.md §六）输入框字号须 ≥16px，
+// 否则 iOS Safari 聚焦时会触发系统自动放大页面；全局一次性覆盖，避免逐组件补丁。
+@media (width <= 768px) {
+  .el-input__inner,
+  .el-textarea__inner {
+    font-size: $fs-body;
+  }
+}
