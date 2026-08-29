@@ -84,9 +84,7 @@ export async function listImports(id: string): Promise<ImportRecord[]> {
  * 上传 Excel 导入账单（TRD §接口：POST .../imports，满足 AC-03）。
  * multipart 字段名固定为 `file`，与后端 FileInterceptor('file') 约定一致。
  */
-// eslint-disable-next-line no-undef -- File/FormData 为浏览器内置全局类型，eslint.config.js globals 未登记，本文件首次引入
 export async function importExcel(id: string, file: File): Promise<ImportExcelResult> {
-  // eslint-disable-next-line no-undef
   const formData = new FormData()
   formData.append('file', file)
   const res = await request.post<ApiEnvelope<ImportExcelResult>>(`/api/commission-batches/${id}/imports`, formData)

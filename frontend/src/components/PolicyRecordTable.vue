@@ -210,15 +210,12 @@ function handleFilterChange() {
   loadData()
 }
 
-// eslint-disable-next-line no-undef -- setTimeout/clearTimeout 为浏览器内置全局函数，eslint.config.js globals 未登记
 let searchDebounceTimer: ReturnType<typeof setTimeout> | undefined
 
 function scheduleSearch() {
   if (searchDebounceTimer) {
-    // eslint-disable-next-line no-undef
     clearTimeout(searchDebounceTimer)
   }
-  // eslint-disable-next-line no-undef
   searchDebounceTimer = setTimeout(() => {
     page.value = 1
     resetExpandState()
@@ -232,7 +229,6 @@ function handleSearchInput() {
 
 function handleSearchClear() {
   if (searchDebounceTimer) {
-    // eslint-disable-next-line no-undef
     clearTimeout(searchDebounceTimer)
   }
   keyword.value = ''
@@ -322,7 +318,6 @@ onMounted(loadData)
 
 onBeforeUnmount(() => {
   if (searchDebounceTimer) {
-    // eslint-disable-next-line no-undef
     clearTimeout(searchDebounceTimer)
   }
 })
