@@ -28,6 +28,7 @@
    - `Fcl.WSOP.dll`（数据访问组件）
    - `Fcl.DataAccess.dll`（`SqlBuilder` 所在程序集，编译必需）
    - `Fcl.WSOP.lic`（授权文件，部署时要放进站点 `bin/`）
+   - `Fcl.DataWork.dll`（service 模式运行时必需，可从 `F:\FalService\bin` 复制；direct 模式不需要）
 2. VS2015 打开 `SalesFillApi.sln`，编译应通过（生成 `bin/SalesFillApi.dll`）
 
 ## 部署前必改的占位项
@@ -53,8 +54,8 @@
 1. 现有网站服务器需已安装 .NET Framework 4.0（及以上），且该服务器能连通内部库所在
    SQL Server（部署前先确认这一点：它既要被外网的后端访问，又要能查内部库）
 2. 服务器上建发布目录（如 `D:\sites\salesfill\`），放入：
-   - `SalesFill.ashx`、`Web.config`（Web.config 已替换两处占位项）
-   - `bin/SalesFillApi.dll`、`bin/Fcl.WSOP.dll`、`bin/Fcl.DataAccess.dll`（发布产物）
+   - `SalesFill.ashx`、`Web.config`（Web.config 已替换占位项）
+   - `bin/SalesFillApi.dll`、`bin/Fcl.WSOP.dll`、`bin/Fcl.DataAccess.dll`、`bin/Fcl.DataWork.dll`（发布产物，service 模式必须含 Fcl.DataWork.dll）
    - `bin/Fcl.WSOP.lic`（授权文件，与 DLL 同目录，FalCode 同款做法）
 3. IIS → 现有网站右键「添加应用程序」：别名如 `salesfill`，物理路径指向发布目录；
    应用程序池选 .NET CLR v4.0、托管管道「集成」（若父站点池版本不符则为本应用单独建池）
