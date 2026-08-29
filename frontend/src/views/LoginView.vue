@@ -89,12 +89,19 @@ async function handleSubmit() {
   background-color: $bg-page;
 
   &__card {
-    width: 360px;
+    width: 380px;
+    border: none;
+    box-shadow: $shadow-lg;
+
+    :deep(.el-card__header) {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
   }
 
   &__title {
-    font-size: $fs-body;
-    font-weight: 600;
+    font-size: $fs-h3;
+    font-weight: $fw-h1;
     color: $text-primary;
   }
 

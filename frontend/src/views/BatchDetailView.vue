@@ -17,18 +17,20 @@
         </div>
       </div>
 
-      <ImportPanel :batch-id="batchId" @records-changed="handleRecordsChanged" />
+      <div class="batch-detail__sections">
+        <ImportPanel :batch-id="batchId" @records-changed="handleRecordsChanged" />
 
-      <div id="policy-record-panel-mount">
-        <PolicyRecordTable
-          ref="policyRecordTableRef"
-          :batch-id="batchId"
-          @sales-name-changed="handleSalesNameChanged"
-        />
-      </div>
+        <div id="policy-record-panel-mount">
+          <PolicyRecordTable
+            ref="policyRecordTableRef"
+            :batch-id="batchId"
+            @sales-name-changed="handleSalesNameChanged"
+          />
+        </div>
 
-      <div id="commission-summary-panel-mount">
-        <CommissionSummaryPanel ref="commissionSummaryRef" :batch-id="batchId" :batch-name="batch?.name" />
+        <div id="commission-summary-panel-mount">
+          <CommissionSummaryPanel ref="commissionSummaryRef" :batch-id="batchId" :batch-name="batch?.name" />
+        </div>
       </div>
     </DataStateWrapper>
 
@@ -127,6 +129,12 @@ onMounted(loadDetail)
 @use '@/styles/variables.scss' as *;
 
 .batch-detail {
+  &__sections {
+    display: flex;
+    flex-direction: column;
+    gap: $space-lg;
+  }
+
   &__head {
     display: flex;
     align-items: center;

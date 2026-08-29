@@ -47,3 +47,32 @@ body {
     font-size: $fs-body;
   }
 }
+
+// 通用卡片容器（design.md 已定义 $bg-card/$radius-md/$shadow-sm 三项 token，此前各页面
+// 各自决定是否用、怎么用，实际落地不一致——多数区块直接铺在 $bg-page 背景上，无视觉分层）；
+// 收敛成一个全局工具类，各业务组件的内容区块统一套用，不再逐组件重复声明同一组 4 行样式。
+.surface-card {
+  background-color: $bg-card;
+  border-radius: $radius-md;
+  box-shadow: $shadow-sm;
+  padding: $space-lg;
+}
+
+// 表格视觉统一收窄：去掉 el-table 默认的顶部渐变分隔线（在卡片容器里显得多余），
+// 表头浅底区分于数据行，可点击整行的表格加手型光标提示。跨多个业务表格共用，
+// 避免每个使用 el-table 的组件各自重复声明这三条 :deep() 规则。
+.data-table {
+  .el-table__inner-wrapper::before {
+    display: none;
+  }
+
+  th.el-table__cell {
+    background-color: $bg-page;
+    color: $text-secondary;
+    font-weight: $fw-h3;
+  }
+
+  &.data-table--clickable-rows .el-table__row {
+    cursor: pointer;
+  }
+}

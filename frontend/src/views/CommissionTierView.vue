@@ -25,26 +25,28 @@
       empty-id="empty-rule-list"
       @retry="loadTiers"
     >
-      <div class="commission-tier-view__table-wrapper">
-        <el-table id="table-rule-list" :data="tiers" border stripe row-key="id">
-          <el-table-column label="下限（票）" width="120">
-            <template #default="{ row }: { row: CommissionTier }">{{ row.lowerBound }}</template>
-          </el-table-column>
-          <el-table-column label="上限（票）" width="120">
-            <template #default="{ row }: { row: CommissionTier }">
-              {{ row.upperBound === null ? '及以上' : row.upperBound }}
-            </template>
-          </el-table-column>
-          <el-table-column label="单价（元/票）" align="right" min-width="140">
-            <template #default="{ row }: { row: CommissionTier }">{{ row.unitPrice.toFixed(2) }}</template>
-          </el-table-column>
-          <el-table-column label="" width="140">
-            <template #default="{ row }: { row: CommissionTier }">
-              <el-button link type="primary" @click="openEditModal(row)">编辑</el-button>
-              <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+      <div class="commission-tier-view__card surface-card">
+        <div class="commission-tier-view__table-wrapper">
+          <el-table id="table-rule-list" class="data-table" :data="tiers" stripe row-key="id">
+            <el-table-column label="下限（票）" width="120">
+              <template #default="{ row }: { row: CommissionTier }">{{ row.lowerBound }}</template>
+            </el-table-column>
+            <el-table-column label="上限（票）" width="120">
+              <template #default="{ row }: { row: CommissionTier }">
+                {{ row.upperBound === null ? '及以上' : row.upperBound }}
+              </template>
+            </el-table-column>
+            <el-table-column label="单价（元/票）" align="right" min-width="140">
+              <template #default="{ row }: { row: CommissionTier }">{{ row.unitPrice.toFixed(2) }}</template>
+            </el-table-column>
+            <el-table-column label="" width="140">
+              <template #default="{ row }: { row: CommissionTier }">
+                <el-button link type="primary" @click="openEditModal(row)">编辑</el-button>
+                <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
       </div>
     </DataStateWrapper>
 

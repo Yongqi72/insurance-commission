@@ -12,42 +12,51 @@
       empty-id="empty-batch-list"
       @retry="loadData"
     >
-      <div class="batch-list__table-wrapper">
-        <el-table id="table-batch-list" :data="list" border stripe row-key="id" @row-click="handleRowClick">
-          <el-table-column prop="name" label="批次名称" min-width="200" />
-          <el-table-column label="状态" width="120">
-            <template #default="{ row }: { row: CommissionBatch }">
-              <span
-                class="batch-list__status-tag"
-                :class="`batch-list__status-tag--${row.status}`"
-              >
-                {{ statusLabel(row.status) }}
-              </span>
-            </template>
-          </el-table-column>
-          <el-table-column label="创建时间" min-width="160">
-            <template #default="{ row }: { row: CommissionBatch }">
-              {{ formatDateTime(row.createdAt) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="" width="80">
-            <template #default>
-              <span class="batch-list__view-link">查看</span>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
+      <div class="batch-list__card surface-card">
+        <div class="batch-list__table-wrapper">
+          <el-table
+            id="table-batch-list"
+            class="data-table data-table--clickable-rows"
+            :data="list"
+            stripe
+            row-key="id"
+            @row-click="handleRowClick"
+          >
+            <el-table-column prop="name" label="批次名称" min-width="200" />
+            <el-table-column label="状态" width="120">
+              <template #default="{ row }: { row: CommissionBatch }">
+                <span
+                  class="batch-list__status-tag"
+                  :class="`batch-list__status-tag--${row.status}`"
+                >
+                  {{ statusLabel(row.status) }}
+                </span>
+              </template>
+            </el-table-column>
+            <el-table-column label="创建时间" min-width="160">
+              <template #default="{ row }: { row: CommissionBatch }">
+                {{ formatDateTime(row.createdAt) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="" width="80">
+              <template #default>
+                <span class="batch-list__view-link">查看</span>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
 
-      <div class="batch-list__pagination">
-        <el-pagination
-          v-model:current-page="page"
-          v-model:page-size="pageSize"
-          :total="total"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next"
-          @size-change="loadData"
-          @current-change="loadData"
-        />
+        <div class="batch-list__pagination">
+          <el-pagination
+            v-model:current-page="page"
+            v-model:page-size="pageSize"
+            :total="total"
+            :page-sizes="[10, 20, 50, 100]"
+            layout="total, sizes, prev, pager, next"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
       </div>
     </DataStateWrapper>
 

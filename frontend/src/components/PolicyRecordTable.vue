@@ -1,5 +1,5 @@
 <template>
-  <div class="policy-record-table">
+  <div class="policy-record-table surface-card">
     <div class="policy-record-table__head">
       <div class="policy-record-table__title">保单记录明细</div>
       <el-button id="btn-start-fill" :loading="filling" @click="handleStartFill">开始回填</el-button>
@@ -39,8 +39,8 @@
           id="table-record-list"
           :key="tableResetKey"
           ref="tableRef"
+          class="data-table data-table--clickable-rows"
           :data="list"
-          border
           stripe
           row-key="id"
           @row-click="handleRowClick"
@@ -331,8 +331,6 @@ defineExpose({ refresh: loadData })
 @use '@/styles/variables.scss' as *;
 
 .policy-record-table {
-  margin-top: $space-lg;
-
   &__head {
     display: flex;
     align-items: center;

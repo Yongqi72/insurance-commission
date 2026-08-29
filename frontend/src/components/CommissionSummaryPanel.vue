@@ -1,5 +1,5 @@
 <template>
-  <div class="commission-summary-panel">
+  <div class="commission-summary-panel surface-card">
     <div class="commission-summary-panel__head">
       <div class="commission-summary-panel__title">提成汇总（实时）</div>
       <div class="commission-summary-panel__actions">
@@ -137,8 +137,6 @@ defineExpose({ refresh: loadSummary })
 @use '@/styles/variables.scss' as *;
 
 .commission-summary-panel {
-  margin-top: $space-lg;
-
   &__head {
     display: flex;
     align-items: center;

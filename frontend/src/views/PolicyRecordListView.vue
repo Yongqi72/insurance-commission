@@ -9,42 +9,44 @@
       empty-id="empty-record-list"
       @retry="loadData"
     >
-      <div class="policy-record-list__table-wrapper">
-        <el-table :data="list" border stripe>
-          <el-table-column prop="customerName" label="客户名称" min-width="140" />
-          <el-table-column prop="workOrderNo" label="工作单号" min-width="140" />
-          <el-table-column prop="businessType" label="业务类型" min-width="120" />
-          <el-table-column prop="currency" label="币种" width="80" />
-          <el-table-column prop="policyholder" label="投保人" min-width="140" />
-          <el-table-column label="保险金额" min-width="120">
-            <template #default="{ row }: { row: PolicyRecord }">
-              {{ row.insuredAmount.toFixed(2) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="policyNo" label="保单号" min-width="140" />
-          <el-table-column label="销售人员" min-width="100">
-            <template #default="{ row }: { row: PolicyRecord }">
-              {{ row.salesName || '-' }}
-            </template>
-          </el-table-column>
-          <el-table-column label="创建时间" min-width="160">
-            <template #default="{ row }: { row: PolicyRecord }">
-              {{ formatDateTime(row.createdAt) }}
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
+      <div class="policy-record-list__card surface-card">
+        <div class="policy-record-list__table-wrapper">
+          <el-table class="data-table" :data="list" stripe>
+            <el-table-column prop="customerName" label="客户名称" min-width="140" />
+            <el-table-column prop="workOrderNo" label="工作单号" min-width="140" />
+            <el-table-column prop="businessType" label="业务类型" min-width="120" />
+            <el-table-column prop="currency" label="币种" width="80" />
+            <el-table-column prop="policyholder" label="投保人" min-width="140" />
+            <el-table-column label="保险金额" min-width="120">
+              <template #default="{ row }: { row: PolicyRecord }">
+                {{ row.insuredAmount.toFixed(2) }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="policyNo" label="保单号" min-width="140" />
+            <el-table-column label="销售人员" min-width="100">
+              <template #default="{ row }: { row: PolicyRecord }">
+                {{ row.salesName || '-' }}
+              </template>
+            </el-table-column>
+            <el-table-column label="创建时间" min-width="160">
+              <template #default="{ row }: { row: PolicyRecord }">
+                {{ formatDateTime(row.createdAt) }}
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
 
-      <div class="policy-record-list__pagination">
-        <el-pagination
-          v-model:current-page="page"
-          v-model:page-size="pageSize"
-          :total="total"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next"
-          @size-change="loadData"
-          @current-change="loadData"
-        />
+        <div class="policy-record-list__pagination">
+          <el-pagination
+            v-model:current-page="page"
+            v-model:page-size="pageSize"
+            :total="total"
+            :page-sizes="[10, 20, 50, 100]"
+            layout="total, sizes, prev, pager, next"
+            @size-change="loadData"
+            @current-change="loadData"
+          />
+        </div>
       </div>
     </DataStateWrapper>
   </div>

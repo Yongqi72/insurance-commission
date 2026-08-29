@@ -1,5 +1,5 @@
 <template>
-  <div class="import-panel">
+  <div class="import-panel surface-card">
     <div class="import-panel__head">
       <div class="import-panel__title">导入记录</div>
       <el-button id="btn-open-import" type="primary" @click="openImportDialog">导入 Excel</el-button>
@@ -7,7 +7,7 @@
 
     <DataStateWrapper :status="status" :error-message="errorMessage" empty-text="暂无导入记录" @retry="loadImports">
       <div class="import-panel__table-wrapper">
-        <el-table id="table-import-list" :data="list" border stripe row-key="id">
+        <el-table id="table-import-list" class="data-table" :data="list" stripe row-key="id">
           <el-table-column prop="fileName" label="文件名" min-width="200" />
           <el-table-column label="导入时间" min-width="160">
             <template #default="{ row }: { row: ImportRecord }">

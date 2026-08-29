@@ -42,30 +42,36 @@ function handleLogout() {
     align-items: center;
     justify-content: space-between;
     height: $layout-header-height;
-    padding: 0 $space-lg;
+    padding: 0 $space-xl;
     background-color: $bg-card;
-    border-bottom: 1px solid $border-color;
+    box-shadow: $shadow-sm;
   }
 
   &__brand {
     display: flex;
     align-items: center;
-    gap: $space-lg;
+    gap: $space-xl;
   }
 
   &__title {
     font-size: $fs-body;
-    font-weight: 600;
+    font-weight: $fw-h3;
     color: $text-primary;
+    letter-spacing: 0.2px;
   }
 
   &__nav {
     display: flex;
     align-items: center;
-    gap: $space-md;
+    gap: $space-xs;
   }
 
   &__nav-link {
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 $space-md;
+    border-radius: $radius-full;
     font-size: $fs-caption;
     color: $text-secondary;
     text-decoration: none;
@@ -73,17 +79,49 @@ function handleLogout() {
 
     &:hover {
       color: $primary;
+      background-color: $bg-hover;
     }
 
     &.router-link-active {
       color: $primary;
-      font-weight: 600;
+      font-weight: $fw-h3;
+      background-color: $primary-light;
     }
   }
 
   &__content {
     flex: 1;
-    padding: $space-lg;
+    width: 100%;
+    max-width: $content-max-width;
+    margin: 0 auto;
+    padding: $space-xl;
+  }
+}
+
+// design.md §六响应式断点：Mobile < 768px。窄屏下标题+导航+退出登录挤在固定 56px
+// 单行高度里放不下完整标题文案，此前会逐字断行；标题让位给导航链接，导航链接自身
+// 收紧内边距，保证单行不换行。
+@media (width <= $breakpoint-mobile) {
+  .app-layout {
+    &__header {
+      padding: 0 $space-md;
+    }
+
+    &__brand {
+      gap: $space-sm;
+    }
+
+    &__title {
+      display: none;
+    }
+
+    &__nav-link {
+      padding: 0 $space-sm;
+    }
+
+    &__content {
+      padding: $space-md;
+    }
   }
 }
 </style>
