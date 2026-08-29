@@ -77,12 +77,16 @@ export class ImportService {
     // key、导入文件记录 file_name、响应 fileName 使用。纯 ASCII 文件名经此转换后不变，无副作用。
     const fileName = Buffer.from(file.originalname, 'latin1').toString('utf8');
 
-    // 归档先于解析（BE-EXT-02 统一经 OssClient 调用）：解析失败场景要求已上传的原文件不删除，
-    // 故不论后续解析成功与否，本次上传的原始文件都先写入 OSS。
+    // OSS 归档（BE-EXT-02 统一经 OssClient 调用）与 Excel 解析都只读同一份内存中的
+    // file.buffer，互不依赖对方结果，并行执行降低总延迟；解析结果本身是判别联合类型
+    // （ok:true/false），不会因为解析失败而 reject，故并行不影响"无论解析成功与否，
+    // 原始文件都要写入 OSS"这条既有保证——upload() 抛错时 Promise.all 整体 reject，
+    // 与原先顺序写法在 upload 失败路径下的行为一致（均不落库、不产生导入记录）。
     const ossKey = buildDatedOssKey('upload', fileName);
-    await this.ossClient.upload(file.buffer, ossKey);
-
-    const parseResult = await this.excelParser.parse(file.buffer);
+    const [, parseResult] = await Promise.all([
+      this.ossClient.upload(file.buffer, ossKey),
+      this.excelParser.parse(file.buffer),
+    ]);
     // 用 `=== false` 而非 `!parseResult.ok` 触发判别联合类型收窄：本仓 tsconfig
     // `strictNullChecks: false`，`!x.ok` 写法在该配置下不会收窄 `ExcelParseResult`
     // 联合类型（实测复现，`=== false`/`=== true` 显式比较不受此限制）。
