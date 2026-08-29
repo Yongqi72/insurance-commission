@@ -4,7 +4,13 @@
       <div class="app-layout__brand">
         <span class="app-layout__title">保单提成管理系统</span>
         <nav class="app-layout__nav">
-          <router-link class="app-layout__nav-link" :to="{ name: 'batch-list' }">提成批次</router-link>
+          <router-link
+            class="app-layout__nav-link"
+            :class="{ 'router-link-active': isBatchNavActive }"
+            :to="{ name: 'batch-list' }"
+          >
+            提成批次
+          </router-link>
           <router-link class="app-layout__nav-link" :to="{ name: 'commission-tier' }">提成阶梯规则</router-link>
         </nav>
       </div>
@@ -17,11 +23,18 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
+const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+
+// batch-detail（/commission-batches/:id）与 batch-list 是路由平级关系（非嵌套子路由），
+// vue-router 的 router-link-active 默认按 matched 路由记录判定，不会把 batch-detail
+// 页面算作"提成批次"这一导航项的激活态，需要手动按当前路由名补一条判定。
+const isBatchNavActive = computed(() => route.name === 'batch-detail')
 
 function handleLogout() {
   authStore.logout()
