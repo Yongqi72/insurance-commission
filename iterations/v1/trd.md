@@ -51,21 +51,21 @@
 
 ### 接口：POST /api/commission-batches
 - 请求体：`{ name: string }`
-- 响应体：`{ id, name, status, createdAt }`
+- 响应体：`{ id, name, status, createdAt, updatedAt }`
 - 错误码：`1001`（`name` 为空）
 - 服务流程：校验 `name` 非空 → 插入提成批次记录，`status` 初始值固定 `doing` → 返回
 # 满足 AC：AC-01
 
 ### 接口：GET /api/commission-batches
 - 请求体：Query `PageQueryDto`（`page`/`pageSize`）
-- 响应体：`PageResultDto<{ id, name, status, createdAt }>`
+- 响应体：`PageResultDto<{ id, name, status, createdAt, updatedAt }>`
 - 错误码：无
 - 服务流程：分页查询，按 `created_at` 倒序；列表为空时前端展示空态（AC-05）
 # 满足 AC：AC-05
 
 ### 接口：GET /api/commission-batches/:id
 - 请求体：无
-- 响应体：`{ id, name, status, createdAt }`
+- 响应体：`{ id, name, status, createdAt, updatedAt }`
 - 错误码：`1004`（批次不存在）
 - 服务流程：按 `id` 查询，不存在返回 `1004`；供批次详情页头部展示批次名/当前状态，是 AC-02 状态切换操作的前提读取
 # 满足 AC：AC-02
