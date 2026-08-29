@@ -8,7 +8,7 @@
           <router-link class="app-layout__nav-link" :to="{ name: 'commission-tier' }">提成阶梯规则</router-link>
         </nav>
       </div>
-      <el-button link type="primary" @click="handleLogout">退出登录</el-button>
+      <el-button class="app-layout__logout" link @click="handleLogout">退出登录</el-button>
     </header>
     <main class="app-layout__content">
       <router-view />
@@ -43,7 +43,7 @@ function handleLogout() {
     justify-content: space-between;
     height: $layout-header-height;
     padding: 0 $space-xl;
-    background-color: $bg-card;
+    background-color: $primary;
     box-shadow: $shadow-sm;
   }
 
@@ -56,7 +56,7 @@ function handleLogout() {
   &__title {
     font-size: $fs-body;
     font-weight: $fw-h3;
-    color: $text-primary;
+    color: $text-on-primary;
     letter-spacing: 0.2px;
   }
 
@@ -73,19 +73,29 @@ function handleLogout() {
     padding: 0 $space-md;
     border-radius: $radius-full;
     font-size: $fs-caption;
-    color: $text-secondary;
+    color: rgb(255 255 255 / 75%);
     text-decoration: none;
     transition: $transition-fast;
 
     &:hover {
-      color: $primary;
-      background-color: $bg-hover;
+      color: $text-on-primary;
+      background-color: rgb(255 255 255 / 12%);
     }
 
     &.router-link-active {
-      color: $primary;
+      color: $text-on-primary;
       font-weight: $fw-h3;
-      background-color: $primary-light;
+      background-color: rgb(255 255 255 / 18%);
+    }
+  }
+
+  // 顶栏改深色底后，退出登录若仍用 type="primary" 的默认蓝色文字会与背景同色不可见，
+  // 模板已去掉 type="primary"，此处显式指定白色系文字，hover 态提亮到纯白。
+  &__logout.el-button.is-link {
+    color: rgb(255 255 255 / 75%);
+
+    &:hover {
+      color: $text-on-primary;
     }
   }
 

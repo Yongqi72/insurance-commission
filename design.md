@@ -44,6 +44,7 @@
 | `$text-primary` | `#1F2329` | 主要文字 |
 | `$text-secondary` | `#646A73` | 次要文字 |
 | `$text-hint` | `#8F959E` | 辅助文字、占位文字 |
+| `$text-on-primary` | `#FFFFFF` | 主色/深色背景上的文字（如顶栏） |
 
 ### 边框色
 
