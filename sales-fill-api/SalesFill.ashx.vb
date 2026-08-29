@@ -173,9 +173,10 @@ Public Class SalesFillHandler
     End Function
 
     ''' <summary>
-    ''' 真实查询（由任务发起人提供）：按工作单号从工单表 m_job 查出对应销售人员——
-    ''' m_job.sales 存的是销售人员编码，经 d_user 翻译为 user_name；
-    ''' sales 为空或在 d_user 无对应时子查询返回 NULL，由 QuerySalesNames 过滤（按未命中处理）。
+    ''' 真实查询（由任务发起人提供）：按工作单号从工单表 m_job 内连接 d_user 查出销售姓名——
+    ''' m_job.sales 存的是销售人员编码，与 d_user.user_code 内连接取 user_name；
+    ''' sales 为空或在 d_user 无对应时内连接不产出该行（按未命中处理）；
+    ''' 另按任务发起人要求只查 booking_date 在近一年内的数据（缩小扫描范围）。
     ''' 结果集两列：job_no（工作单号）、sales_name（销售姓名）。
     ''' 占位 ? 与参数数组逐个绑定，禁止字符串拼接工作单号。
     ''' </summary>
@@ -190,7 +191,7 @@ Public Class SalesFillHandler
             lobjParams(lnIndex) = llistWorkOrderNos(lnIndex)
         Next
 
-        Dim lsSql As String = "SELECT job_no, (SELECT user_name FROM d_user WHERE user_code = m_job.sales) AS sales_name FROM m_job WHERE job_no IN (" + lsbPlaceholders.ToString() + ")"
+        Dim lsSql As String = "SELECT job_no, d_user.user_name AS sales_name FROM m_job INNER JOIN d_user ON m_job.sales = d_user.user_code WHERE booking_date >= DATEADD(YEAR, -1, GETDATE()) AND job_no IN (" + lsbPlaceholders.ToString() + ")"
         Return New Fcl.WSOP.SqlBuilder(lsSql, lobjParams)
     End Function
 
