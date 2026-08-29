@@ -49,6 +49,17 @@ export default [
       ],
       // FE-BUILD-01：禁止 CommonJS require()
       'no-restricted-globals': ['error', 'require'],
+      // SH-AUTH-01/standards-frontend.md HTTP 单例：禁止另建 axios.create() 实例，
+      // 唯一实例收敛在 src/api/request.ts（该文件通过下方 files override 放行）。
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "CallExpression[callee.object.name='axios'][callee.property.name='create']",
+          message:
+            'HTTP 客户端必须是唯一单例，禁止另建 axios.create() 实例；复用 src/api/request.ts 导出的 request。',
+        },
+      ],
       '@typescript-eslint/no-explicit-any': 'warn',
       'vue/multi-word-component-names': 'off',
       'no-console': ['warn', { allow: ['error'] }],
@@ -88,6 +99,23 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
       'no-console': ['warn', { allow: ['error'] }],
       'no-warning-comments': ['warn', { terms: ['todo', 'fixme'], location: 'anywhere' }],
+    },
+  },
+  {
+    // 唯一允许调用 axios.create() 的文件（HTTP 单例的构造点本身）。
+    files: ['src/api/request.ts'],
+    rules: {
+      'no-restricted-syntax': 'off',
+    },
+  },
+  {
+    // scripts/ 下是 Node 环境执行的工程脚本（如 check-router-structure.js），非浏览器代码。
+    files: ['scripts/**/*.js'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+      },
     },
   },
   prettierConfig,
