@@ -1,9 +1,9 @@
 # SalesFillApi · 销售人员回填查询接口
 
-保险佣金系统（ic-b-007）的第三方回填接口服务端：部署在**内网 IIS**，按工作单号批量查询内部库中的销售人员姓名，供外网的保险佣金系统通过网络调用。
+保险佣金系统（ic-b-007）的第三方回填接口服务端：以 **IIS 子应用**形式挂到现有外网可访问的网站下，按工作单号批量查询内部库中的销售人员姓名，供外网的保险佣金系统通过网络调用。
 
 ```
-保险佣金系统（外网） ──POST JSON + X-Fill-Token──▶ SalesFill.ashx（内网 IIS） ──SQL──▶ 内部库（SQL Server）
+保险佣金系统（外网） ──POST JSON + X-Fill-Token──▶ SalesFill.ashx（现有网站下的 IIS 子应用） ──SQL──▶ 内部库（SQL Server）
 ```
 
 ## 技术形态
@@ -43,22 +43,25 @@
 > `sales` 编码，经 `d_user` 翻译为销售姓名（结果列 `job_no`/`sales_name`）。
 > 若后续内部库表结构变化，仅需调整该函数内的 SELECT 语句。
 
-## IIS 部署步骤
+## IIS 部署步骤（挂到现有外网可访问网站下，作为子应用）
 
-1. 服务器需安装 .NET Framework 4.0（及以上）
-2. IIS 新建应用程序池：.NET CLR v4.0，托管管道「集成」
-3. 新建网站（或虚拟目录）指向发布目录，包含文件：
-   - `SalesFill.ashx`、`Web.config`
+1. 现有网站服务器需已安装 .NET Framework 4.0（及以上），且该服务器能连通内部库所在
+   SQL Server（部署前先确认这一点：它既要被外网的后端访问，又要能查内部库）
+2. 服务器上建发布目录（如 `D:\sites\salesfill\`），放入：
+   - `SalesFill.ashx`、`Web.config`（Web.config 已替换两处占位项）
    - `bin/SalesFillApi.dll`、`bin/Fcl.WSOP.dll`、`bin/Fcl.DataAccess.dll`（发布产物）
    - `bin/Fcl.WSOP.lic`（授权文件，与 DLL 同目录，FalCode 同款做法）
-4. 确认保险佣金系统所在外网服务器能访问本机 HTTP 端口（防火墙放行）
-5. 冒烟验证：浏览器 GET 访问 `SalesFill.ashx` 应返回 `{"error":"method not allowed"}`（405）；
+3. IIS → 现有网站右键「添加应用程序」：别名如 `salesfill`，物理路径指向发布目录；
+   应用程序池选 .NET CLR v4.0、托管管道「集成」（若父站点池版本不符则为本应用单独建池）
+4. 访问地址即 `http://{现有网站域名}/salesfill/SalesFill.ashx`
+5. 冒烟验证：浏览器 GET 访问应返回 `{"error":"method not allowed"}`（405）；
    带正确密钥的 POST 空数组应返回 `{}`
+   （若报配置继承冲突，检查父站 Web.config 是否向子应用下渗了不兼容配置节）
 
 ## 联调步骤（部署完成后）
 
 1. 保险佣金系统后端 `.env` 配置：
-   - `SALES_FILL_API_URL=http://{内网服务器地址}/SalesFill.ashx`
+   - `SALES_FILL_API_URL=http://{现有网站域名}/salesfill/SalesFill.ashx`
    - `SALES_FILL_API_TOKEN={与 Web.config FillApiToken 相同}`
 2. 重启后端，导入含真实工作单号的账单 → 批次详情点「开始回填」
 3. 验证：命中记录 `销售人员` 有值且回填状态为「系统回填」，未命中保持「未匹配」，回填统计数正确
