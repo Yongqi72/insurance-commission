@@ -59,6 +59,7 @@ import DataStateWrapper from '@/components/DataStateWrapper.vue'
 import ExportHistoryDrawer from '@/components/ExportHistoryDrawer.vue'
 import {
   CommissionReportRuleIncompleteError,
+  SessionExpiredError,
   exportCommissionReport,
   fetchCommissionSummary,
   triggerBlobDownload,
@@ -104,7 +105,9 @@ async function handleExport() {
     ElMessage.success('导出成功')
   } catch (error) {
     // AC-15：命中 2002（规则不完整）与其余业务错误码用各自的具体文案区分展示，不混淆（FE-ASYNC-01）
-    if (error instanceof CommissionReportRuleIncompleteError) {
+    if (error instanceof SessionExpiredError) {
+      // request.ts 响应拦截器已对 401 统一弹出提示并跳转登录页，此处不重复提示
+    } else if (error instanceof CommissionReportRuleIncompleteError) {
       ElMessage.error(error.message)
     } else {
       ElMessage.error(error instanceof Error ? error.message : '导出失败，请稍后重试')

@@ -52,6 +52,14 @@ export class CommissionReportRuleIncompleteError extends Error {
   }
 }
 
+/** 导出请求命中 401（登录失效）时抛出的专用错误：request.ts 拦截器已对该场景统一弹出提示并跳转登录页，调用方据此跳过自己的错误提示，避免重复弹窗。 */
+export class SessionExpiredError extends Error {
+  constructor() {
+    super('登录状态已失效')
+    this.name = 'SessionExpiredError'
+  }
+}
+
 /**
  * 从 `Content-Disposition` 响应头解析文件名（AC-15：优先取响应头文件名）。
  * 兼容 `filename="xxx.xlsx"` 与 `filename*=UTF-8''xxx.xlsx` 两种形式；解析失败返回 null 由调用方兜底。
@@ -81,7 +89,6 @@ function extractFileName(contentDisposition: unknown): string | null {
  * 再 `JSON.parse` 才能拿到真实 `{code, msg}`，不能把 Blob 对象本身当错误信息展示。
  * request.ts 响应拦截器对 `responseType: 'blob'` 的请求已跳过统一信封解析/toast，全部处理收敛在本函数。
  */
-// eslint-disable-next-line no-undef -- 下方函数签名引用 Blob（浏览器内置全局类型，eslint.config.js globals 未登记）
 type CommissionReportExportResult = { blob: Blob; fileName: string }
 
 export async function exportCommissionReport(
@@ -96,9 +103,11 @@ export async function exportCommissionReport(
     return { blob: res.data, fileName }
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
+      if (error.response.status === 401) {
+        throw new SessionExpiredError()
+      }
       const contentType = String(error.response.headers?.['content-type'] ?? '')
       const responseData: unknown = error.response.data
-      // eslint-disable-next-line no-undef -- Blob 为浏览器内置全局类型，eslint.config.js globals 未登记
       if (contentType.includes('application/json') && responseData instanceof Blob) {
         const envelope = safeParseEnvelope(await responseData.text())
         if (envelope?.code === ErrorCode.RULE_INCOMPLETE) {
@@ -134,9 +143,7 @@ export async function fetchExportHistory(batchId: string): Promise<ExportRecord[
  * 触发浏览器下载一个内存中的 Blob（导出 Excel 用，AC-15）。
  * 用完即撤销 objectURL，避免内存泄漏；不依赖服务端跳转，纯前端触发。
  */
-// eslint-disable-next-line no-undef -- Blob 为浏览器内置全局类型，eslint.config.js globals 未登记
 export function triggerBlobDownload(blob: Blob, fileName: string): void {
-  // eslint-disable-next-line no-undef -- URL 为浏览器内置全局类型，eslint.config.js globals 未登记
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
@@ -144,7 +151,6 @@ export function triggerBlobDownload(blob: Blob, fileName: string): void {
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
-  // eslint-disable-next-line no-undef -- URL 为浏览器内置全局类型，eslint.config.js globals 未登记
   URL.revokeObjectURL(url)
 }
 
