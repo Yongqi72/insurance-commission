@@ -1,0 +1,93 @@
+{
+  "schema": "develop-review-profile/v1",
+  "task_id": "ic-b-007",
+  "task_type": "dev-backend",
+  "layers": [
+    "shared"
+  ],
+  "source": "",
+  "effective_risk": "sensitive",
+  "changed_files": [
+    "backend/.env.example",
+    "backend/src/commission-batch/policy-record-query.service.ts",
+    "backend/test/commission-batch-policy-records.e2e-spec.ts",
+    "sales-fill-api/.gitignore",
+    "sales-fill-api/My Project/AssemblyInfo.vb",
+    "sales-fill-api/README.md",
+    "sales-fill-api/SalesFill.ashx",
+    "sales-fill-api/SalesFill.ashx.vb",
+    "sales-fill-api/SalesFillApi.sln",
+    "sales-fill-api/SalesFillApi.vbproj",
+    "sales-fill-api/Web.config"
+  ],
+  "input_fingerprint": "e6f4e37c128bc08c9a844eb37feadb671046be01b62638f6f552b81d1590f00d",
+  "signals": {
+    "metadata_incomplete": true,
+    "unknown_layer": false,
+    "surface": "production",
+    "frontend": false,
+    "backend": true,
+    "ui": false,
+    "input": true,
+    "query": true,
+    "concurrency": true,
+    "logging": true,
+    "enforcement": true,
+    "sensitive": true
+  },
+  "selected_dimensions": [
+    {
+      "id": "contract",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "scope-and-secrets",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "test-evidence",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "comment-hygiene",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "standards",
+      "reason": "fail-safe: task metadata is incomplete"
+    },
+    {
+      "id": "enforcement",
+      "reason": "fail-safe: task metadata is incomplete"
+    },
+    {
+      "id": "design-fidelity",
+      "reason": "fail-safe: frontend applicability is unresolved"
+    },
+    {
+      "id": "input-provenance",
+      "reason": "fail-safe: backend input applicability is unresolved"
+    },
+    {
+      "id": "query-performance",
+      "reason": "fail-safe: backend query applicability is unresolved"
+    },
+    {
+      "id": "concurrency",
+      "reason": "fail-safe: backend concurrency applicability is unresolved"
+    },
+    {
+      "id": "logging-privacy",
+      "reason": "fail-safe: task metadata is incomplete"
+    },
+    {
+      "id": "maintainability",
+      "reason": "fail-safe: changed surface is unresolved"
+    },
+    {
+      "id": "sensitive-boundaries",
+      "reason": "fail-safe: task metadata is incomplete"
+    }
+  ],
+  "omitted_dimensions": []
+}
