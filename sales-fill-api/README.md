@@ -46,6 +46,12 @@
 > 数据访问双模式：本机开发直连内部库（`direct`）；服务器无法直连时切换 `service`，
 > 经 Fcl.WSOP 的 `sqldbservice.asmx` 中转查库，查询逻辑与返回契约不变。
 >
+> **service 模式两项按环境取值，不能跨机器照抄**：
+> - `SqlDbServiceSerial`（序列号）按机器绑定，须用**目标服务器** falservice 的序列号
+>   （拿本机的去服务器用会报"序列号验证失败"）；
+> - `SqlDbServiceUrl` 的端口须与目标服务器上 falservice 实际端口一致
+>   （站点不在 80 端口时须显式带端口，如 `http://127.0.0.1:8085/falservice/sqldbservice.asmx`）。
+>
 > 查询 SQL 已由任务发起人提供并落地到 `BuildSalesSql`：按 `job_no` 从 `m_job` 查出
 > `sales` 编码，经 `d_user` 翻译为销售姓名（结果列 `job_no`/`sales_name`）。
 > 若后续内部库表结构变化，仅需调整该函数内的 SELECT 语句。
