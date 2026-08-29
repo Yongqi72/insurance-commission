@@ -132,6 +132,9 @@ Public Class SalesFillHandler
     Private Function QuerySalesNames(ByVal llistWorkOrderNos As List(Of String)) As Dictionary(Of String, String)
         Dim lmapResult As New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
         Dim lsMode As String = ConfigurationManager.AppSettings("DbAccessMode")
+        If lsMode IsNot Nothing Then
+            lsMode = lsMode.Trim()
+        End If
         Dim lws As Fcl.WSOP.sqldbop = Nothing
         Try
             If String.Equals(lsMode, "service", StringComparison.OrdinalIgnoreCase) Then
