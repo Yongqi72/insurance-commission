@@ -114,10 +114,12 @@ export class PolicyRecordQueryService {
     }
 
     const apiUrl = this.configService.get<string>('SALES_FILL_API_URL');
+    const apiToken = this.configService.get<string>('SALES_FILL_API_TOKEN');
     const mapping = apiUrl
       ? await this.callFillApi(
           apiUrl,
           unmatchedRecords.map((record) => record.workOrderNo),
+          apiToken,
         )
       : undefined;
 
@@ -171,17 +173,27 @@ export class PolicyRecordQueryService {
   /**
    * 调用第三方回填接口：超时（5s）/网络异常/HTTP 非成功状态码/返回体非对象结构
    * 一律返回 undefined（按未命中处理），异常经 Logger 记录具体原因，不裸吞（BE-LOG-01）。
+   * apiToken 已配置时经请求头 X-Fill-Token 携带，与服务端校验密钥匹配；未配置则不携带，
+   * 其余行为与无密钥场景完全一致。
    */
   private async callFillApi(
     apiUrl: string,
     workOrderNos: string[],
+    apiToken?: string,
   ): Promise<Record<string, string> | undefined> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FILL_TIMEOUT_MS);
     try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (apiToken) {
+        headers['X-Fill-Token'] = apiToken;
+      }
+
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ workOrderNos }),
         signal: controller.signal,
       });

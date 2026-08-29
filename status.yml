@@ -364,6 +364,23 @@ tasks:
     urgency: null
     branch: ic-b-006
     risk: standard
+  - id: ic-b-007
+    iteration: null
+    sprint: null
+    source: integration
+    title: 第三方销售人员回填接口对接
+    type: develop
+    discipline: dev-backend
+    layer: backend
+    status: done
+    assigned_to: 朱敏
+    pr: 16
+    parent_id: null
+    depends_on: []
+    delivery: 串行
+    urgency: null
+    branch: ic-b-007
+    risk: sensitive
 # 每条（写 queue 任务包处同步追加）：
 #  - id: {缩写}-v{N}-001     # B 类为 {缩写}-b-001
 #    iteration: v1           # 属哪期；B 类(bug/optimization)为 null
