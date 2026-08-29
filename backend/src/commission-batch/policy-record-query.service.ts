@@ -1,10 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Raw, Repository } from 'typeorm';
+import { FindOptionsWhere, MoreThan, Raw, Repository } from 'typeorm';
 import { PageResultDto } from '../common/dto/page-result.dto';
 import { PolicyRecord } from '../policy-record/policy-record.entity';
 import { CommissionBatch } from './commission-batch.entity';
+import { FillPolicyRecordsDto } from './dto/fill-policy-records.dto';
 import { QueryPolicyRecordDto } from './dto/query-policy-record.dto';
 import { ensureBatchExists } from './ensure-batch-exists.util';
 
@@ -27,6 +28,10 @@ export interface FillResultDto {
   total: number;
   matchedCount: number;
   unmatchedCount: number;
+  /** 本批处理到的最大 id（按 id 升序），供下一批调用透传为 afterId 游标；无记录可处理时为 null。 */
+  nextAfterId: string | null;
+  /** 该批次内是否还有 id 更大、仍待处理的 unmatched 记录（未传 limit 时恒为 false，因为已一次处理全部）。 */
+  hasMore: boolean;
 }
 
 const KEYWORD_FIELDS: Array<keyof PolicyRecord> = [
@@ -100,18 +105,59 @@ export class PolicyRecordQueryService {
    * 批量回填骨架（TRD §接口：POST .../policy-records/fill，PRD AC-06）：只对当前仍为
    * unmatched 的记录生效，已是 system/manual 的记录本次不受影响；地址未配置/超时/
    * 调用异常/返回结构不符预期一律按未命中处理，操作本身视为成功完成，不抛错。
+   *
+   * `options.limit` 省略时保持旧行为：一次性处理该批次全部 unmatched 记录（`nextAfterId`
+   * 恒为 null、`hasMore` 恒为 false）。传了 `limit` 时改为按 id 升序的游标分页：只取
+   * `id > afterId`（未传 afterId 则从最小 id 开始）的前 `limit` 条处理，返回本批处理到的
+   * 游标 `nextAfterId` 与是否还有更多待处理记录 `hasMore`，供前端多次调用、每次只处理一批、
+   * 逐批推进真实进度。用 id 游标而非"还剩多少 unmatched"计数分页，是因为第三方接口没查到
+   * 匹配的记录会一直停留在 unmatched 状态——若按"还有 unmatched 就继续"简单重试，会不断
+   * 选中同一批"确实查不到"的记录，永远无法结束；游标保证不管本批匹配与否，下一批总是
+   * 处理 id 更大的一批新记录，有限步内必然处理完当前存在的全部记录。
    */
-  async fill(batchId: string): Promise<FillResultDto> {
+  async fill(
+    batchId: string,
+    options: FillPolicyRecordsDto = {},
+  ): Promise<FillResultDto> {
     await ensureBatchExists(this.commissionBatchRepository, batchId);
 
+    const { limit, afterId } = options;
+    const where: FindOptionsWhere<PolicyRecord> = {
+      importBatchId: batchId,
+      salesFillSource: 'unmatched',
+      ...(limit && afterId ? { id: MoreThan(afterId) } : {}),
+    };
+
     const unmatchedRecords = await this.policyRecordRepository.find({
-      where: { importBatchId: batchId, salesFillSource: 'unmatched' },
+      where,
+      order: { id: 'ASC' },
+      ...(limit ? { take: limit } : {}),
     });
 
     const total = unmatchedRecords.length;
+    const lastRecord = total > 0 ? unmatchedRecords[total - 1] : undefined;
+    const nextAfterId = limit && lastRecord ? lastRecord.id : null;
+
     if (total === 0) {
-      return { total: 0, matchedCount: 0, unmatchedCount: 0 };
+      return {
+        total: 0,
+        matchedCount: 0,
+        unmatchedCount: 0,
+        nextAfterId: null,
+        hasMore: false,
+      };
     }
+
+    const hasMore =
+      !!limit &&
+      total === limit &&
+      (await this.policyRecordRepository.count({
+        where: {
+          importBatchId: batchId,
+          salesFillSource: 'unmatched',
+          id: MoreThan(lastRecord!.id),
+        },
+      })) > 0;
 
     const apiUrl = this.configService.get<string>('SALES_FILL_API_URL');
     const apiToken = this.configService.get<string>('SALES_FILL_API_TOKEN');
@@ -167,7 +213,13 @@ export class PolicyRecordQueryService {
       }
     }
 
-    return { total, matchedCount, unmatchedCount: total - matchedCount };
+    return {
+      total,
+      matchedCount,
+      unmatchedCount: total - matchedCount,
+      nextAfterId,
+      hasMore,
+    };
   }
 
   /**

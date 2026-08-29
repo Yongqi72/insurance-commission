@@ -305,7 +305,13 @@ describe('commission-batch 保单记录查询 + 回填 (e2e)', () => {
       expect(res.body).toEqual(
         expect.objectContaining({
           code: 0,
-          data: { total: 3, matchedCount: 0, unmatchedCount: 3 },
+          data: {
+            total: 3,
+            matchedCount: 0,
+            unmatchedCount: 3,
+            nextAfterId: null,
+            hasMore: false,
+          },
         }),
       );
 
@@ -332,6 +338,8 @@ describe('commission-batch 保单记录查询 + 回填 (e2e)', () => {
         total: 0,
         matchedCount: 0,
         unmatchedCount: 0,
+        nextAfterId: null,
+        hasMore: false,
       });
       expect(fetchSpy).not.toHaveBeenCalled();
     });
@@ -359,6 +367,8 @@ describe('commission-batch 保单记录查询 + 回填 (e2e)', () => {
         total: 1,
         matchedCount: 0,
         unmatchedCount: 1,
+        nextAfterId: null,
+        hasMore: false,
       });
 
       const reloadedSystem = await policyRecordRepository.findOne({
@@ -394,6 +404,8 @@ describe('commission-batch 保单记录查询 + 回填 (e2e)', () => {
         total: 2,
         matchedCount: 1,
         unmatchedCount: 1,
+        nextAfterId: null,
+        hasMore: false,
       });
 
       const reloadedMatched = await policyRecordRepository.findOne({
@@ -488,6 +500,8 @@ describe('commission-batch 保单记录查询 + 回填 (e2e)', () => {
         total: 2,
         matchedCount: 1,
         unmatchedCount: 1,
+        nextAfterId: null,
+        hasMore: false,
       });
 
       const reloadedSurvivor = await policyRecordRepository.findOne({
@@ -520,6 +534,8 @@ describe('commission-batch 保单记录查询 + 回填 (e2e)', () => {
         total: 1,
         matchedCount: 0,
         unmatchedCount: 1,
+        nextAfterId: null,
+        hasMore: false,
       });
     });
 
@@ -543,6 +559,140 @@ describe('commission-batch 保单记录查询 + 回填 (e2e)', () => {
         total: 1,
         matchedCount: 0,
         unmatchedCount: 1,
+        nextAfterId: null,
+        hasMore: false,
+      });
+    });
+
+    it('limit 分页：单批不足 limit 条时一次处理完，hasMore=false 且 nextAfterId=最后一条 id', async () => {
+      const batchId = await createBatch('回填-limit未超批次');
+      const r1 = await createRecord(batchId, { workOrderNo: 'WO-L1' });
+      const r2 = await createRecord(batchId, { workOrderNo: 'WO-L2' });
+
+      process.env.SALES_FILL_API_URL = 'http://mock-sales-fill.local/lookup';
+      fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ 'WO-L1': '张三', 'WO-L2': '李四' }),
+      } as Response);
+
+      const res = await request(app.getHttpServer())
+        .post(`/api/commission-batches/${batchId}/policy-records/fill`)
+        .query({ limit: 100 })
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(201);
+      expect(res.body.data).toEqual({
+        total: 2,
+        matchedCount: 2,
+        unmatchedCount: 0,
+        nextAfterId: r2.id,
+        hasMore: false,
+      });
+      // 只是断言游标是"最后一条"，不依赖具体 id 递增顺序假设
+      expect(res.body.data.nextAfterId).not.toBe(r1.id);
+    });
+
+    it('limit 分页：分两批处理完全部记录，游标不重叠、不遗漏、不重复调用第三方接口', async () => {
+      const batchId = await createBatch('回填-limit分两批');
+      const records = [];
+      for (let i = 0; i < 5; i += 1) {
+        records.push(
+          await createRecord(batchId, { workOrderNo: `WO-PAGE-${i}` }),
+        );
+      }
+
+      process.env.SALES_FILL_API_URL = 'http://mock-sales-fill.local/lookup';
+      const calledWorkOrderNos: string[][] = [];
+      fetchSpy = jest
+        .spyOn(global, 'fetch')
+        .mockImplementation(async (_url: any, init?: any) => {
+          const body = JSON.parse(init.body) as { workOrderNos: string[] };
+          calledWorkOrderNos.push(body.workOrderNos);
+          // 只有 WO-PAGE-0/2/4 命中，WO-PAGE-1/3 永远查不到（模拟第三方也无解的记录）
+          const mapping: Record<string, string> = {
+            'WO-PAGE-0': '张三',
+            'WO-PAGE-2': '李四',
+            'WO-PAGE-4': '王五',
+          };
+          return {
+            ok: true,
+            status: 200,
+            json: async () => mapping,
+          } as Response;
+        });
+
+      // 第一批：limit=3，应处理前 3 条（按 id 升序）
+      const res1 = await request(app.getHttpServer())
+        .post(`/api/commission-batches/${batchId}/policy-records/fill`)
+        .query({ limit: 3 })
+        .set('Authorization', `Bearer ${token}`);
+      expect(res1.status).toBe(201);
+      expect(res1.body.data.total).toBe(3);
+      expect(res1.body.data.matchedCount).toBe(2); // WO-PAGE-0/2 命中
+      expect(res1.body.data.hasMore).toBe(true);
+      const cursor1 = res1.body.data.nextAfterId as string;
+      expect(cursor1).toBe(records[2].id);
+
+      // 第二批：带上一批游标，应处理剩余 2 条（WO-PAGE-3/4），不重复处理前 3 条
+      const res2 = await request(app.getHttpServer())
+        .post(`/api/commission-batches/${batchId}/policy-records/fill`)
+        .query({ limit: 3, afterId: cursor1 })
+        .set('Authorization', `Bearer ${token}`);
+      expect(res2.status).toBe(201);
+      expect(res2.body.data).toEqual({
+        total: 2,
+        matchedCount: 1, // WO-PAGE-4 命中，WO-PAGE-3 查不到
+        unmatchedCount: 1,
+        nextAfterId: records[4].id,
+        hasMore: false,
+      });
+
+      // 两批加起来总共只调用了 2 次第三方接口，且合起来覆盖全部 5 个工作单号、互不重叠
+      expect(fetchSpy).toHaveBeenCalledTimes(2);
+      const allCalledNos = calledWorkOrderNos.flat().sort();
+      expect(allCalledNos).toEqual(
+        [
+          'WO-PAGE-0',
+          'WO-PAGE-1',
+          'WO-PAGE-2',
+          'WO-PAGE-3',
+          'WO-PAGE-4',
+        ].sort(),
+      );
+
+      // 最终库里状态：0/2/4 已回填，1/3 仍未匹配（不会被无限重试，两批就终止了）
+      const finalRecords = await policyRecordRepository.find({
+        where: { importBatchId: batchId },
+        order: { id: 'ASC' },
+      });
+      expect(
+        finalRecords.map((r) => [r.workOrderNo, r.salesFillSource]),
+      ).toEqual([
+        ['WO-PAGE-0', 'system'],
+        ['WO-PAGE-1', 'unmatched'],
+        ['WO-PAGE-2', 'system'],
+        ['WO-PAGE-3', 'unmatched'],
+        ['WO-PAGE-4', 'system'],
+      ]);
+    });
+
+    it('未传 limit 时忽略 afterId，保持旧行为一次处理全部（向后兼容）', async () => {
+      const batchId = await createBatch('回填-未传limit兼容');
+      await createRecord(batchId, { workOrderNo: 'WO-COMPAT-1' });
+      await createRecord(batchId, { workOrderNo: 'WO-COMPAT-2' });
+
+      const res = await request(app.getHttpServer())
+        .post(`/api/commission-batches/${batchId}/policy-records/fill`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(201);
+      expect(res.body.data).toEqual({
+        total: 2,
+        matchedCount: 0,
+        unmatchedCount: 2,
+        nextAfterId: null,
+        hasMore: false,
       });
     });
   });

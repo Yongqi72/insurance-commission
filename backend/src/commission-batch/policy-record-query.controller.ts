@@ -1,6 +1,7 @@
 import { Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { PageResultDto } from '../common/dto/page-result.dto';
 import { PolicyRecord } from '../policy-record/policy-record.entity';
+import { FillPolicyRecordsDto } from './dto/fill-policy-records.dto';
 import { QueryPolicyRecordDto } from './dto/query-policy-record.dto';
 import {
   FillResultDto,
@@ -32,7 +33,10 @@ export class PolicyRecordQueryController {
   }
 
   @Post('fill')
-  fill(@Param('batchId') batchId: string): Promise<FillResultDto> {
-    return this.policyRecordQueryService.fill(batchId);
+  fill(
+    @Param('batchId') batchId: string,
+    @Query() query: FillPolicyRecordsDto,
+  ): Promise<FillResultDto> {
+    return this.policyRecordQueryService.fill(batchId, query);
   }
 }

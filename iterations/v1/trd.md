@@ -112,10 +112,10 @@
 # 满足 AC：AC-05, AC-07
 
 ### 接口：POST /api/commission-batches/:id/policy-records/fill
-- 请求体：无
-- 响应体：`{ total, matchedCount, unmatchedCount }`
+- 请求体：无；Query 可选 `limit`（1~500）、`afterId`（游标，配合 `limit` 使用）
+- 响应体：`{ total, matchedCount, unmatchedCount, nextAfterId, hasMore }`
 - 错误码：`1004`（批次不存在）；第三方接口未配置/失败不算业务错误，操作本身视为成功完成
-- 服务流程：查询该批次内 `sales_fill_source = 'unmatched'` 的全部记录，按工作单号批量调用可配置的第三方接口（请求：工作单号数组；响应：工作单号→销售人员姓名映射；接口地址读取环境变量 `SALES_FILL_API_URL`，本期未配置该变量）；地址未配置、请求超时（超时阈值 5s）、或调用异常 → 涉及记录保持 `unmatched`；有返回且命中映射的记录 → 更新 `sales_name` = 返回值、`sales_fill_source` = `system`；返回统计
+- 服务流程：省略 `limit` 时查询该批次内 `sales_fill_source = 'unmatched'` 的全部记录（旧行为，`nextAfterId` 恒为 `null`、`hasMore` 恒为 `false`）；传 `limit` 时改为按 `id` 升序游标分页——只取 `id > afterId`（未传 `afterId` 则从最小 id 开始）的前 `limit` 条，返回本批处理到的游标 `nextAfterId` 与是否还有更多待处理记录 `hasMore`，供调用方分批调用、每批推进一次进度（前端约定：每 100 条一批，见 `BatchDetailView` 开始回填交互）。按工作单号批量调用可配置的第三方接口（请求：工作单号数组；响应：工作单号→销售人员姓名映射；接口地址读取环境变量 `SALES_FILL_API_URL`）；地址未配置、请求超时（超时阈值 5s）、或调用异常 → 涉及记录保持 `unmatched`；有返回且命中映射的记录 → 更新 `sales_name` = 返回值、`sales_fill_source` = `system`；返回统计。游标而非"还剩多少 unmatched"计数分页：第三方查不到的记录永远停留在 `unmatched`，按计数分页会无限重试同一批查不到的记录，游标保证每批总是处理 id 更大的新记录
 # 满足 AC：AC-06
 
 ### 接口：PATCH /api/policy-records/:id/sales-name

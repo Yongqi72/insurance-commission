@@ -5,6 +5,21 @@
       <el-button id="btn-start-fill" :loading="filling" @click="handleStartFill">开始回填</el-button>
     </div>
 
+    <Transition name="fade">
+      <div v-if="fillProgress" id="fill-progress" class="policy-record-table__fill-progress">
+        <el-progress
+          :percentage="fillProgressPercentage"
+          :stroke-width="10"
+          striped
+          striped-flow
+          :duration="8"
+        />
+        <span class="policy-record-table__fill-progress-text">
+          正在回填：{{ fillProgress.processed }}/{{ fillProgress.total }}
+        </span>
+      </div>
+    </Transition>
+
     <div class="policy-record-table__toolbar">
       <div class="policy-record-table__search-wrap">
         <el-input
@@ -124,7 +139,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ElMessage, type TableInstance } from 'element-plus'
 import DataStateWrapper from '@/components/DataStateWrapper.vue'
 import PolicyRecordHistoryDrawer from '@/components/PolicyRecordHistoryDrawer.vue'
@@ -161,6 +176,14 @@ const keyword = ref('')
 const fillStatusFilter = ref<'all' | SalesFillSource>('all')
 
 const filling = ref(false)
+/** 分批回填的进度状态：null 表示当前不在回填中；非 null 时显示进度条（AC：每 100 条调一次接口，前端展示真实进度）。 */
+const fillProgress = ref<{ processed: number; total: number } | null>(null)
+const fillProgressPercentage = computed(() => {
+  if (!fillProgress.value || fillProgress.value.total === 0) {
+    return 0
+  }
+  return Math.round((fillProgress.value.processed / fillProgress.value.total) * 100)
+})
 const savingId = ref<string | null>(null)
 const editingSalesName = ref('')
 
@@ -237,18 +260,56 @@ function handleSearchClear() {
   loadData()
 }
 
+/** 每批最多让后端处理的记录数（用户需求：无论明细多少条，都按 100 条一批调用第三方接口）。 */
+const FILL_CHUNK_SIZE = 100
+
 async function handleStartFill() {
   filling.value = true
   try {
-    // AC-06：无论 matchedCount 是否为 0 均按成功分支处理（第三方接口本期未配置）。
-    const result = await triggerSalesFill(props.batchId)
-    ElMessage.success(`回填完成，${result.unmatchedCount} 条待人工补录`)
+    // 先查一次当前未匹配总数，作为进度条分母；分批过程中途新增/被删的记录不重新计入分母，
+    // 避免进度条中途抖动——这批开始时存在多少条，就以处理完这些为"完成"。
+    const initialUnmatched = await fetchBatchPolicyRecords(props.batchId, {
+      page: 1,
+      pageSize: 1,
+      fillStatus: 'unmatched',
+    })
+    const totalToProcess = initialUnmatched.total
+    if (totalToProcess === 0) {
+      ElMessage.success('回填完成，0 条待人工补录')
+      return
+    }
+
+    fillProgress.value = { processed: 0, total: totalToProcess }
+
+    // AC-06：无论 matchedCount 是否为 0 均按成功分支处理（第三方接口本期未配置时全部落回未匹配，
+    // 操作本身仍视为成功）。用 id 游标逐批调用：每批最多处理 FILL_CHUNK_SIZE 条，处理完一批
+    // 推进一次进度条，直到 hasMore=false 或某批返回 0 条（双重兜底，避免任何原因下的死循环）。
+    let afterId: string | undefined
+    let totalUnmatchedAfter = 0
+    for (;;) {
+      const result = await triggerSalesFill(props.batchId, {
+        limit: FILL_CHUNK_SIZE,
+        afterId,
+      })
+      totalUnmatchedAfter += result.unmatchedCount
+      fillProgress.value = {
+        processed: Math.min(fillProgress.value.processed + result.total, totalToProcess),
+        total: totalToProcess,
+      }
+      if (result.total === 0 || !result.hasMore || !result.nextAfterId) {
+        break
+      }
+      afterId = result.nextAfterId
+    }
+
+    ElMessage.success(`回填完成，${totalUnmatchedAfter} 条待人工补录`)
     resetExpandState()
     await loadData()
   } catch {
     // 失败已由 api/request.ts 响应拦截器统一 ElMessage.error 透传后端 msg（FE-ASYNC-01），不重复弹窗
   } finally {
     filling.value = false
+    fillProgress.value = null
   }
 }
 
@@ -352,6 +413,28 @@ defineExpose({ refresh: loadData })
     margin-bottom: $space-md;
   }
 
+  &__fill-progress {
+    display: flex;
+    align-items: center;
+    gap: $space-md;
+    margin-bottom: $space-md;
+    padding: $space-sm $space-md;
+    background-color: $bg-page;
+    border-radius: $radius-md;
+
+    :deep(.el-progress) {
+      flex: 1;
+    }
+  }
+
+  &__fill-progress-text {
+    flex-shrink: 0;
+    font-size: $fs-small;
+    color: $text-secondary;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
   // FE-EP-04：禁止在 Element Plus 组件标签上直接用 style/class 设宽度，改用外层 wrapper + :deep()
   &__search-wrap {
     width: $input-width-lg;
@@ -433,5 +516,16 @@ defineExpose({ refresh: loadData })
       color: $primary-dark;
     }
   }
+}
+
+// 回填进度条的显隐过渡（FE-EP-04 之外的纯动效需求，与 design.md $transition-fast 一致）
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity $transition-fast;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

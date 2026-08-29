@@ -109,6 +109,16 @@ export interface FillResult {
   total: number
   matchedCount: number
   unmatchedCount: number
+  /** 本批处理到的最大 id 游标，供下一批调用透传为 afterId；无记录可处理时为 null。 */
+  nextAfterId: string | null
+  /** 是否还有更多待处理记录（仅在传了 limit 分批调用时才可能为 true）。 */
+  hasMore: boolean
+}
+
+/** 触发回填的分批参数：省略 limit 时保持旧行为，一次处理该批次全部未匹配记录。 */
+export interface FillOptions {
+  limit?: number
+  afterId?: string
 }
 
 /**
@@ -130,7 +140,11 @@ export async function fetchBatchPolicyRecords(
  * 触发批次内未匹配保单记录的销售人员回填（TRD §接口：POST .../policy-records/fill，满足 AC-06）。
  * 第三方接口地址本期未配置/调用失败均不算业务错误，操作本身按成功处理，返回统计供前端提示文案。
  */
-export async function triggerSalesFill(id: string): Promise<FillResult> {
-  const res = await request.post<ApiEnvelope<FillResult>>(`/api/commission-batches/${id}/policy-records/fill`)
+export async function triggerSalesFill(id: string, options: FillOptions = {}): Promise<FillResult> {
+  const res = await request.post<ApiEnvelope<FillResult>>(
+    `/api/commission-batches/${id}/policy-records/fill`,
+    undefined,
+    { params: options },
+  )
   return res.data.data
 }
