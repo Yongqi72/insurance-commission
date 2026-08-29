@@ -37,6 +37,10 @@
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Fcl.DataAccess">
+      <HintPath>lib\Fcl.DataAccess.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Fcl.WSOP">
       <HintPath>lib\Fcl.WSOP.dll</HintPath>
       <Private>True</Private>

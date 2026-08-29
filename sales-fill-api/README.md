@@ -1,6 +1,6 @@
 # SalesFillApi · 销售人员回填查询接口
 
-保险佣金系统（ic-b-002）的第三方回填接口服务端：部署在**内网 IIS**，按工作单号批量查询内部库中的销售人员姓名，供外网的保险佣金系统通过网络调用。
+保险佣金系统（ic-b-007）的第三方回填接口服务端：部署在**内网 IIS**，按工作单号批量查询内部库中的销售人员姓名，供外网的保险佣金系统通过网络调用。
 
 ```
 保险佣金系统（外网） ──POST JSON + X-Fill-Token──▶ SalesFill.ashx（内网 IIS） ──SQL──▶ 内部库（SQL Server）
@@ -24,10 +24,11 @@
 
 ## 开发准备（一次性）
 
-1. 从 `F:\Qoder\Projects\FalCode\Fal\bin\Debug` 复制 `Fcl.WSOP.dll` 到本项目 `lib/` 目录
-   - 同目录若有 `Fcl.WSOP.lic` 一并复制（授权文件，`lib/` 已在 .gitignore，不入库）
-2. VS2015 打开 `SalesFillApi.sln`，编译应通过
-3. 若运行时报 Fcl.WSOP 授权异常：把 `Fcl.WSOP.lic` 加入项目作为嵌入资源后重新编译
+1. 从 `F:\Qoder\Projects\FalCode\Fal\bin\Debug` 复制以下文件到本项目 `lib/` 目录（`lib/` 已在 .gitignore，不入库）：
+   - `Fcl.WSOP.dll`（数据访问组件）
+   - `Fcl.DataAccess.dll`（`SqlBuilder` 所在程序集，编译必需）
+   - `Fcl.WSOP.lic`（授权文件，部署时要放进站点 `bin/`）
+2. VS2015 打开 `SalesFillApi.sln`，编译应通过（生成 `bin/SalesFillApi.dll`）
 
 ## 部署前必改的两个占位项
 
@@ -47,8 +48,9 @@
 1. 服务器需安装 .NET Framework 4.0（及以上）
 2. IIS 新建应用程序池：.NET CLR v4.0，托管管道「集成」
 3. 新建网站（或虚拟目录）指向发布目录，包含文件：
-   - `SalesFill.ashx`、`SalesFill.ashx.vb`、`Web.config`
-   - `bin/SalesFillApi.dll`、`bin/Fcl.WSOP.dll`（发布产物）
+   - `SalesFill.ashx`、`Web.config`
+   - `bin/SalesFillApi.dll`、`bin/Fcl.WSOP.dll`、`bin/Fcl.DataAccess.dll`（发布产物）
+   - `bin/Fcl.WSOP.lic`（授权文件，与 DLL 同目录，FalCode 同款做法）
 4. 确认保险佣金系统所在外网服务器能访问本机 HTTP 端口（防火墙放行）
 5. 冒烟验证：浏览器 GET 访问 `SalesFill.ashx` 应返回 `{"error":"method not allowed"}`（405）；
    带正确密钥的 POST 空数组应返回 `{}`
@@ -68,4 +70,4 @@
 | 回填全部未匹配 | 后端日志看第三方调用报错；确认网络可达、密钥一致（密钥不符返回 401，调用方按未命中处理） |
 | 500 + `internal error` | 服务器事件查看器 → 应用程序日志，来源 `SalesFillApi`，含具体异常 |
 | 连接内部库失败 | 核对连接串、账号权限（只需 SELECT）、SQL Server 是否允许该机器连接 |
-| Fcl.WSOP 授权异常 | 按「开发准备」第 3 步处理授权文件 |
+| Fcl.WSOP 授权异常 | 确认站点 `bin/` 目录里有 `Fcl.WSOP.lic`（与 DLL 同级）；仍异常则升级确认授权方案（任务包 escalate-if） |
