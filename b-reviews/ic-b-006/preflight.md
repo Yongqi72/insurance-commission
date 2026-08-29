@@ -8,7 +8,7 @@ completed_at: 2026-08-28T09:59:25Z
 base_ref: 29ad8a501992659394943b3c04aa74b8f77a7ffc
 base_tree: a9c11836387a1295a1ac5fd82e336fabbeb8a4af
 result: pass
-spec_minutes: 3
+spec_minutes: 5
 ---
 
 ## 核对结果（retroactive 说明）

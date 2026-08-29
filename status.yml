@@ -355,9 +355,9 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 15
     parent_id: null
     depends_on: []
     delivery: 串行
@@ -779,6 +779,24 @@ code_reviews:
     review_minutes: 8
     spec_minutes: 2
     comment: "PolicyRecordQueryService.findPage() 原用 Like(`%${keyword}%`) 拼 keyword，未转义 %/_，导致工作单号含下划线时过度匹配；改用 Raw()+参数绑定的 ESCAPE 子句修复，独立审查额外用隔离 sqlite 探针验证了多字段 OR 条件复用同名参数不冲突、ESCAPE 子句在 sqlite 下真实生效、且用未修复前的逻辑复现了原 bug 以证明新增反例用例有辨别力。顺带恢复 policy-record.e2e-spec.ts 被弱化的空列表断言、补 keyword+fillStatus 组合用例；round-01（full）0 blocking 0 advisory → conclusion: pass"
+    issues: []
+  - iteration: null
+    task_id: ic-b-006
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-006
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-28T09:59:25Z
+    implementation_completed_at: 2026-08-28T10:00:53Z
+    review_started_at: 2026-08-28T10:00:53Z
+    review_completed_at: 2026-08-28T10:03:21Z
+    implementation_minutes: 2
+    review_minutes: 3
+    spec_minutes: 5
+    comment: "freshness preflight（retroactive，先实现后补）核实 backlog 两条欠账仍存在，backlog 原文提及的 commission-batch.service.ts 重复实现经 grep 核实不存在，已在任务包 context/do-not 如实记录该出入。round-01（full）0 blocking 0 advisory，逐点核对 ensureBatchExists/extractOperator 收敛后与原三/两处实现逐字节行为一致，隔离 worktree 复核 build/lint/test:e2e（94/95，唯一失败为 ic-b-001 遗留已知问题）与首轮完全一致 → conclusion: pass。合并前发现 master 已并行合并 ic-b-004/ic-b-005（同触碰 policy-record-query.service.ts/status.yml/b-tasks.md），本地 merge master 解决冲突（policy-record-query.service.ts 自动合并干净，status.yml/b-tasks.md 手工按 id 顺序合并），合并后重跑 build/lint/test/test:e2e 全绿（97/98，同一已知失败），无新增回归"
     issues: []
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
