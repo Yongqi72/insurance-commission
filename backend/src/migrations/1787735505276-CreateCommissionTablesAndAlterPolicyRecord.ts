@@ -264,6 +264,13 @@ export class CreateCommissionTablesAndAlterPolicyRecord1787735505276 implements 
     );
   }
 
+  /**
+   * 运维前提：执行 `migration:revert` 前必须停止对 `policy_record` 表的写入。
+   * `assertNoDuplicatesForRevert()` 的重复值检测与下方实际执行的 `ADD UNIQUE INDEX`
+   * 之间存在窗口——若检测通过后、DDL 执行前另一连接插入了新的重复
+   * `policy_no`/`work_order_no`，仍会复现半回滚状态失败（DROP 已执行，
+   * ADD UNIQUE INDEX 失败）。该窗口无法在应用层消除，只能靠运维流程约束。
+   */
   public async down(queryRunner: QueryRunner): Promise<void> {
     // 先做全程唯一的前置校验（V1 允许 policy_no/work_order_no 重复，回滚要恢复唯一索引，
     // MySQL 不支持事务性 DDL、任何一步失败都不会自动撤销前面已执行的 DDL——故必须在
