@@ -135,10 +135,10 @@ Public Class SalesFillHandler
             Dim ldt As DataTable = lws.GetTable(lsb)
             If ldt IsNot Nothing Then
                 For Each lrow As DataRow In ldt.Rows
-                    If lrow.IsNull("work_order_no") OrElse lrow.IsNull("sales_name") Then
+                    If lrow.IsNull("job_no") OrElse lrow.IsNull("sales_name") Then
                         Continue For
                     End If
-                    Dim lsNo As String = lrow("work_order_no").ToString().Trim()
+                    Dim lsNo As String = lrow("job_no").ToString().Trim()
                     Dim lsName As String = lrow("sales_name").ToString().Trim()
                     If lsNo.Length > 0 AndAlso lsName.Length > 0 AndAlso Not lmapResult.ContainsKey(lsNo) Then
                         lmapResult.Add(lsNo, lsName)
@@ -156,13 +156,11 @@ Public Class SalesFillHandler
     End Function
 
     ''' <summary>
-    ''' ============================================================
-    ''' 【占位 SQL · 待替换】
-    ''' 真实查询 SQL 由任务发起人提供后仅替换下方 SELECT 语句；
-    ''' 约定结果集必须包含两列：work_order_no（工作单号）、sales_name（销售姓名），
-    ''' 列名不一致时需同步调整 QuerySalesNames 的取列代码。
+    ''' 真实查询（由任务发起人提供）：按工作单号从工单表 m_job 查出对应销售人员——
+    ''' m_job.sales 存的是销售人员编码，经 d_user 翻译为 user_name；
+    ''' sales 为空或在 d_user 无对应时子查询返回 NULL，由 QuerySalesNames 过滤（按未命中处理）。
+    ''' 结果集两列：job_no（工作单号）、sales_name（销售姓名）。
     ''' 占位 ? 与参数数组逐个绑定，禁止字符串拼接工作单号。
-    ''' ============================================================
     ''' </summary>
     Private Function BuildSalesSql(ByVal llistWorkOrderNos As List(Of String)) As Fcl.WSOP.SqlBuilder
         Dim lsbPlaceholders As New StringBuilder()
@@ -175,7 +173,7 @@ Public Class SalesFillHandler
             lobjParams(lnIndex) = llistWorkOrderNos(lnIndex)
         Next
 
-        Dim lsSql As String = "SELECT work_order_no, sales_name FROM d_sales_workorder WHERE work_order_no IN (" + lsbPlaceholders.ToString() + ")"
+        Dim lsSql As String = "SELECT job_no, (SELECT user_name FROM d_user WHERE user_code = m_job.sales) AS sales_name FROM m_job WHERE job_no IN (" + lsbPlaceholders.ToString() + ")"
         Return New Fcl.WSOP.SqlBuilder(lsSql, lobjParams)
     End Function
 

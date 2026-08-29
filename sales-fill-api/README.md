@@ -29,15 +29,18 @@
 2. VS2015 打开 `SalesFillApi.sln`，编译应通过
 3. 若运行时报 Fcl.WSOP 授权异常：把 `Fcl.WSOP.lic` 加入项目作为嵌入资源后重新编译
 
-## 部署前必改的三个占位项
+## 部署前必改的两个占位项
 
 | 位置 | 占位内容 | 替换为 |
 |---|---|---|
-| `SalesFill.ashx.vb` → `BuildSalesSql` | `SELECT ... FROM d_sales_workorder ...` | 任务发起人提供的真实 SQL（结果列须含 `work_order_no`、`sales_name`，列名不符时同步改 `QuerySalesNames` 取列处） |
 | `Web.config` → `FillApiToken` | `change-me-to-a-random-token` | 高强度随机串（与后端 `SALES_FILL_API_TOKEN` 环境变量同值） |
 | `Web.config` → `InternalDbConnectionString` | `127.0.0.1/change-me` | 内部 SQL Server 真实地址、账号（仅 SELECT 权限）、库名 |
 
 > 占位密钥带 `change-me` 前缀时接口会一律返回 401，属预期防呆行为。
+>
+> 查询 SQL 已由任务发起人提供并落地到 `BuildSalesSql`：按 `job_no` 从 `m_job` 查出
+> `sales` 编码，经 `d_user` 翻译为销售姓名（结果列 `job_no`/`sales_name`）。
+> 若后续内部库表结构变化，仅需调整该函数内的 SELECT 语句。
 
 ## IIS 部署步骤
 
