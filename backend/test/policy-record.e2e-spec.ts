@@ -119,13 +119,16 @@ describe('标杆穿透切片：登录 + 保单记录列表 (e2e)', () => {
       .set('Authorization', `Bearer ${freshToken}`);
 
     expect(listRes.status).toBe(200);
+    // 本用例是本文件第一个查询该表的测试（beforeAll 共享同一 app/DB 实例，
+    // 后续用例才首次调用 createRecord() 插入数据），此刻表内确定为空，
+    // 断言 list=[]/total=0 是真实基线校验，不是巧合下的空态。
     expect(listRes.body).toEqual(
       expect.objectContaining({
         code: 0,
         msg: 'success',
         data: expect.objectContaining({
-          list: expect.any(Array),
-          total: expect.any(Number),
+          list: [],
+          total: 0,
           page: 1,
           pageSize: 20,
         }),

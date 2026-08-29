@@ -163,6 +163,86 @@ describe('commission-batch 保单记录查询 + 回填 (e2e)', () => {
       expect(res.body.data.total).toBe(3);
     });
 
+    it('keyword 含下划线时按字面量匹配，不当作 LIKE 通配符', async () => {
+      const batchId = await createBatch('明细查询-下划线关键词批次');
+      await createRecord(batchId, {
+        workOrderNo: 'WO_2026_001',
+        policyNo: 'PN-9101',
+        customerName: '张三',
+      });
+      // 若 "_" 被当成 SQL 通配符（匹配任意单字符），"WO_2026_001" 会误命中这条：
+      // "WOX2026X001" 恰好把两处 "_" 都替换成别的单字符，长度与结构完全对应。
+      await createRecord(batchId, {
+        workOrderNo: 'WOX2026X001',
+        policyNo: 'PN-9102',
+        customerName: '李四',
+      });
+
+      const res = await request(app.getHttpServer())
+        .get(`/api/commission-batches/${batchId}/policy-records`)
+        .query({ keyword: 'WO_2026_001' })
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.total).toBe(1);
+      expect(res.body.data.list[0].workOrderNo).toBe('WO_2026_001');
+    });
+
+    it('keyword 含百分号时按字面量匹配，不当作 LIKE 通配符', async () => {
+      const batchId = await createBatch('明细查询-百分号关键词批次');
+      await createRecord(batchId, {
+        workOrderNo: 'WO-100%DONE',
+        policyNo: 'PN-9201',
+        customerName: '王五',
+      });
+      await createRecord(batchId, {
+        workOrderNo: 'WO-100xDONE',
+        policyNo: 'PN-9202',
+        customerName: '赵六',
+      });
+
+      const res = await request(app.getHttpServer())
+        .get(`/api/commission-batches/${batchId}/policy-records`)
+        .query({ keyword: '100%DONE' })
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.total).toBe(1);
+      expect(res.body.data.list[0].workOrderNo).toBe('WO-100%DONE');
+    });
+
+    it('keyword 与 fillStatus 同时传入时按 AND 组合过滤（keyword 命中的记录里再筛 fillStatus）', async () => {
+      const batchId = await createBatch('明细查询-关键词加回填状态组合批次');
+      await createRecord(batchId, {
+        workOrderNo: 'WOCOMBO-001',
+        policyNo: 'PN-9301',
+        customerName: '组合甲',
+        salesFillSource: 'unmatched',
+      });
+      await createRecord(batchId, {
+        workOrderNo: 'WOCOMBO-002',
+        policyNo: 'PN-9302',
+        customerName: '组合乙',
+        salesFillSource: 'system',
+        salesName: '张三',
+      });
+      await createRecord(batchId, {
+        workOrderNo: 'WO-NOMATCH-COMBO',
+        policyNo: 'PN-9303',
+        customerName: '组合丙',
+        salesFillSource: 'unmatched',
+      });
+
+      const res = await request(app.getHttpServer())
+        .get(`/api/commission-batches/${batchId}/policy-records`)
+        .query({ keyword: 'WOCOMBO', fillStatus: 'unmatched' })
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.total).toBe(1);
+      expect(res.body.data.list[0].workOrderNo).toBe('WOCOMBO-001');
+    });
+
     it('fillStatus 按 sales_fill_source 精确过滤（AC-07）', async () => {
       const batchId = await createBatch('明细查询-回填状态批次');
       await createRecord(batchId, {

@@ -313,6 +313,40 @@ tasks:
     urgency: high
     branch: ic-b-003
     risk: sensitive
+  - id: ic-b-004
+    iteration: null
+    sprint: null
+    source: bug
+    title: 修复 commission-tier remove() 删除与变更日志非事务写入的不一致风险
+    type: develop
+    discipline: dev-backend
+    layer: backend
+    status: merged
+    assigned_to: yongqi.liu
+    pr: 13
+    parent_id: null
+    depends_on: []
+    delivery: 串行
+    urgency: normal
+    branch: ic-b-004
+    risk: sensitive
+  - id: ic-b-005
+    iteration: null
+    sprint: null
+    source: bug
+    title: 修复保单记录关键词搜索的 LIKE 通配符转义缺失 + 补测试覆盖
+    type: develop
+    discipline: dev-backend
+    layer: backend
+    status: merged
+    assigned_to: yongqi.liu
+    pr: 14
+    parent_id: null
+    depends_on: []
+    delivery: 串行
+    urgency: normal
+    branch: ic-b-005
+    risk: standard
   - id: ic-b-006
     iteration: null
     sprint: null
@@ -709,6 +743,43 @@ code_reviews:
     issues:
       - { id: ic-b-003-F002, dimension: test-evidence, severity: advisory, type: evidence-gap, reachability: current, action: backlog, impact: "当前无回归风险（已通过 build/lint 全绿人工验证），但 down() 分支今后若被误改无自动化防线拦截", description: "全仓无任何自动化测试覆盖 migration 的 down()（sqlite 测试路径不走 migration，mysql-only CLI 路径不进 CI）" }
       - { id: ic-b-003-F003, dimension: concurrency, severity: advisory, type: future-risk, reachability: conditional, action: backlog, impact: "unknown；若生产运维流程未强制 revert 期间停写，窄并发窗口内理论上仍可复现半回滚状态", description: "assertNoDuplicatesForRevert 检查通过后到 ADD UNIQUE INDEX 实际执行前存在 TOCTOU 窗口，期间另一连接插入重复值仍会触发原始失败模式" }
+  - iteration: null
+    task_id: ic-b-004
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-004
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-28T09:27:43Z
+    implementation_completed_at: 2026-08-28T09:28:54Z
+    review_started_at: 2026-08-28T09:28:54Z
+    review_completed_at: 2026-08-28T09:31:31Z
+    implementation_minutes: 2
+    review_minutes: 3
+    spec_minutes: 2
+    comment: "remove() 原实现是两条独立语句（先删除再单独写变更日志），与 create()/update() 已有的事务包裹写法不一致；改写为 dataSource.transaction('SERIALIZABLE', ...) 包裹查找/校验存在/删除/写日志四步，因此变为死代码的私有方法 findOneOrFail 一并删除；round-01（full）0 blocking，1 条建议级 evidence-gap（写日志步骤本身失败时的回滚未被直接测试证实）转 backlog → conclusion: pass"
+    issues:
+      - { id: ic-b-004-F001, dimension: test-evidence, severity: advisory, type: evidence-gap, reachability: current, action: backlog, impact: "该步骤当前实践中失败概率极低（简单数值对象的 JSON.stringify），不构成阻断，仅原子性承诺未被直接测试证实", description: "写变更日志步骤本身失败时事务是否真的回滚，只靠与 create()/update() 同一事务机制的类比论证支撑，未构造失败注入测试" }
+  - iteration: null
+    task_id: ic-b-005
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-005
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-28T09:40:00Z
+    implementation_completed_at: 2026-08-28T09:43:59Z
+    review_started_at: 2026-08-28T09:43:59Z
+    review_completed_at: 2026-08-28T09:51:04Z
+    implementation_minutes: 4
+    review_minutes: 8
+    spec_minutes: 2
+    comment: "PolicyRecordQueryService.findPage() 原用 Like(`%${keyword}%`) 拼 keyword，未转义 %/_，导致工作单号含下划线时过度匹配；改用 Raw()+参数绑定的 ESCAPE 子句修复，独立审查额外用隔离 sqlite 探针验证了多字段 OR 条件复用同名参数不冲突、ESCAPE 子句在 sqlite 下真实生效、且用未修复前的逻辑复现了原 bug 以证明新增反例用例有辨别力。顺带恢复 policy-record.e2e-spec.ts 被弱化的空列表断言、补 keyword+fillStatus 组合用例；round-01（full）0 blocking 0 advisory → conclusion: pass"
+    issues: []
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}

@@ -1,12 +1,24 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Like, Repository } from 'typeorm';
+import { FindOptionsWhere, Raw, Repository } from 'typeorm';
 import { PageResultDto } from '../common/dto/page-result.dto';
 import { PolicyRecord } from '../policy-record/policy-record.entity';
 import { CommissionBatch } from './commission-batch.entity';
 import { QueryPolicyRecordDto } from './dto/query-policy-record.dto';
 import { ensureBatchExists } from './ensure-batch-exists.util';
+
+/** LIKE 通配符转义字符；MySQL/SQLite 均支持标准 SQL 的 ESCAPE 子句。 */
+const LIKE_ESCAPE_CHAR = '\\';
+
+/**
+ * keyword 作为 LIKE 模式前必须转义其中的 SQL 通配符本身（%/_）与转义字符自身（\），
+ * 否则工作单号/保单号里天然含有的 "_"（如 "WO_2026_001"）会被数据库当成
+ * "匹配任意单字符" 的通配符，造成过度匹配（如误命中 "WOX2026X001"）。
+ */
+function escapeLikeKeyword(value: string): string {
+  return value.replace(/[\\%_]/g, (char) => `${LIKE_ESCAPE_CHAR}${char}`);
+}
 
 /** 第三方回填接口调用超时阈值（TRD §接口：POST .../policy-records/fill，5s） */
 const FILL_TIMEOUT_MS = 5000;
@@ -57,12 +69,20 @@ export class PolicyRecordQueryService {
 
     // keyword 对工作单号/保单号/客户名称三字段做 OR 模糊匹配，同时叠加 batchId/fillStatus
     // 过滤——用「同一前缀条件 + 各自字段 Like」的多条 where 对象数组表达 OR（TypeORM 惯例）。
+    // 用 Raw() 而非 Like() 是因为需要显式 ESCAPE 子句转义 keyword 中天然可能出现的
+    // %/_（工作单号常见格式如 "WO_2026_001"），否则会被数据库当成通配符导致过度匹配。
     const where:
       FindOptionsWhere<PolicyRecord> | FindOptionsWhere<PolicyRecord>[] =
       keyword
         ? KEYWORD_FIELDS.map((field) => ({
             ...baseWhere,
-            [field]: Like(`%${keyword}%`),
+            [field]: Raw(
+              (alias) => `${alias} LIKE :keyword ESCAPE :escapeChar`,
+              {
+                keyword: `%${escapeLikeKeyword(keyword)}%`,
+                escapeChar: LIKE_ESCAPE_CHAR,
+              },
+            ),
           }))
         : baseWhere;
 
