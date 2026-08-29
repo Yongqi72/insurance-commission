@@ -125,12 +125,27 @@ Public Class SalesFillHandler
     ''' <summary>
     ''' 用参数化 SQL 查内部库，把命中结果收敛为 工作单号→销售姓名 映射；
     ''' 空值/空白值一律不入映射（调用方按未命中处理）。
+    ''' 数据访问按 DbAccessMode 开关二选一：
+    '''   service（服务器）——经 Fcl.WSOP 服务中转：构造时传服务地址，Init(用户, 加密密码, 序列号)；
+    '''   direct（本机）——直连内部库：Init(连接串)。默认（未配置/其他值）按 direct。
     ''' </summary>
     Private Function QuerySalesNames(ByVal llistWorkOrderNos As List(Of String)) As Dictionary(Of String, String)
         Dim lmapResult As New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
-        Dim lws As New Fcl.WSOP.sqldbop
+        Dim lsMode As String = ConfigurationManager.AppSettings("DbAccessMode")
+        If lsMode IsNot Nothing Then
+            lsMode = lsMode.Trim()
+        End If
+        Dim lws As Fcl.WSOP.sqldbop = Nothing
         Try
-            lws.Init(ConfigurationManager.AppSettings("InternalDbConnectionString"))
+            If String.Equals(lsMode, "service", StringComparison.OrdinalIgnoreCase) Then
+                lws = New Fcl.WSOP.sqldbop(ConfigurationManager.AppSettings("SqlDbServiceUrl"))
+                lws.Init(ConfigurationManager.AppSettings("SqlDbServiceUser"), _
+                         ConfigurationManager.AppSettings("SqlDbServicePassword"), _
+                         ConfigurationManager.AppSettings("SqlDbServiceSerial"))
+            Else
+                lws = New Fcl.WSOP.sqldbop
+                lws.Init(ConfigurationManager.AppSettings("InternalDbConnectionString"))
+            End If
             Dim lsb As Fcl.WSOP.SqlBuilder = BuildSalesSql(llistWorkOrderNos)
             Dim ldt As DataTable = lws.GetTable(lsb)
             If ldt IsNot Nothing Then
@@ -147,7 +162,9 @@ Public Class SalesFillHandler
             End If
         Finally
             Try
-                lws.Quit()
+                If lws IsNot Nothing Then
+                    lws.Quit()
+                End If
             Catch
                 ' 释放失败不影响响应结果
             End Try

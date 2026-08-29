@@ -28,16 +28,22 @@
    - `Fcl.WSOP.dll`（数据访问组件）
    - `Fcl.DataAccess.dll`（`SqlBuilder` 所在程序集，编译必需）
    - `Fcl.WSOP.lic`（授权文件，部署时要放进站点 `bin/`）
+   - `Fcl.DataWork.dll`（service 模式运行时必需，可从 `F:\FalService\bin` 复制；direct 模式不需要）
 2. VS2015 打开 `SalesFillApi.sln`，编译应通过（生成 `bin/SalesFillApi.dll`）
 
-## 部署前必改的两个占位项
+## 部署前必改的占位项
 
 | 位置 | 占位内容 | 替换为 |
 |---|---|---|
 | `Web.config` → `FillApiToken` | `change-me-to-a-random-token` | 高强度随机串（与后端 `SALES_FILL_API_TOKEN` 环境变量同值） |
-| `Web.config` → `InternalDbConnectionString` | `127.0.0.1/change-me` | 内部 SQL Server 真实地址、账号（仅 SELECT 权限）、库名 |
+| `Web.config` → `DbAccessMode` | `direct` | 服务器部署改为 `service`（本机直连开发保持 `direct`） |
+| direct 模式：`InternalDbConnectionString` | `127.0.0.1/change-me` | 内部 SQL Server 真实地址、账号（仅 SELECT 权限）、库名 |
+| service 模式：`SqlDbServiceUrl` / `SqlDbServiceUser` / `SqlDbServicePassword` / `SqlDbServiceSerial` | `change-me` | 环境的真实服务地址与凭据（与 FalCode `sqldbop(服务地址)` + `Init(用户, 加密密码, 序列号)` 用法一致） |
 
 > 占位密钥带 `change-me` 前缀时接口会一律返回 401，属预期防呆行为。
+>
+> 数据访问双模式：本机开发直连内部库（`direct`）；服务器无法直连时切换 `service`，
+> 经 Fcl.WSOP 的 `sqldbservice.asmx` 中转查库，查询逻辑与返回契约不变。
 >
 > 查询 SQL 已由任务发起人提供并落地到 `BuildSalesSql`：按 `job_no` 从 `m_job` 查出
 > `sales` 编码，经 `d_user` 翻译为销售姓名（结果列 `job_no`/`sales_name`）。
@@ -48,8 +54,8 @@
 1. 现有网站服务器需已安装 .NET Framework 4.0（及以上），且该服务器能连通内部库所在
    SQL Server（部署前先确认这一点：它既要被外网的后端访问，又要能查内部库）
 2. 服务器上建发布目录（如 `D:\sites\salesfill\`），放入：
-   - `SalesFill.ashx`、`Web.config`（Web.config 已替换两处占位项）
-   - `bin/SalesFillApi.dll`、`bin/Fcl.WSOP.dll`、`bin/Fcl.DataAccess.dll`（发布产物）
+   - `SalesFill.ashx`、`Web.config`（Web.config 已替换占位项）
+   - `bin/SalesFillApi.dll`、`bin/Fcl.WSOP.dll`、`bin/Fcl.DataAccess.dll`、`bin/Fcl.DataWork.dll`（发布产物，service 模式必须含 Fcl.DataWork.dll）
    - `bin/Fcl.WSOP.lic`（授权文件，与 DLL 同目录，FalCode 同款做法）
 3. IIS → 现有网站右键「添加应用程序」：别名如 `salesfill`，物理路径指向发布目录；
    应用程序池选 .NET CLR v4.0、托管管道「集成」（若父站点池版本不符则为本应用单独建池）
