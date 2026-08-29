@@ -350,8 +350,9 @@ describe('commission-report 提成汇总与导出 (e2e)', () => {
       expect(findRowValues(workbook, '太仓', ['张三', 20, 40])).toBe(true);
 
       expect(ossUploadMock).toHaveBeenCalledTimes(1);
-      expect(ossUploadMock.mock.calls[0][1] as string).toContain(
-        `exports/${batchId}/`,
+      // ic-b-001 起 ossKey 改为按日期分层归档（bill/export/yyyy/yyyyMM/yyyyMMdd/...），不再含 batchId
+      expect(ossUploadMock.mock.calls[0][1] as string).toMatch(
+        /^bill\/export\/\d{4}\/\d{6}\/\d{8}\//,
       );
       expect(await exportRecordRepository.count()).toBe(beforeCount + 1);
     });
