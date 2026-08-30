@@ -50,6 +50,9 @@
           />
         </el-select>
       </div>
+      <span v-if="unmatchedCount > 0" id="hint-unmatched-count" class="policy-record-table__unmatched-hint">
+        ⚠ 有 {{ unmatchedCount }} 条未获取到销售记录
+      </span>
     </div>
 
     <DataStateWrapper
@@ -185,6 +188,12 @@ const pageSize = ref(20)
 const keyword = ref('')
 const fillStatusFilter = ref<'all' | SalesFillSource>('all')
 
+/**
+ * 整个批次的未匹配总数（与主表格的搜索/筛选/分页无关，始终反映全批次），
+ * 用于工具栏旁的提示文案（用户需求：不用切到"未匹配"筛选再看分页总数才知道）。
+ */
+const unmatchedCount = ref(0)
+
 const filling = ref(false)
 /** 分批回填的进度状态：null 表示当前不在回填中；非 null 时显示进度条（AC：每 100 条调一次接口，前端展示真实进度）。 */
 const fillProgress = ref<{ processed: number; total: number } | null>(null)
@@ -231,6 +240,24 @@ async function loadData() {
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '请求出错，请稍后重试'
     status.value = 'error'
+  }
+}
+
+/**
+ * 轻量查询整个批次的未匹配总数，与 handleStartFill() 内"先查一次未匹配总数作为进度条分母"
+ * 同一查询手法（不新增后端接口）。known-risks：查询失败按静默失败处理，不弹错误提示，
+ * 避免与主表格加载失败的错误提示重复噪音。
+ */
+async function loadUnmatchedCount() {
+  try {
+    const result = await fetchBatchPolicyRecords(props.batchId, {
+      page: 1,
+      pageSize: 1,
+      fillStatus: 'unmatched',
+    })
+    unmatchedCount.value = result.total
+  } catch {
+    // 静默失败：不影响主表格数据展示与分页/搜索/筛选主功能
   }
 }
 
@@ -328,6 +355,7 @@ async function handleStartFill() {
   } finally {
     filling.value = false
     fillProgress.value = null
+    loadUnmatchedCount()
   }
 }
 
@@ -390,10 +418,14 @@ watch(
     page.value = 1
     resetExpandState()
     loadData()
+    loadUnmatchedCount()
   },
 )
 
-onMounted(loadData)
+onMounted(() => {
+  loadData()
+  loadUnmatchedCount()
+})
 
 onBeforeUnmount(() => {
   if (searchDebounceTimer) {
@@ -403,7 +435,13 @@ onBeforeUnmount(() => {
 
 // 供宿主 BatchDetailView.vue 在收到兄弟组件的记录变更信号后触发本表刷新；
 // 直接复用既有 loadData，不重新实现一份加载逻辑，也不重置展开编辑态（loadData 本身不涉及该状态）。
-defineExpose({ refresh: loadData })
+// 同时刷新 unmatchedCount，保持工具栏提示与刷新后的数据同步。
+function refresh() {
+  loadUnmatchedCount()
+  return loadData()
+}
+
+defineExpose({ refresh })
 </script>
 
 <style scoped lang="scss">
@@ -465,6 +503,17 @@ defineExpose({ refresh: loadData })
     :deep(.el-select) {
       width: 100%;
     }
+  }
+
+  &__unmatched-hint {
+    display: inline-block;
+    padding: $space-xs $space-sm;
+    border-radius: $radius-sm;
+    background-color: $color-warning-bg;
+    color: $color-warning-text;
+    font-size: $fs-small;
+    line-height: 1;
+    white-space: nowrap;
   }
 
   &__table-wrapper {
