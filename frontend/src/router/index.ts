@@ -20,7 +20,7 @@ const router = createRouter({
       children: [
         {
           path: '',
-          redirect: '/policy-records',
+          redirect: '/commission-batches',
         },
         {
           path: 'policy-records',
