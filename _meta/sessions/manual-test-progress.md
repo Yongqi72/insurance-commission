@@ -106,6 +106,12 @@ Playwright 走查登录+批次列表+批次详情+保单记录+阶梯规则四�
 
 两个 PR 合并时仓库均要求先在 Gitee 网页手动标记审查通过（新出现的分支保护设置，此前 PR#10~#16 未遇到），用户手动标记后我调 API 完成合并。
 
+### 2026-08-30 续：回填进度条改弹出层（ic-b-009）
+
+用户此前把"回填进度条改弹出层遮挡页面"记入 backlog 留下期，本轮改主意要求现在做。走完整 dispatch-new + develop 流程：`ic-b-009`（`b-queue/ic-b-009.md`）→ 用 `el-dialog` 包裹现有进度条内容，三重配置（`close-on-click-modal`/`close-on-press-escape`/`show-close` 均 false）+ computed getter/setter 劫持 v-model 阻止用户主动关闭 → 独立审查 round-01 pass（1 条 advisory：全仓 el-dialog 圆角/阴影与 design.md 令牌历史性不符，非本次引入，记入 backlog）→ **PR#19 已合并**，可复测。
+
+三个 PR（#17/#18/#19）合并时仓库均要求先在 Gitee 网页手动标记审查通过。
+
 ### 当前状态
 
-`ic-b-008`（PR#17）、`ic-mt-001`（PR#18）均已合并到 master，测试环境（真实 MySQL 172.22.224.1，非 sqlite）仍在运行，代码已是最新。等待用户复测这两项改动，或继续走查其他功能，或说"验收通过"。
+`ic-b-008`（PR#17）、`ic-mt-001`（PR#18）、`ic-b-009`（PR#19）均已合并到 master，测试环境（真实 MySQL 172.22.224.1，非 sqlite）仍在运行，代码已是最新。等待用户复测这三项改动，或继续走查其他功能，或说"验收通过"。
