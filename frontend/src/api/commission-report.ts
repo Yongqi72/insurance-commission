@@ -13,11 +13,13 @@ export interface CommissionSummaryItem {
 /**
  * 单个投保人的分组汇总；`items` 为空数组表示该投保人下全部记录未匹配销售人员（AC-16），
  * 此时 `subtotal` 恒为 0，前端不展示该字段，改展示空态文案，避免误导性合计。
+ * `unmatchedCount` 为该分组内未匹配销售人员的记录条数，不计入 `subtotal`。
  */
 export interface CommissionSummaryGroup {
   policyholder: string
   items: CommissionSummaryItem[]
   subtotal: number
+  unmatchedCount: number
 }
 
 export interface CommissionSummaryResult {

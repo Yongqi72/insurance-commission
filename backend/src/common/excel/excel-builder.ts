@@ -47,11 +47,18 @@ export interface ExcelBuilderGroup {
   detailRows: PolicyRecordExportRow[];
   summaryRows: SalesSummaryRow[];
   totalRow: TotalRow;
+  /**
+   * 本组内未匹配销售人员的记录条数；未传或 <= 0 时不追加未匹配汇总行。
+   * 不计入 totalRow 的票数/金额口径（合计仍只统计已匹配销售）。
+   */
+  unmatchedCount?: number;
 }
 
 const DETAIL_HEADER_ROW = 1;
 const SUMMARY_SECTION_TITLE = '销售人员提成汇总';
 const TOTAL_SECTION_TITLE = '合计';
+/** 未匹配汇总行的销售人员列文案；沿用 PolicyRecordTable.vue 界面对 unmatched 记录的既有展示约定。 */
+const UNMATCHED_ROW_LABEL = '未匹配';
 
 /**
  * 提成报表 Excel 生成器：明细行的 8 列账单字段与 ExcelParser 共用 policy-record-columns.ts
@@ -87,6 +94,11 @@ export class ExcelBuilder {
       group.summaryRows.forEach((row) => {
         sheet.addRow([row.salesName, row.policyCount, row.commissionAmount]);
       });
+      // 未匹配统计行：既有 summaryRows 之后、合计行之前追加，仅 unmatchedCount > 0 时展示；
+      // 不参与下方 totalRow 的计算（totalRow 仍只统计已匹配销售，do-not）。
+      if (group.unmatchedCount && group.unmatchedCount > 0) {
+        sheet.addRow([UNMATCHED_ROW_LABEL, group.unmatchedCount, 0]);
+      }
 
       // 合计行
       sheet.addRow([]);

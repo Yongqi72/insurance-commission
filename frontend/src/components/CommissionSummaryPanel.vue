@@ -29,7 +29,10 @@
             :class="`commission-summary-panel__card--cat-${(index % 8) + 1}`"
           >
             <div class="commission-summary-panel__station">{{ group.policyholder }}</div>
-            <div v-if="group.items.length === 0" class="commission-summary-panel__empty-hint">
+            <div
+              v-if="group.items.length === 0 && group.unmatchedCount === 0"
+              class="commission-summary-panel__empty-hint"
+            >
               当前没有已确认销售人员的记录
             </div>
             <template v-else>
@@ -38,6 +41,13 @@
                 <span class="commission-summary-panel__amt">
                   {{ item.ticketCount }} 票 · ¥{{ item.commission.toFixed(2) }}
                 </span>
+              </div>
+              <div
+                v-if="group.unmatchedCount > 0"
+                class="commission-summary-panel__row commission-summary-panel__row--unmatched"
+              >
+                <span>未匹配</span>
+                <span class="commission-summary-panel__amt">{{ group.unmatchedCount }} 票</span>
               </div>
               <div class="commission-summary-panel__total">
                 <span>合计</span>
@@ -77,11 +87,15 @@ const summary = ref<CommissionSummaryResult | null>(null)
 const exporting = ref(false)
 const historyDrawerVisible = ref(false)
 
-// AC-16：某投保人分组 items 为空数组时展示空态；对应原型 #card-commission-empty 只在静态演示里绑定单张卡片，
-// 一批数据中可能出现多个空分组，若逐个都赋同一个 id 会产生重复 DOM id，因此只把该 id 落在第一个空分组上，
-// 其余空分组仍按同一视觉样式（class）展示空态文案，不受影响。
+// AC-16：某投保人分组 items 为空数组且 unmatchedCount 也为 0（兜底空态，正常情况下不会出现）时
+// 展示空态；对应原型 #card-commission-empty 只在静态演示里绑定单张卡片，一批数据中可能出现多个
+// 空分组，若逐个都赋同一个 id 会产生重复 DOM id，因此只把该 id 落在第一个空分组上，其余空分组
+// 仍按同一视觉样式（class）展示空态文案，不受影响。items 为空但 unmatchedCount > 0 时改为
+// 展示"未匹配 N 票"行，不再是空态卡片，故排除在外。
 const firstEmptyPolicyholder = computed(
-  () => summary.value?.groups.find((group) => group.items.length === 0)?.policyholder ?? null,
+  () =>
+    summary.value?.groups.find((group) => group.items.length === 0 && group.unmatchedCount === 0)
+      ?.policyholder ?? null,
 )
 
 async function loadSummary() {
@@ -234,6 +248,12 @@ defineExpose({ refresh: loadSummary })
 
     &:last-of-type {
       border-bottom: none;
+    }
+
+    // 未匹配统计行与已确认销售行区分——沿用本文件 __empty-hint 已用的
+    // $text-hint（次要/置灰文字色），不引入新的视觉语言。
+    &--unmatched {
+      color: $text-hint;
     }
   }
 

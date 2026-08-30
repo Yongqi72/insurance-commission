@@ -276,9 +276,46 @@ describe('commission-report 提成汇总与导出 (e2e)', () => {
       expect(res.status).toBe(200);
       expect(res.body.data.groups).toEqual(
         expect.arrayContaining([
-          { policyholder: 'XX保险', items: [], subtotal: 0 },
+          {
+            policyholder: 'XX保险',
+            items: [],
+            subtotal: 0,
+            unmatchedCount: 10,
+          },
         ]),
       );
+    });
+
+    it('分组内同时存在已匹配与未匹配记录 → unmatchedCount 正确，且不影响已匹配的 items/subtotal', async () => {
+      const batchId = await createBatch('提成汇总测试批次-未匹配计数');
+      await createTier(0, 50, 2);
+      await createTier(50, 100, 2.2);
+      await createTier(100, null, 2.4);
+      await createRecords(batchId, 3, {
+        policyholder: '常熟',
+        salesName: '张三',
+        salesFillSource: 'system',
+      });
+      await createRecords(batchId, 2, {
+        policyholder: '常熟',
+        salesFillSource: 'unmatched',
+      });
+
+      const res = await authed(
+        'get',
+        `/api/commission-batches/${batchId}/commission-summary`,
+      );
+
+      expect(res.status).toBe(200);
+      const group = res.body.data.groups.find(
+        (g: { policyholder: string }) => g.policyholder === '常熟',
+      );
+      expect(group).toEqual({
+        policyholder: '常熟',
+        items: [{ salesName: '张三', ticketCount: 3, commission: 6 }],
+        subtotal: 6,
+        unmatchedCount: 2,
+      });
     });
   });
 
@@ -417,8 +454,48 @@ describe('commission-report 提成汇总与导出 (e2e)', () => {
       const detailRow = sheet.getRow(2).values as unknown[];
       expect(detailRow[6]).toBeFalsy();
 
-      // 合计行：总票数 0、总提成 0（销售汇总表为空）
+      // 销售汇总表在空的已匹配汇总行之后追加一行未匹配统计
+      expect(findRowValues(workbook, 'XX保险', ['未匹配', 10, 0])).toBe(true);
+
+      // 合计行：总票数 0、总提成 0（销售汇总表为空，未匹配不计入合计）
       expect(findRowValues(workbook, 'XX保险', ['合计', 0, 0])).toBe(true);
+    });
+
+    it('分组内同时存在已匹配与未匹配记录 → 导出的销售汇总表在已匹配行之后追加未匹配行，合计行口径不变', async () => {
+      const batchId = await createBatch('提成导出测试批次-未匹配汇总行');
+      await createTier(0, 50, 2);
+      await createTier(50, 100, 2.2);
+      await createTier(100, null, 2.4);
+      await createRecords(batchId, 3, {
+        policyholder: '常熟',
+        salesName: '张三',
+        salesFillSource: 'system',
+      });
+      await createRecords(batchId, 2, {
+        policyholder: '常熟',
+        salesFillSource: 'unmatched',
+      });
+
+      const res = await authed(
+        'get',
+        `/api/commission-batches/${batchId}/commission-report`,
+      )
+        .buffer(true)
+        .parse(binaryParser);
+
+      expect(res.status).toBe(200);
+      const workbook = new Workbook();
+      await workbook.xlsx.load(res.body as Buffer as never);
+      const sheet = workbook.getWorksheet('常熟');
+      expect(sheet).toBeDefined();
+      if (!sheet) return;
+
+      // 已匹配销售行不受影响
+      expect(findRowValues(workbook, '常熟', ['张三', 3, 6])).toBe(true);
+      // 未匹配统计行
+      expect(findRowValues(workbook, '常熟', ['未匹配', 2, 0])).toBe(true);
+      // 合计行只统计已匹配的 3 票/6 元，不把未匹配的 2 票折进去
+      expect(findRowValues(workbook, '常熟', ['合计', 3, 6])).toBe(true);
     });
   });
 
