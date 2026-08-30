@@ -206,7 +206,7 @@ async function handleStartImport() {
   }
 }
 
-/** 点击历史列表"失败"列数字，查看该次导入持久化的失败行清单（ic-b-010，与即时上传弹窗 #import-result 同一份文案格式）。 */
+/** 点击历史列表"失败"列数字，查看该次导入持久化的失败行清单（与即时上传弹窗 #import-result 同一份文案格式）。 */
 function openFailReasonsDialog(row: ImportRecord) {
   activeFailReasons.value = row.failReasons
   failReasonsDialogVisible.value = true

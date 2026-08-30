@@ -248,7 +248,7 @@ describe('commission-batch 导入 (e2e)', () => {
     });
     expect(records).toHaveLength(1);
 
-    // ic-b-010：failReasons 已持久化，且与本次导入即时响应的 failRows 一致
+    // failReasons 已持久化，且与本次导入即时响应的 failRows 一致
     const listRes = await request(app.getHttpServer())
       .get(`/api/commission-batches/${batchId}/imports`)
       .set('Authorization', `Bearer ${token}`);
@@ -258,7 +258,7 @@ describe('commission-batch 导入 (e2e)', () => {
     expect(listedItem.failReasons).toEqual(res.body.data.failRows);
   });
 
-  it('GET .../imports 无失败行的导入记录，failReasons 为空数组（ic-b-010）', async () => {
+  it('GET .../imports 无失败行的导入记录，failReasons 为空数组', async () => {
     const batchId = await createBatch('导入-failReasons为空批次');
     const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [VALID_ROW]);
 
@@ -277,7 +277,7 @@ describe('commission-batch 导入 (e2e)', () => {
     expect(listedItem.failReasons).toEqual([]);
   });
 
-  it('GET .../imports 历史记录 fail_reasons 为 null（本任务上线前产生）时，failReasons 降级为空数组（ic-b-010，BE-JSON-01）', async () => {
+  it('GET .../imports 历史记录 fail_reasons 为 null（本列上线前产生）时，failReasons 降级为空数组（BE-JSON-01）', async () => {
     const batchId = await createBatch('导入-历史空列批次');
     const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [VALID_ROW]);
 

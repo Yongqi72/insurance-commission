@@ -40,8 +40,8 @@ export class ImportFile {
   failCount: number;
 
   /**
-   * 失败行清单 {row, reason}[]（ic-b-010，可空 JSON 列，本任务上线前产生的历史记录为
-   * null）。JSON 列运行时类型不可信（BE-JSON-01），读取处须做类型守卫，
+   * 失败行清单 {row, reason}[]，可空 JSON 列，早于本列上线的历史导入记录为 null。
+   * JSON 列运行时类型不可信（BE-JSON-01），读取处须做类型守卫，
    * 见 import.service.ts `toFailReasonsDto()`；本 Entity 仅声明列类型，不做校验。
    */
   @Column({ name: 'fail_reasons', type: 'json', nullable: true })

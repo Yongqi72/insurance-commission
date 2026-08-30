@@ -122,6 +122,11 @@ export class ImportService {
     }
 
     const { successRows, failRows } = parseResult;
+    // 持久化字段与响应体共用同一份映射结果，不重新解析、不重复写映射逻辑。
+    const failReasonsDto = failRows.map((row) => ({
+      row: row.rowNumber,
+      reason: row.reason,
+    }));
 
     const savedImportFile = await this.dataSource.transaction(
       async (manager) => {
@@ -133,12 +138,7 @@ export class ImportService {
             importedAt: new Date(),
             successCount: successRows.length,
             failCount: failRows.length,
-            // 与下方响应体 failRows 同一份数据（parseResult.failRows），不重新解析
-            // （ic-b-010，任务包 do-not：不改动导入解析规则/逐行容错判定逻辑）。
-            failReasons: failRows.map((row) => ({
-              row: row.rowNumber,
-              reason: row.reason,
-            })),
+            failReasons: failReasonsDto,
           }),
         );
 
@@ -170,10 +170,7 @@ export class ImportService {
       fileName: savedImportFile.fileName,
       successCount: savedImportFile.successCount,
       failCount: savedImportFile.failCount,
-      failRows: failRows.map((row) => ({
-        row: row.rowNumber,
-        reason: row.reason,
-      })),
+      failRows: failReasonsDto,
     };
   }
 
