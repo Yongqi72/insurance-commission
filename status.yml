@@ -432,6 +432,23 @@ tasks:
     urgency: null
     branch: ic-mt-001
     risk: standard
+  - id: ic-b-010
+    iteration: null
+    sprint: null
+    source: optimization
+    title: 导入记录历史失败原因可查看
+    type: develop
+    discipline: dev-fullstack
+    layer: null
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: []
+    delivery: null
+    urgency: null
+    branch: null
+    risk: standard
 # 每条（写 queue 任务包处同步追加）：
 #  - id: {缩写}-v{N}-001     # B 类为 {缩写}-b-001
 #    iteration: v1           # 属哪期；B 类(bug/optimization)为 null
