@@ -51,6 +51,7 @@ export interface ImportRecord {
   importedAt: string
   successCount: number
   failCount: number
+  downloadUrl: string
 }
 
 /**

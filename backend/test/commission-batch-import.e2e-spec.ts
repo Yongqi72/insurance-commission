@@ -56,7 +56,9 @@ describe('commission-batch 导入 (e2e)', () => {
     ossUploadMock = jest.fn().mockResolvedValue('mock-oss-key');
     const mockOssClient = {
       upload: ossUploadMock,
-      getSignedUrl: jest.fn(),
+      getSignedUrl: jest
+        .fn()
+        .mockResolvedValue('https://mock-oss.example.com/signed-url'),
     };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -325,6 +327,11 @@ describe('commission-batch 导入 (e2e)', () => {
     );
     expect(fileNames[0]).toBe('6月账单-补充.xlsx');
     expect(fileNames[1]).toBe('6月账单.xlsx');
+    // downloadUrl：每条记录都应附带 OssClient.getSignedUrl 生成的签名下载地址（本任务新增字段）。
+    (res.body.data as Array<{ downloadUrl: unknown }>).forEach((item) => {
+      expect(typeof item.downloadUrl).toBe('string');
+      expect((item.downloadUrl as string).length).toBeGreaterThan(0);
+    });
   });
 
   it('DELETE 导入记录不存在 → 1004', async () => {

@@ -42,6 +42,7 @@ export interface ImportFileListItemDto {
   importedAt: Date;
   successCount: number;
   failCount: number;
+  downloadUrl: string;
 }
 
 /**
@@ -155,13 +156,16 @@ export class ImportService {
       order: { importedAt: 'DESC' },
     });
 
-    return imports.map((item) => ({
-      id: item.id,
-      fileName: item.fileName,
-      importedAt: item.importedAt,
-      successCount: item.successCount,
-      failCount: item.failCount,
-    }));
+    return Promise.all(
+      imports.map(async (item) => ({
+        id: item.id,
+        fileName: item.fileName,
+        importedAt: item.importedAt,
+        successCount: item.successCount,
+        failCount: item.failCount,
+        downloadUrl: await this.ossClient.getSignedUrl(item.ossKey),
+      })),
+    );
   }
 
   async deleteImport(batchId: string, importId: string): Promise<void> {
