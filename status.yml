@@ -440,9 +440,9 @@ tasks:
     type: develop
     discipline: dev-fullstack
     layer: null
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 20
     parent_id: null
     depends_on: []
     delivery: null
@@ -964,6 +964,27 @@ code_reviews:
     comment: "manual-test 验收会话中用户先提出、记入 backlog 留下期，后改主意要求现在做。round-01（full，standard 档，13 个 selected dimensions 全审）0 blocking，1 条建议级：F001（design-fidelity，全仓 el-dialog 圆角/阴影与 design.md 令牌历史性不符，非本次引入）记入 backlog。conclusion: pass。审查专项验证了'回填过程中阻断其他操作'这条核心不变式：源码级追踪 Element Plus el-dialog 三条内部关闭触发源均被 close-on-click-modal/close-on-press-escape/show-close 拦截，无自定义 z-index 覆盖，遮罩结构性覆盖顶部导航栏。全量检测 frontend build/lint/stylelint 全绿。"
     issues:
       - { id: ic-b-009-F001, dimension: design-fidelity, severity: 建议, type: contract-drift, reachability: current, action: backlog, impact: "新增弹窗视觉圆角/阴影与 design.md 设计令牌表要求不符，但全仓既有 3 个 el-dialog 同样表现，非本次改动引入的回归", description: "el-dialog 实际圆角落在 --el-border-radius-base(2px) 而非 design.md 弹窗要求的 $radius-lg(8px)，阴影未覆盖 $shadow-lg" }
+  - iteration: null
+    task_id: ic-b-010
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-010
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-30T07:17:53Z
+    implementation_completed_at: 2026-08-30T07:22:10Z
+    review_started_at: 2026-08-30T07:22:10Z
+    review_completed_at: 2026-08-30T07:31:00Z
+    implementation_minutes: 5
+    review_minutes: 9
+    spec_minutes: 3
+    comment: "manual-test 验收会话中用户提出：保单导入的失败原因只在即时弹窗展示，历史列表看不到，经 dispatch-new 判定符合 B 类条件后走 develop。import_file 表新增可空 fail_reasons(JSON) 列持久化失败行清单，GET .../imports 新增 failReasons 字段，前端历史列表失败数字可点击查看。round-01（full，standard 档，13 个 selected dimensions 全审）0 blocking，3 条建议级（F001 注释里写了任务号/F002 BE-JSON-01 非法非空分支缺专项测试/F003 failRows 映射逻辑重复两遍）均记入 backlog。conclusion: pass。审查用反向破坏测试验证了三处关键行为的真实辨别力：commission-batch.entity.spec.ts 越界改动的必要性、持久化-回读 round-trip 断言、BE-JSON-01 类型守卫的有效性。全量检测 backend build/lint/单测(56)/e2e(106)、frontend build/lint/stylelint 全绿。"
+    issues:
+      - { id: ic-b-010-F001, dimension: comment-hygiene, severity: 建议, type: future-risk, reachability: current, action: backlog, impact: "不影响当前行为正确性，随任务号增多增加未来读代码者的查阅成本，属轻度可维护性技术债", description: "4 处新增运行时注释把任务号 ic-b-010 写入生产/测试代码本体，与仓库既有惯例（历史同类问题已由 ic-b-002 清理）不符" }
+      - { id: ic-b-010-F002, dimension: test-evidence, severity: 建议, type: evidence-gap, reachability: conditional, action: backlog, impact: "若 BE-JSON-01 守卫的非法非空分支未来被改坏，当前测试矩阵不会捕获，只有回归到 null 输入才会被发现", description: "toFailReasonsDto()/isImportFailRow() 对『非 null 但结构损坏』分支的实现已读代码确认正确，但缺专项测试用例断言其行为（现有测试只覆盖了 null 分支）" }
+      - { id: ic-b-010-F003, dimension: maintainability, severity: 建议, type: future-risk, reachability: current, action: backlog, impact: "当前无功能性后果，两处结果始终一致；但若未来两处口径需要出现差异，维护者容易只改一处而遗漏另一处", description: "importExcel() 内 failRows.map(...)→{row,reason} 的映射逻辑重复写了两遍（持久化一次、响应体一次），字面量完全相同" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}

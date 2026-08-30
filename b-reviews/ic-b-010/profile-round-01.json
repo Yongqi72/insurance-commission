@@ -1,0 +1,90 @@
+{
+  "schema": "develop-review-profile/v1",
+  "task_id": "ic-b-010",
+  "task_type": "dev-fullstack",
+  "layers": [
+    "backend",
+    "frontend"
+  ],
+  "source": "",
+  "effective_risk": "standard",
+  "changed_files": [
+    "backend/src/commission-batch/commission-batch.entity.spec.ts",
+    "backend/src/commission-batch/import-file.entity.ts",
+    "backend/src/commission-batch/import.service.ts",
+    "backend/src/migrations/1788074308866-AddFailReasonsToImportFile.ts",
+    "backend/test/commission-batch-import.e2e-spec.ts",
+    "frontend/src/api/commission-batch.ts",
+    "frontend/src/components/ImportPanel.vue"
+  ],
+  "input_fingerprint": "14f1c783e82d8ae6db46e3ca6cab96702fff5ba3d4dfb6f2a74c452e50b17bc4",
+  "signals": {
+    "metadata_incomplete": true,
+    "unknown_layer": false,
+    "surface": "production",
+    "frontend": true,
+    "backend": true,
+    "ui": true,
+    "input": true,
+    "query": true,
+    "concurrency": true,
+    "logging": true,
+    "enforcement": true,
+    "sensitive": false
+  },
+  "selected_dimensions": [
+    {
+      "id": "contract",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "scope-and-secrets",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "test-evidence",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "comment-hygiene",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "standards",
+      "reason": "fail-safe: task metadata is incomplete"
+    },
+    {
+      "id": "enforcement",
+      "reason": "fail-safe: task metadata is incomplete"
+    },
+    {
+      "id": "design-fidelity",
+      "reason": "fail-safe: frontend applicability is unresolved"
+    },
+    {
+      "id": "input-provenance",
+      "reason": "fail-safe: backend input applicability is unresolved"
+    },
+    {
+      "id": "query-performance",
+      "reason": "fail-safe: backend query applicability is unresolved"
+    },
+    {
+      "id": "concurrency",
+      "reason": "fail-safe: backend concurrency applicability is unresolved"
+    },
+    {
+      "id": "logging-privacy",
+      "reason": "fail-safe: task metadata is incomplete"
+    },
+    {
+      "id": "maintainability",
+      "reason": "fail-safe: changed surface is unresolved"
+    },
+    {
+      "id": "sensitive-boundaries",
+      "reason": "fail-safe: task metadata is incomplete"
+    }
+  ],
+  "omitted_dimensions": []
+}

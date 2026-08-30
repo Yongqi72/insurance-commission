@@ -11,4 +11,4 @@
 | ic-b-007 | integration | normal | 第三方销售人员回填接口对接 | merged（PR#16） | 2026-08-29 |
 | ic-b-008 | optimization | normal | 导入记录文件名加超链接，可下载原始 Excel | merged（PR#17） | 2026-08-30 |
 | ic-b-009 | optimization | normal | 回填进度指示改弹出层，遮挡页面并阻断其他操作 | merged（PR#19） | 2026-08-30 |
-| ic-b-010 | optimization | normal | 导入记录历史失败原因可查看 | [可取] | 2026-08-30 |
+| ic-b-010 | optimization | normal | 导入记录历史失败原因可查看 | merged（PR#20） | 2026-08-30 |
