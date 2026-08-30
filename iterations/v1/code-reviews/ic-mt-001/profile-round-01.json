@@ -1,0 +1,87 @@
+{
+  "schema": "develop-review-profile/v1",
+  "task_id": "ic-mt-001",
+  "task_type": "dev-backend",
+  "layers": [
+    "backend"
+  ],
+  "source": "manual-test",
+  "effective_risk": "standard",
+  "changed_files": [
+    "backend/src/policy-record/policy-record.entity.spec.ts",
+    "backend/src/policy-record/policy-record.entity.ts",
+    "backend/src/policy-record/sales-fill-log.entity.spec.ts",
+    "backlog.md"
+  ],
+  "input_fingerprint": "78756ffd42bc9dd116b8b90f1e789eb33d47b55372a0a9dd4a12a1e52c30c7ad",
+  "signals": {
+    "metadata_incomplete": false,
+    "unknown_layer": false,
+    "surface": "production",
+    "frontend": false,
+    "backend": true,
+    "ui": false,
+    "input": true,
+    "query": true,
+    "concurrency": true,
+    "logging": true,
+    "enforcement": true,
+    "sensitive": false
+  },
+  "selected_dimensions": [
+    {
+      "id": "contract",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "scope-and-secrets",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "test-evidence",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "comment-hygiene",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "standards",
+      "reason": "task package has relevant-standards"
+    },
+    {
+      "id": "enforcement",
+      "reason": "task/change surface contains enforcement or test/tooling signals"
+    },
+    {
+      "id": "input-provenance",
+      "reason": "backend request/API input surface is present"
+    },
+    {
+      "id": "query-performance",
+      "reason": "backend query/data-read surface is present"
+    },
+    {
+      "id": "concurrency",
+      "reason": "backend write/transaction/concurrency surface is present"
+    },
+    {
+      "id": "logging-privacy",
+      "reason": "production or logging/privacy surface is present"
+    },
+    {
+      "id": "maintainability",
+      "reason": "fixed diff contains production code"
+    }
+  ],
+  "omitted_dimensions": [
+    {
+      "id": "design-fidelity",
+      "reason": "task is not frontend"
+    },
+    {
+      "id": "sensitive-boundaries",
+      "reason": "effective risk is standard"
+    }
+  ]
+}
