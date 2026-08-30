@@ -140,6 +140,14 @@ Playwright 走查登录+批次列表+批次详情+保单记录+阶梯规则四�
 
 计划处理顺序：#3 → #5（含导出同步）→ #4（含重置选择）→ #2（先 revise-doc）。
 
+### 2026-08-30 续：#3/#5/#4 三条依次走完 dispatch-new + develop
+
+1. **保单明细回填状态旁加未匹配条数提示**（`ic-b-012`）：复用 `handleStartFill()` 已有查询手法，纯前端。独立审查 round-01 发现 1 条阻断级（F001：`watch(batchId)` 未联动刷新未匹配计数，跨批次导航不重挂载时提示显示旧值），已修复 → round-02 verified-closed。另 2 条建议级记入 backlog。**PR#22 已合并**。
+2. **提成汇总未匹配记录按投保人单列展示**（`ic-b-013`）：`CommissionSummaryGroupDto`/`ExcelBuilderGroup` 新增 `unmatchedCount`，界面卡片+导出 Excel 同步展示"未匹配 N 票"，合计口径不变。独立审查 round-01 pass，3 条建议级（F001 导出测试判别力/F002 注释写任务号/F003 计算重复）：F002/F003 提交前直修，F001 记入 backlog。**PR#23 已合并**。
+3. **保单记录明细工作单号可编辑并留痕**（`ic-b-014`）：新增 `PATCH .../work-order-no`（`resetFillStatus` 由操作人决定），`sales_fill_log` 表加 `field_name` 列泛化为两类字段共用的修改历史。**独立审查抓到一个真实严重 bug**：`updateSalesName()`/`updateWorkOrderNo()` 并发写同一条记录存在丢失更新竞态（快速先后点两个保存按钮即可触发，用真实 MySQL 复现成功，会静默覆盖提成归属数据且日志与实际状态矛盾）→ round-01 conclusion: revise。已修复：按数据库驱动类型条件加行锁（`pessimistic_write`，因 sqlite 测试驱动不支持行锁）→ round-02 独立复现验证 verified-closed。1 条新建议级（F002：该保护在 sqlite-only e2e 里无自动化覆盖）记入 backlog。**PR#24 已合并**。
+
+⚠️ **第二次过程事故**：`ic-b-012` 的独立审查同样是真实、独立派发的（未复用有问题的流程），但值得记录的是本轮多次显式提醒执行 subagent"不要 commit/不要写审查文件"后，`ic-b-012`/`ic-b-013`/`ic-b-014` 三个任务的执行 subagent 均未再复现 `ic-b-011` 那次的伪造/越权行为——每次合并前都做了独立验证（`git log`/`git status`/远程分支检查）确认干净。
+
 ### 当前状态
 
-`ic-b-008`（PR#17）、`ic-mt-001`（PR#18）、`ic-b-009`（PR#19）、`ic-b-010`（PR#20）、`ic-b-011`（PR#21）、顶栏吸顶直修、提成汇总视觉标识直修均已合并到 master，测试环境（真实 MySQL 172.22.224.1）已重启为最新代码+已跑新迁移。上述 5 条批量反馈中 #3/#4/#5/#2 尚未处理，按上述顺序继续。
+`ic-b-008`~`ic-b-014`（PR#17~#24）、`ic-mt-001`（PR#18）、顶栏吸顶直修、提成汇总视觉标识直修均已合并到 master，测试环境（真实 MySQL 172.22.224.1）代码已是最新，`ic-b-010`/`ic-b-014` 的迁移均已跑过。5 条批量反馈中 #1（已是现状）/#3/#4/#5 均已处理完毕，只剩 **#2（保费为空时应正常导入）**：需要先做 `revise-doc(target=prd)` 修订 AC-03 校验口径（已用 AskUserQuestion 确认修订文字），再走 B 类实现。这是当前唯一剩余的开放项。
