@@ -51,6 +51,9 @@ function handleLogout() {
   min-height: 100%;
 
   &__header {
+    position: sticky;
+    top: 0;
+    z-index: $z-header;
     display: flex;
     align-items: center;
     justify-content: space-between;
