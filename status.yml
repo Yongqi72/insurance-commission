@@ -406,9 +406,9 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 18
     parent_id: null
     depends_on: []
     delivery: null
@@ -890,6 +890,27 @@ code_reviews:
     comment: "manual-test 验收会话中用户提出的优化需求（导入记录文件名加超链接可下载），经 dispatch-new 判定符合 B 类条件后走 develop。round-01（full，standard 档，13 个 selected dimensions 全审）0 blocking，1 条建议级：F001（新增 e2e 断言只判 downloadUrl 非空字符串，未断言等于 mock 返回值/未断言 getSignedUrl 调用参数，属未来回归判别力缺口非当前缺陷）记入 backlog。conclusion: pass。全量检测 backend build/lint/test(53)/test:e2e(104)、frontend build/lint/stylelint 全绿。"
     issues:
       - { id: ic-b-008-F001, dimension: test-evidence, severity: 建议, type: future-risk, reachability: unreachable, action: backlog, impact: "unknown（当前生产实现正确，缺口只在未来代码被误改时才会暴露）", description: "commission-batch-import.e2e-spec.ts 新增 downloadUrl 断言判别力不足，未验证值来源/调用参数" }
+  - iteration: v1
+    task_id: ic-mt-001
+    conclusion: 通过
+    rounds: 2
+    code_rounds: 2
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: iterations/v1/code-reviews/ic-mt-001
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-30T05:45:49Z
+    implementation_completed_at: 2026-08-30T05:52:14Z
+    review_started_at: 2026-08-30T05:52:14Z
+    review_completed_at: 2026-08-30T06:07:50Z
+    implementation_minutes: 7
+    review_minutes: 16
+    spec_minutes: 2
+    comment: "manual-test 验收会话中用户要求重新评估此前判定'不做'的 backlog 项。round-01（full，standard 档，11 个 selected dimensions）0 blocking，3 条建议级：F001（test-evidence，未验证关系对象不泄漏进响应序列化）/F002（enforcement，未验证违规 FK 引用真的被拒绝）/F003（comment-hygiene，两处 TypeORM 源码引用有误）均 action=fix-code/revise-doc 但非阻断。因改动量小且直接关系本任务验收目的，主线主动追加一轮整改：补 3 条负例/正例测试 + 修正文档引用。round-02（targeted）三条 finding 全部 verified-closed，conclusion: pass。全量检测 build/lint/test(56)/test:e2e(104) 全绿。过程中纠正 backlog 旧结论一处技术性错误：better-sqlite3 驱动实际无条件开启 PRAGMA foreign_keys=ON（旧结论称默认不开，有误），关系装饰器落地后 e2e 沙箱现在真实具备拦截外键违规写入的能力。"
+    issues:
+      - { id: ic-mt-001-F001, dimension: test-evidence, severity: 建议, type: scope-gap, reachability: current, action: fix-code, status: closed, impact: "intent 3 oracle 明文要求的关系对象不泄漏进响应，此前只有人工独立验证担保，未来误加 eager 或全局序列化拦截器时现有测试不会捕获回归", description: "已补测试验证 commissionBatch/importFile 不作为 own property 出现，且 JSON 序列化路径同样不含这两个 key，verified-closed" }
+      - { id: ic-mt-001-F002, dimension: enforcement, severity: 建议, type: scope-gap, reachability: current, action: fix-code, status: closed, impact: "本任务立项理由就是让 e2e 能真实复现外键约束拒绝违规写入，此前该能力交付了但无回归测试保护", description: "已补两条负例测试（importBatchId/importFileId 引用不存在 id 均应被 FK 拒绝），独立验证过判别力（临时去掉关系装饰器后测试确实翻红），verified-closed" }
+      - { id: ic-mt-001-F003, dimension: comment-hygiene, severity: 建议, type: example-error, reachability: unreachable, action: revise-doc, status: closed, impact: "不影响代码行为，纯文档引用不准确", description: "backlog.md 与 policy-record.entity.spec.ts 对 TypeORM 内部源码文件名/类名的引用有误，已核实源码后改正，verified-closed" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
