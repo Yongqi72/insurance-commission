@@ -389,14 +389,14 @@ tasks:
     type: develop
     discipline: dev-fullstack
     layer: null
-    status: 可取
-    assigned_to: null
+    status: taken-by
+    assigned_to: yongqi.liu
     pr: null
     parent_id: null
     depends_on: []
     delivery: null
     urgency: null
-    branch: null
+    branch: ic-b-008
     risk: standard
   - id: ic-mt-001
     iteration: v1

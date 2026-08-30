@@ -8,7 +8,13 @@
     <DataStateWrapper :status="status" :error-message="errorMessage" empty-text="暂无导入记录" @retry="loadImports">
       <div class="import-panel__table-wrapper">
         <el-table id="table-import-list" class="data-table" :data="list" stripe row-key="id">
-          <el-table-column prop="fileName" label="文件名" min-width="200" />
+          <el-table-column label="文件名" min-width="200">
+            <template #default="{ row }: { row: ImportRecord }">
+              <el-button class="btn-download-import" link type="primary" @click="handleDownloadImport(row)">
+                {{ row.fileName }}
+              </el-button>
+            </template>
+          </el-table-column>
           <el-table-column label="导入时间" min-width="160">
             <template #default="{ row }: { row: ImportRecord }">
               {{ formatDateTime(row.importedAt) }}
@@ -91,6 +97,7 @@ import {
   type ImportExcelResult,
   type ImportRecord,
 } from '@/api/commission-batch'
+import { triggerUrlDownload } from '@/api/commission-report'
 import { useResponsiveDialogWidth } from '@/composables/useResponsiveDialogWidth'
 import { formatDateTime } from '@/utils/format'
 
@@ -163,6 +170,11 @@ async function handleStartImport() {
   } finally {
     importing.value = false
   }
+}
+
+/** 点击文件名下载该次导入上传的原始 Excel（与导出历史"重新下载"AC-13 同一套签名 URL 交互）。 */
+function handleDownloadImport(row: ImportRecord) {
+  triggerUrlDownload(row.downloadUrl)
 }
 
 async function handleDeleteImport(row: ImportRecord) {
