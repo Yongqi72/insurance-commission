@@ -525,9 +525,9 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 25
     parent_id: null
     depends_on: []
     delivery: null
@@ -1149,6 +1149,25 @@ code_reviews:
     issues:
       - { id: ic-b-014-F001, dimension: concurrency, severity: 严重, type: behavior-bug, reachability: current, action: fix-code, impact: "并发场景下一次刚提交的人工销售人员补录可能被同一时刻的工作单号重置操作静默覆盖为 unmatched/null，且 sales_fill_log 留下与最终行状态矛盾的历史记录；salesFillSource/salesName 是下游提成归属计算的直接依据，误覆盖会导致提成报表把本该算给某销售的保单错误算作未匹配", description: "updateSalesName()/updateWorkOrderNo() 各自独立事务读同一条 PolicyRecord 后局部 mutate 再 save，无锁保护；round-02 已用行锁修复并独立复现验证", status: verified-closed }
       - { id: ic-b-014-F002, dimension: test-evidence, severity: 建议, type: evidence-gap, reachability: current, action: backlog, impact: "若未来 findOneForUpdate() 的驱动判断或锁逻辑被误改，本仓自动化测试矩阵不会捕获，只能靠人工连真实 MySQL 验证兜底（与 ic-b-003/migration 场景同类缺口）", description: "新增的行锁并发保护在本仓 sqlite-only 的 e2e 测试路径下（better-sqlite3 不支持行锁）无自动化覆盖" }
+  - iteration: null
+    task_id: ic-b-015
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-015
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-30T09:44:50Z
+    implementation_completed_at: 2026-08-30T09:47:02Z
+    review_started_at: 2026-08-30T09:47:02Z
+    review_completed_at: 2026-08-30T09:50:26Z
+    implementation_minutes: 3
+    review_minutes: 4
+    spec_minutes: 2
+    comment: "manual-test 验收会话中用户提出 5 条批量反馈中的最后一条：保费为空时应允许正常导入。已先走 revise-doc(target=prd) 修订 AC-03 校验口径（commit 62e758d，无下游 TRD 影响），本任务落地代码：PolicyRecordColumnDef 新增 optional 标记，仅 premiumAmount 设为 true；excel-parser.ts 空值分支 honor optional，落 null 不计入必填校验，数字校验分支不受影响。round-01（full，13 个 selected dimensions 全审）0 blocking，1 条建议级（F001：缺'保险金额为空仍判失败'专项测试，未验证 optional 未泄漏到同为数值列的保险金额）已在提交前直接补齐测试用例。conclusion: pass。全量检测 backend build/lint/单测(61)/e2e(118)全绿。"
+    issues:
+      - { id: ic-b-015-F001, dimension: test-evidence, severity: 建议, type: future-risk, reachability: unreachable, action: backlog, impact: "当前代码经审查确认正确，测试覆盖缺口本身不影响当前行为正确性", description: "缺'保险金额为空仍判失败'的专项测试用例，未验证 optional 标记未泄漏到同为数值列的保险金额——提交前已直接补齐（backend/src/common/excel/excel-parser.spec.ts 新增用例），backlog.md 对应条目标 [x]" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
