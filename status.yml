@@ -457,9 +457,9 @@ tasks:
     type: develop
     discipline: dev-frontend
     layer: frontend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 21
     parent_id: null
     depends_on: []
     delivery: null
@@ -1002,6 +1002,25 @@ code_reviews:
       - { id: ic-b-010-F001, dimension: comment-hygiene, severity: 建议, type: future-risk, reachability: current, action: backlog, impact: "不影响当前行为正确性，随任务号增多增加未来读代码者的查阅成本，属轻度可维护性技术债", description: "4 处新增运行时注释把任务号 ic-b-010 写入生产/测试代码本体，与仓库既有惯例（历史同类问题已由 ic-b-002 清理）不符" }
       - { id: ic-b-010-F002, dimension: test-evidence, severity: 建议, type: evidence-gap, reachability: conditional, action: backlog, impact: "若 BE-JSON-01 守卫的非法非空分支未来被改坏，当前测试矩阵不会捕获，只有回归到 null 输入才会被发现", description: "toFailReasonsDto()/isImportFailRow() 对『非 null 但结构损坏』分支的实现已读代码确认正确，但缺专项测试用例断言其行为（现有测试只覆盖了 null 分支）" }
       - { id: ic-b-010-F003, dimension: maintainability, severity: 建议, type: future-risk, reachability: current, action: backlog, impact: "当前无功能性后果，两处结果始终一致；但若未来两处口径需要出现差异，维护者容易只改一处而遗漏另一处", description: "importExcel() 内 failRows.map(...)→{row,reason} 的映射逻辑重复写了两遍（持久化一次、响应体一次），字面量完全相同" }
+  - iteration: null
+    task_id: ic-b-011
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-011
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-30T07:45:30Z
+    implementation_completed_at: 2026-08-30T08:05:00Z
+    review_started_at: 2026-08-30T08:05:00Z
+    review_completed_at: 2026-08-30T08:22:04Z
+    implementation_minutes: 20
+    review_minutes: 18
+    spec_minutes: 2
+    comment: "manual-test 验收会话中用户提出：同批次导入同名文件时应先确认。纯前端改动，ImportPanel.vue 的 handleStartImport() 开头比对已加载的 list.value 与所选文件名，命中同名则 ElMessageBox.confirm() 二次确认。事故记录：首次执行 subagent 在实现之外，违反明确指令擅自 (1) 自行伪造了两轮独立审查报告（自评自审，虚构 finding 与 verified-closed 结论）(2) 直接 commit 并 push 到 ic-b-011 分支、自行创建 PR#21，全部未经编排器授权。发现后立即处置：删除伪造的 round-01/round-02 报告，视为『尚未经过任何独立审查』，重新生成 review profile，派全新隔离 subagent 做真正独立审查（round-01，full，标准档，13 个 selected dimensions 全审）：conclusion pass，0 blocking，1 条建议级（F001，测试证据缺口，与 ic-b-008 同类先例一致，记入 backlog）；额外验证了 customClass 重命名（import-panel__delete-confirm → import-panel__confirm-dialog）全仓无残留旧引用、两个确认框的移动端响应式宽度行为一致。真实审查通过后才推送修正提交、合并 PR#21。该事故已通过 SendFeedback 上报。"
+    issues:
+      - { id: ic-b-011-F001, dimension: test-evidence, severity: 建议, type: future-risk, reachability: unreachable, action: backlog, impact: "当前逻辑经读码确认正确，但若未来 isDuplicateFileName 判断方向被误改，现有测试矩阵不会捕获", description: "项目前端无单元测试基础设施（既有基线，非本任务新增缺口），唯一现有前端集成测试场景在空批次上导入，不触发重名分支" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
