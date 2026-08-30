@@ -52,6 +52,7 @@ export interface ImportRecord {
   successCount: number
   failCount: number
   downloadUrl: string
+  failReasons: ImportFailRow[]
 }
 
 /**

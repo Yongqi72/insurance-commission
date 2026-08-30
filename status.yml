@@ -440,14 +440,14 @@ tasks:
     type: develop
     discipline: dev-fullstack
     layer: null
-    status: 可取
-    assigned_to: null
+    status: taken-by
+    assigned_to: yongqi.liu
     pr: null
     parent_id: null
     depends_on: []
     delivery: null
     urgency: null
-    branch: null
+    branch: ic-b-010
     risk: standard
 # 每条（写 queue 任务包处同步追加）：
 #  - id: {缩写}-v{N}-001     # B 类为 {缩写}-b-001

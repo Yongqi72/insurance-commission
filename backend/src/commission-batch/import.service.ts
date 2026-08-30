@@ -43,6 +43,29 @@ export interface ImportFileListItemDto {
   successCount: number;
   failCount: number;
   downloadUrl: string;
+  failReasons: ImportFailRowDto[];
+}
+
+/** 运行时类型守卫：JSON 列读取后不可信，格式异常不进入下游（BE-JSON-01）。 */
+function isImportFailRow(value: unknown): value is ImportFailRowDto {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.row === 'number' && typeof candidate.reason === 'string'
+  );
+}
+
+/**
+ * 把 ImportFile.failReasons 列（列类型 json，运行时可能为 null/损坏内容）
+ * 转成安全的 ImportFailRowDto[]；非法/损坏一律降级为空数组，不透传给前端（BE-JSON-01）。
+ */
+function toFailReasonsDto(raw: unknown): ImportFailRowDto[] {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  return raw.every(isImportFailRow) ? raw : [];
 }
 
 /**
@@ -110,6 +133,12 @@ export class ImportService {
             importedAt: new Date(),
             successCount: successRows.length,
             failCount: failRows.length,
+            // 与下方响应体 failRows 同一份数据（parseResult.failRows），不重新解析
+            // （ic-b-010，任务包 do-not：不改动导入解析规则/逐行容错判定逻辑）。
+            failReasons: failRows.map((row) => ({
+              row: row.rowNumber,
+              reason: row.reason,
+            })),
           }),
         );
 
@@ -164,6 +193,7 @@ export class ImportService {
         successCount: item.successCount,
         failCount: item.failCount,
         downloadUrl: await this.ossClient.getSignedUrl(item.ossKey),
+        failReasons: toFailReasonsDto(item.failReasons),
       })),
     );
   }

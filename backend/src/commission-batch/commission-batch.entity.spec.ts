@@ -44,7 +44,8 @@ describe('CommissionBatch / ImportFile entity 类型正确性', () => {
         "oss_key" varchar(512) NOT NULL,
         "imported_at" datetime NOT NULL,
         "success_count" int NOT NULL,
-        "fail_count" int NOT NULL
+        "fail_count" int NOT NULL,
+        "fail_reasons" json
       )
     `);
   });
