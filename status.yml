@@ -389,9 +389,9 @@ tasks:
     type: develop
     discipline: dev-fullstack
     layer: null
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 17
     parent_id: null
     depends_on: []
     delivery: null
@@ -871,6 +871,25 @@ code_reviews:
       - { id: ic-b-007-F002, dimension: scope-and-secrets, severity: 一般, type: undocumented-scope-drift, reachability: confirmed, action: backlog, impact: "文档口径滞后于实际交付范围，非代码缺陷", description: "任务包 files:/known-risks 未覆盖 merged 标记后追加的 service 模式改动（Web.config 新增 5 个 key + Fcl.DataWork.dll 依赖），已按同等标准审查未见结构性问题" }
       - { id: ic-b-007-F003, dimension: test-evidence, severity: 建议, type: evidence-gap, reachability: confirmed, action: revise-doc, status: closed, impact: "无功能性影响，纯审计留痕完整性", description: "协调者生产环境 curl 复测成功结果原未写回仓库，已补写 backlog.md/manual-test-progress.md" }
       - { id: ic-b-007-F004, dimension: sensitive-boundaries, severity: 建议, type: transport-security, reachability: "confirmed(production URL)", action: backlog, impact: "理论中间人风险，AC 未要求 TLS，非本任务验收缺陷", description: "生产地址 http://58.210.163.18:8085 为明文 HTTP，X-Fill-Token 与销售姓名明文传输" }
+  - iteration: null
+    task_id: ic-b-008
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-008
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-30T05:11:41Z
+    implementation_completed_at: 2026-08-30T05:14:54Z
+    review_started_at: 2026-08-30T05:14:54Z
+    review_completed_at: 2026-08-30T05:21:09Z
+    implementation_minutes: 4
+    review_minutes: 7
+    spec_minutes: 1
+    comment: "manual-test 验收会话中用户提出的优化需求（导入记录文件名加超链接可下载），经 dispatch-new 判定符合 B 类条件后走 develop。round-01（full，standard 档，13 个 selected dimensions 全审）0 blocking，1 条建议级：F001（新增 e2e 断言只判 downloadUrl 非空字符串，未断言等于 mock 返回值/未断言 getSignedUrl 调用参数，属未来回归判别力缺口非当前缺陷）记入 backlog。conclusion: pass。全量检测 backend build/lint/test(53)/test:e2e(104)、frontend build/lint/stylelint 全绿。"
+    issues:
+      - { id: ic-b-008-F001, dimension: test-evidence, severity: 建议, type: future-risk, reachability: unreachable, action: backlog, impact: "unknown（当前生产实现正确，缺口只在未来代码被误改时才会暴露）", description: "commission-batch-import.e2e-spec.ts 新增 downloadUrl 断言判别力不足，未验证值来源/调用参数" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
