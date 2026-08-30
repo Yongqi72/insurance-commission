@@ -216,6 +216,32 @@ describe('commission-batch 导入 (e2e)', () => {
     }
   });
 
+  it('POST 保费为空、其余 7 个字段齐全 → 该行成功导入，落库 premiumAmount: null（AC-03）', async () => {
+    const batchId = await createBatch('导入-保费为空批次');
+    const rowWithEmptyPremium = [...VALID_ROW];
+    rowWithEmptyPremium[6] = '';
+    const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [
+      rowWithEmptyPremium,
+    ]);
+
+    const res = await request(app.getHttpServer())
+      .post(`/api/commission-batches/${batchId}/imports`)
+      .set('Authorization', `Bearer ${token}`)
+      .attach('file', buffer, '账单.xlsx');
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.successCount).toBe(1);
+    expect(res.body.data.failCount).toBe(0);
+    expect(res.body.data.failRows).toEqual([]);
+
+    const importFileId = res.body.data.importFileId as string;
+    const records = await policyRecordRepository.find({
+      where: { importFileId },
+    });
+    expect(records).toHaveLength(1);
+    expect(records[0].premiumAmount).toBeNull();
+  });
+
   it('POST 部分行字段缺失/金额非数字 → 该行计入 failRows（行号+原因），不影响其余行', async () => {
     const batchId = await createBatch('导入-部分失败批次');
     const rowWithEmptyCustomerName = [...VALID_ROW];
