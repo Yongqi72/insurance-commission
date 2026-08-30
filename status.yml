@@ -406,9 +406,9 @@ tasks:
     type: develop
     discipline: dev-frontend
     layer: frontend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 19
     parent_id: null
     depends_on: []
     delivery: null
@@ -928,6 +928,25 @@ code_reviews:
       - { id: ic-mt-001-F001, dimension: test-evidence, severity: 建议, type: scope-gap, reachability: current, action: fix-code, status: closed, impact: "intent 3 oracle 明文要求的关系对象不泄漏进响应，此前只有人工独立验证担保，未来误加 eager 或全局序列化拦截器时现有测试不会捕获回归", description: "已补测试验证 commissionBatch/importFile 不作为 own property 出现，且 JSON 序列化路径同样不含这两个 key，verified-closed" }
       - { id: ic-mt-001-F002, dimension: enforcement, severity: 建议, type: scope-gap, reachability: current, action: fix-code, status: closed, impact: "本任务立项理由就是让 e2e 能真实复现外键约束拒绝违规写入，此前该能力交付了但无回归测试保护", description: "已补两条负例测试（importBatchId/importFileId 引用不存在 id 均应被 FK 拒绝），独立验证过判别力（临时去掉关系装饰器后测试确实翻红），verified-closed" }
       - { id: ic-mt-001-F003, dimension: comment-hygiene, severity: 建议, type: example-error, reachability: unreachable, action: revise-doc, status: closed, impact: "不影响代码行为，纯文档引用不准确", description: "backlog.md 与 policy-record.entity.spec.ts 对 TypeORM 内部源码文件名/类名的引用有误，已核实源码后改正，verified-closed" }
+  - iteration: null
+    task_id: ic-b-009
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-009
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-30T06:22:54Z
+    implementation_completed_at: 2026-08-30T06:25:24Z
+    review_started_at: 2026-08-30T06:25:24Z
+    review_completed_at: 2026-08-30T06:32:58Z
+    implementation_minutes: 3
+    review_minutes: 8
+    spec_minutes: 1
+    comment: "manual-test 验收会话中用户先提出、记入 backlog 留下期，后改主意要求现在做。round-01（full，standard 档，13 个 selected dimensions 全审）0 blocking，1 条建议级：F001（design-fidelity，全仓 el-dialog 圆角/阴影与 design.md 令牌历史性不符，非本次引入）记入 backlog。conclusion: pass。审查专项验证了'回填过程中阻断其他操作'这条核心不变式：源码级追踪 Element Plus el-dialog 三条内部关闭触发源均被 close-on-click-modal/close-on-press-escape/show-close 拦截，无自定义 z-index 覆盖，遮罩结构性覆盖顶部导航栏。全量检测 frontend build/lint/stylelint 全绿。"
+    issues:
+      - { id: ic-b-009-F001, dimension: design-fidelity, severity: 建议, type: contract-drift, reachability: current, action: backlog, impact: "新增弹窗视觉圆角/阴影与 design.md 设计令牌表要求不符，但全仓既有 3 个 el-dialog 同样表现，非本次改动引入的回归", description: "el-dialog 实际圆角落在 --el-border-radius-base(2px) 而非 design.md 弹窗要求的 $radius-lg(8px)，阴影未覆盖 $shadow-lg" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
