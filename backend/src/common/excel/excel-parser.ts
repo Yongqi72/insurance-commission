@@ -15,7 +15,7 @@ export interface PolicyRecordParsedRow {
   currency: string;
   policyholder: string;
   insuredAmount: number;
-  premiumAmount: number;
+  premiumAmount: number | null;
   policyNo: string;
 }
 
@@ -96,6 +96,10 @@ export class ExcelParser {
         const raw = ExcelParser.extractCellValue(cell.value);
 
         if (isEmptyValue(raw)) {
+          if (column.optional) {
+            values[column.key] = null;
+            return;
+          }
           if (!missingField) {
             missingField = column.header;
           }
@@ -139,7 +143,7 @@ export class ExcelParser {
         currency: values.currency as string,
         policyholder: values.policyholder as string,
         insuredAmount: values.insuredAmount as number,
-        premiumAmount: values.premiumAmount as number,
+        premiumAmount: values.premiumAmount as number | null,
         policyNo: values.policyNo as string,
       });
     });

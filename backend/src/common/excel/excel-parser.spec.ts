@@ -97,6 +97,87 @@ describe('ExcelParser（AC5：8 列解析 + 失败行/文件级失败识别）',
     expect(result.successRows[0].rowNumber).toBe(4);
   });
 
+  it('保费为空、其余 7 个字段齐全的行成功导入，落 premiumAmount: null（AC-03）', async () => {
+    const rowWithEmptyPremium = [...VALID_ROW];
+    rowWithEmptyPremium[6] = '';
+    const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [
+      rowWithEmptyPremium,
+    ]);
+
+    const result = await parser.parse(buffer);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.failRows).toEqual([]);
+    expect(result.successRows).toHaveLength(1);
+    expect(result.successRows[0]).toMatchObject({
+      rowNumber: 2,
+      premiumAmount: null,
+    });
+  });
+
+  it('保费有值且为数字的行仍成功导入（回归）', async () => {
+    const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [VALID_ROW]);
+
+    const result = await parser.parse(buffer);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.failRows).toEqual([]);
+    expect(result.successRows[0].premiumAmount).toBe(1234.56);
+  });
+
+  it('保费有值但非数字的行仍判失败（optional 不豁免数字校验）', async () => {
+    const rowWithNonNumericPremium = [...VALID_ROW];
+    rowWithNonNumericPremium[6] = '也不是数字';
+    const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [
+      rowWithNonNumericPremium,
+    ]);
+
+    const result = await parser.parse(buffer);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.failRows).toEqual([
+      { rowNumber: 2, reason: '「保费」必须为数字' },
+    ]);
+    expect(result.successRows).toEqual([]);
+  });
+
+  it('保险金额为空的行仍判失败，optional 不泄漏到同为数值列的保险金额', async () => {
+    const rowWithEmptyInsuredAmount = [...VALID_ROW];
+    rowWithEmptyInsuredAmount[5] = '';
+    const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [
+      rowWithEmptyInsuredAmount,
+    ]);
+
+    const result = await parser.parse(buffer);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.failRows).toEqual([
+      { rowNumber: 2, reason: '「保险金额」不能为空' },
+    ]);
+    expect(result.successRows).toEqual([]);
+  });
+
+  it('保费有值但其他字段（工作单号）为空的行仍判失败，optional 不泄漏到其他列', async () => {
+    const rowWithEmptyWorkOrderNo = [...VALID_ROW];
+    rowWithEmptyWorkOrderNo[1] = '';
+    const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [
+      rowWithEmptyWorkOrderNo,
+    ]);
+
+    const result = await parser.parse(buffer);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.failRows).toEqual([
+      { rowNumber: 2, reason: '「工作单号」不能为空' },
+    ]);
+    expect(result.successRows).toEqual([]);
+  });
+
   it('未找到「账单」sheet 时产出 sheet_not_found 文件级失败', async () => {
     const buffer = await buildWorkbookBuffer('其他sheet', [VALID_ROW]);
     const result = await parser.parse(buffer);

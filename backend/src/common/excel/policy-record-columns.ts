@@ -15,6 +15,8 @@ export interface PolicyRecordColumnDef {
   header: string;
   /** 该列是否为数值列（保险金额/保费）；数值列非数字时该行判为失败行 */
   numeric?: boolean;
+  /** 该列是否允许为空；为空时不计入 missingField，落 null 而非判该行失败（当前仅 premiumAmount） */
+  optional?: boolean;
 }
 
 export const POLICY_RECORD_COLUMNS: readonly PolicyRecordColumnDef[] = [
@@ -24,7 +26,7 @@ export const POLICY_RECORD_COLUMNS: readonly PolicyRecordColumnDef[] = [
   { key: 'currency', header: '币种' },
   { key: 'policyholder', header: '投保人' },
   { key: 'insuredAmount', header: '保险金额', numeric: true },
-  { key: 'premiumAmount', header: '保费', numeric: true },
+  { key: 'premiumAmount', header: '保费', numeric: true, optional: true },
   { key: 'policyNo', header: '保单号' },
 ] as const;
 
