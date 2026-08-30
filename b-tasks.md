@@ -16,3 +16,4 @@
 | ic-b-012 | optimization | normal | 保单明细回填状态旁加未匹配条数提示 | merged（PR#22） | 2026-08-30 |
 | ic-b-013 | optimization | normal | 提成汇总未匹配记录按投保人单列展示 | merged（PR#23） | 2026-08-30 |
 | ic-b-014 | optimization | normal | 保单记录明细工作单号可编辑并留痕 | merged（PR#24） | 2026-08-30 |
+| ic-b-015 | bug | normal | 导入时保费为空应允许正常导入 | [可取] | 2026-08-30 |
