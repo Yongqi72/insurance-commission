@@ -508,9 +508,9 @@ tasks:
     type: develop
     discipline: dev-fullstack
     layer: null
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 24
     parent_id: null
     depends_on: []
     delivery: null
@@ -1112,6 +1112,26 @@ code_reviews:
     comment: "manual-test 验收会话中用户提出：提成汇总应展示未匹配记录（按投保人单列），导出 Excel 同步。CommissionSummaryGroupDto/ExcelBuilderGroup 新增 unmatchedCount 字段，从既有 groupRecords 计算，不新增查询；界面卡片新增“未匹配 N 票”行，导出销售汇总表同步追加一行，合计行口径不变（仍只统计已匹配销售）。round-01（full，13 个 selected dimensions 全审）0 blocking，3 条建议级（F001 导出测试断言判别力偏弱/F002 注释写任务号/F003 unmatchedCount 计算重复两处）：F002/F003 在提交前直接清理（抽取 countUnmatched() 共享私有方法），F001 记入 backlog。conclusion: pass。审查逐项核实 totalRow 真的不受未匹配影响、firstEmptyPolicyholder 收窄的必要性（对照 prototype-map.md 的 AC-16 空态选择器）。全量检测 backend build/lint/单测(56)/e2e(20 commission-report 专项)、frontend build/lint/stylelint 全绿。"
     issues:
       - { id: ic-b-013-F001, dimension: test-evidence, severity: 建议, type: evidence-gap, reachability: current, action: backlog, impact: "当前代码正确，但若未来未匹配行的插入位置/触发条件被误改（如插到合计行之后、或在 unmatchedCount=0 时也插入），现有按内容存在性匹配的断言不一定能捕获", description: "新增的导出 e2e 断言按内容存在性匹配未匹配行，未验证其相对位置（须在销售汇总行之后、合计行之前）" }
+  - iteration: null
+    task_id: ic-b-014
+    conclusion: 通过
+    rounds: 2
+    code_rounds: 2
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-014
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-30T09:07:50Z
+    implementation_completed_at: 2026-08-30T09:13:24Z
+    review_started_at: 2026-08-30T09:13:24Z
+    review_completed_at: 2026-08-30T09:32:52Z
+    implementation_minutes: 6
+    review_minutes: 20
+    spec_minutes: 2
+    comment: "manual-test 验收会话中用户提出：保单记录明细工作单号应可编辑；追问后要求与销售人员补录同等留痕。sales_fill_log 表新增 field_name 列（DEFAULT 'salesName' 自动回填历史行），新增 PATCH .../work-order-no（{workOrderNo, resetFillStatus}），resetFillStatus 由操作人决定是否连带清空原销售人员回填结果。round-01（full，13 个 selected dimensions 全审）发现 1 条阻断级：F001（updateSalesName()/updateWorkOrderNo() 并发写同一记录存在丢失更新竞态，用真实 MySQL 复现——两个保存按钮互不禁用对方，快速先后点击即可触发，reset 场景下会静默覆盖掉刚提交的销售人员修改，且 sales_fill_log 会留下与最终行状态矛盾的历史记录）→ conclusion: revise。已修复：新增 findOneForUpdate() 私有方法，按驱动类型条件加行锁（mysql 下 pessimistic_write，better-sqlite3 不支持行锁故降级为普通读——本仓 e2e 测试路径强制用 sqlite，生产/开发实际用 mysql）；用真实 MySQL 临时记录复现原竞态场景验证不再丢失更新，数据已清理 → round-02（targeted，只复核 F001+增量 diff）独立复现验证（重新用真实 MySQL 临时记录复现，确认第二个事务的读真实阻塞 656ms 直到第一个提交、随后读到的是提交后的新值），verified-closed → conclusion: pass。另 1 条新增建议级（F002：锁行为在 sqlite-only e2e 套件里无自动化覆盖，MySQL-only 行为的已知测试基建缺口，与既有 migration 测试缺口同类）记入 backlog。全量检测 backend build/lint/单测(56)/e2e(116 全量 6 套)、frontend build/lint/stylelint 全绿；迁移已在真实 MySQL 验证 run/revert/run 全链路。"
+    issues:
+      - { id: ic-b-014-F001, dimension: concurrency, severity: 严重, type: behavior-bug, reachability: current, action: fix-code, impact: "并发场景下一次刚提交的人工销售人员补录可能被同一时刻的工作单号重置操作静默覆盖为 unmatched/null，且 sales_fill_log 留下与最终行状态矛盾的历史记录；salesFillSource/salesName 是下游提成归属计算的直接依据，误覆盖会导致提成报表把本该算给某销售的保单错误算作未匹配", description: "updateSalesName()/updateWorkOrderNo() 各自独立事务读同一条 PolicyRecord 后局部 mutate 再 save，无锁保护；round-02 已用行锁修复并独立复现验证", status: verified-closed }
+      - { id: ic-b-014-F002, dimension: test-evidence, severity: 建议, type: evidence-gap, reachability: current, action: backlog, impact: "若未来 findOneForUpdate() 的驱动判断或锁逻辑被误改，本仓自动化测试矩阵不会捕获，只能靠人工连真实 MySQL 验证兜底（与 ic-b-003/migration 场景同类缺口）", description: "新增的行锁并发保护在本仓 sqlite-only 的 e2e 测试路径下（better-sqlite3 不支持行锁）无自动化覆盖" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
