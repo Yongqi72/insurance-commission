@@ -94,6 +94,32 @@
                 >
                   保存
                 </el-button>
+                <div class="policy-record-table__field">
+                  <label :for="`input-work-order-no-${row.id}`">工作单号</label>
+                  <el-input
+                    :id="`input-work-order-no-${row.id}`"
+                    v-model="editingWorkOrderNo"
+                    placeholder="填写工作单号"
+                    @click.stop
+                  />
+                </div>
+                <el-checkbox
+                  v-if="row.salesFillSource !== 'unmatched'"
+                  :id="`checkbox-reset-fill-status-${row.id}`"
+                  v-model="resetFillStatus"
+                  @click.stop
+                >
+                  同时清空原销售人员回填结果
+                </el-checkbox>
+                <el-button
+                  :id="`btn-save-work-order-no-${row.id}`"
+                  type="primary"
+                  size="small"
+                  :loading="savingWorkOrderNoId === row.id"
+                  @click.stop="handleSaveWorkOrderNo(row)"
+                >
+                  保存
+                </el-button>
                 <el-button id="btn-view-record-history" size="small" @click.stop="handleViewHistory(row)">
                   查看修改历史
                 </el-button>
@@ -156,7 +182,7 @@ import { ElMessage, type TableInstance } from 'element-plus'
 import DataStateWrapper from '@/components/DataStateWrapper.vue'
 import PolicyRecordHistoryDrawer from '@/components/PolicyRecordHistoryDrawer.vue'
 import { fetchBatchPolicyRecords, triggerSalesFill } from '@/api/commission-batch'
-import { updateSalesName, type PolicyRecord, type SalesFillSource } from '@/api/policy-record'
+import { updateSalesName, updateWorkOrderNo, type PolicyRecord, type SalesFillSource } from '@/api/policy-record'
 import { useResponsiveDialogWidth } from '@/composables/useResponsiveDialogWidth'
 
 type Status = 'loading' | 'empty' | 'error' | 'success'
@@ -213,6 +239,11 @@ const fillDialogVisible = computed({
 })
 const savingId = ref<string | null>(null)
 const editingSalesName = ref('')
+/** 工作单号编辑区独立的保存中态/编辑态，与销售人员字段互不影响（各自只提交对应字段）。 */
+const savingWorkOrderNoId = ref<string | null>(null)
+const editingWorkOrderNo = ref('')
+/** "同时清空原销售人员回填结果"勾选项，展开新行/收起时重置为默认不勾选。 */
+const resetFillStatus = ref(false)
 
 const tableRef = ref<TableInstance>()
 // 分页/搜索/筛选切换时自增，强制 el-table 整体重新挂载，彻底清空其内部展开行状态，
@@ -264,6 +295,8 @@ async function loadUnmatchedCount() {
 /** 收起当前展开行、清空编辑态、强制表格重新挂载（known-risks：切换分页/搜索/筛选需主动收起展开行）。 */
 function resetExpandState() {
   editingSalesName.value = ''
+  editingWorkOrderNo.value = ''
+  resetFillStatus.value = false
   tableResetKey.value += 1
 }
 
@@ -378,6 +411,8 @@ function handleExpandChange(row: PolicyRecord, expandedRows: PolicyRecord[]) {
   }
   const stillExpanded = expandedRows.some((expandedRow) => expandedRow.id === row.id)
   editingSalesName.value = stillExpanded ? row.salesName || '' : ''
+  editingWorkOrderNo.value = stillExpanded ? row.workOrderNo : ''
+  resetFillStatus.value = false
 }
 
 async function handleSaveSalesName(row: PolicyRecord) {
@@ -403,6 +438,37 @@ async function handleSaveSalesName(row: PolicyRecord) {
     // 失败已由 api/request.ts 响应拦截器统一 ElMessage.error 透传后端 msg（如 1001 salesName 为空，FE-ASYNC-01），不重复弹窗
   } finally {
     savingId.value = null
+  }
+}
+
+/**
+ * 保存工作单号修改：与销售人员字段的保存互不影响，各自只提交对应字段、各自写入一条
+ * fieldName 不同的日志。resetFillStatus 由用户在勾选项里自行决定（仅当该记录已回填过
+ * 销售人员时展示），后端据此决定是否连带清空原销售人员回填结果。
+ */
+async function handleSaveWorkOrderNo(row: PolicyRecord) {
+  const trimmed = editingWorkOrderNo.value.trim()
+  if (!trimmed) {
+    ElMessage.error('请填写工作单号')
+    return
+  }
+
+  savingWorkOrderNoId.value = row.id
+  try {
+    const updated = await updateWorkOrderNo(row.id, trimmed, resetFillStatus.value)
+    const target = list.value.find((item) => item.id === row.id)
+    if (target) {
+      target.workOrderNo = updated.workOrderNo
+      target.salesName = updated.salesName
+      target.salesFillSource = updated.salesFillSource
+    }
+    ElMessage.success('保存成功')
+    tableRef.value?.toggleRowExpansion(row, false)
+    emit('sales-name-changed')
+  } catch {
+    // 失败已由 api/request.ts 响应拦截器统一 ElMessage.error 透传后端 msg（如 1001 workOrderNo 为空，FE-ASYNC-01），不重复弹窗
+  } finally {
+    savingWorkOrderNoId.value = null
   }
 }
 

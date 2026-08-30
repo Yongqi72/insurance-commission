@@ -12,6 +12,7 @@ import { PageResultDto } from '../common/dto/page-result.dto';
 import { extractOperator } from '../common/utils/extract-operator.util';
 import { QueryPolicyRecordDto } from './dto/query-policy-record.dto';
 import { UpdateSalesNameDto } from './dto/update-sales-name.dto';
+import { UpdateWorkOrderNoDto } from './dto/update-work-order-no.dto';
 import { PolicyRecord } from './policy-record.entity';
 import {
   PolicyRecordService,
@@ -42,6 +43,19 @@ export class PolicyRecordController {
     @Req() request: Request,
   ): Promise<PolicyRecord> {
     return this.policyRecordService.updateSalesName(
+      id,
+      dto,
+      extractOperator(request),
+    );
+  }
+
+  @Patch(':id/work-order-no')
+  updateWorkOrderNo(
+    @Param('id') id: string,
+    @Body() dto: UpdateWorkOrderNoDto,
+    @Req() request: Request,
+  ): Promise<PolicyRecord> {
+    return this.policyRecordService.updateWorkOrderNo(
       id,
       dto,
       extractOperator(request),

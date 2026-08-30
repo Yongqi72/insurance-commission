@@ -245,7 +245,134 @@ describe('标杆穿透切片：登录 + 保单记录列表 (e2e)', () => {
     });
   });
 
-  describe('GET /api/policy-records/:id/sales-fill-logs（补录历史，PRD AC-09）', () => {
+  describe('PATCH /api/policy-records/:id/work-order-no（工作单号更正，本任务新增）', () => {
+    it('不勾选重置时，成功更新工作单号，salesName/salesFillSource 不变', async () => {
+      const record = await createRecord({
+        workOrderNo: 'WO-NORESET-01',
+        salesName: '张三',
+        salesFillSource: 'system',
+      });
+
+      const res = await request(app.getHttpServer())
+        .patch(`/api/policy-records/${record.id}/work-order-no`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ workOrderNo: 'WO-NORESET-02', resetFillStatus: false });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toEqual(
+        expect.objectContaining({
+          id: record.id,
+          workOrderNo: 'WO-NORESET-02',
+          salesName: '张三',
+          salesFillSource: 'system',
+        }),
+      );
+
+      const logsRes = await request(app.getHttpServer())
+        .get(`/api/policy-records/${record.id}/sales-fill-logs`)
+        .set('Authorization', `Bearer ${token}`);
+      expect(logsRes.body.data).toEqual([
+        expect.objectContaining({
+          operator: 'e2e-admin',
+          oldValue: 'WO-NORESET-01',
+          newValue: 'WO-NORESET-02',
+          fieldName: 'workOrderNo',
+        }),
+      ]);
+    });
+
+    it('勾选重置且此前已回填过销售人员：salesName 变 null，salesFillSource 变 unmatched，只新增一条日志', async () => {
+      const record = await createRecord({
+        workOrderNo: 'ABC123',
+        salesName: '张三',
+        salesFillSource: 'system',
+      });
+
+      const res = await request(app.getHttpServer())
+        .patch(`/api/policy-records/${record.id}/work-order-no`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ workOrderNo: 'ABC124', resetFillStatus: true });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toEqual(
+        expect.objectContaining({
+          id: record.id,
+          workOrderNo: 'ABC124',
+          salesName: null,
+          salesFillSource: 'unmatched',
+        }),
+      );
+
+      const logsRes = await request(app.getHttpServer())
+        .get(`/api/policy-records/${record.id}/sales-fill-logs`)
+        .set('Authorization', `Bearer ${token}`);
+      // 一次操作只写一条日志：重置销售人员是工作单号修改的连带效应，不单独产生销售人员变更日志
+      expect(logsRes.body.data).toEqual([
+        expect.objectContaining({
+          oldValue: 'ABC123',
+          newValue: 'ABC124',
+          fieldName: 'workOrderNo',
+        }),
+      ]);
+    });
+
+    it('workOrderNo 为空字符串 → 1001', async () => {
+      const record = await createRecord({ workOrderNo: 'WO-EMPTY-02' });
+
+      const res = await request(app.getHttpServer())
+        .patch(`/api/policy-records/${record.id}/work-order-no`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ workOrderNo: '', resetFillStatus: false });
+
+      expect(res.status).toBe(400);
+      expect(res.body.code).toBe(1001);
+    });
+
+    it('已是 unmatched 的记录勾选重置：对 salesName/salesFillSource 是无操作（本就无可重置内容）', async () => {
+      const record = await createRecord({
+        workOrderNo: 'WO-ALREADY-UNMATCHED',
+        salesName: null,
+        salesFillSource: 'unmatched',
+      });
+
+      const res = await request(app.getHttpServer())
+        .patch(`/api/policy-records/${record.id}/work-order-no`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ workOrderNo: 'WO-STILL-UNMATCHED', resetFillStatus: true });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toEqual(
+        expect.objectContaining({
+          workOrderNo: 'WO-STILL-UNMATCHED',
+          salesName: null,
+          salesFillSource: 'unmatched',
+        }),
+      );
+    });
+
+    it('记录不存在 → 1004', async () => {
+      const res = await request(app.getHttpServer())
+        .patch('/api/policy-records/999999/work-order-no')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ workOrderNo: 'WO-ANY', resetFillStatus: false });
+
+      expect(res.status).toBe(404);
+      expect(res.body.code).toBe(1004);
+    });
+
+    it('未登录访问应返回 401', async () => {
+      const record = await createRecord({ workOrderNo: 'WO-WO-AUTH-01' });
+
+      const res = await request(app.getHttpServer())
+        .patch(`/api/policy-records/${record.id}/work-order-no`)
+        .send({ workOrderNo: 'WO-WO-AUTH-02', resetFillStatus: false });
+
+      expect(res.status).toBe(401);
+      expect(res.body.code).toBe(1002);
+    });
+  });
+
+  describe('GET /api/policy-records/:id/sales-fill-logs（补录历史，PRD AC-09；本任务扩展 fieldName）', () => {
     it('从未被人工修改过的记录返回空数组', async () => {
       const record = await createRecord({ workOrderNo: 'WO-NOLOG-01' });
 
@@ -264,6 +391,54 @@ describe('标杆穿透切片：登录 + 保单记录列表 (e2e)', () => {
 
       expect(res.status).toBe(404);
       expect(res.body.code).toBe(1004);
+    });
+
+    it('销售人员历史返回 fieldName=salesName', async () => {
+      const record = await createRecord({ workOrderNo: 'WO-FIELDNAME-SALES' });
+
+      await request(app.getHttpServer())
+        .patch(`/api/policy-records/${record.id}/sales-name`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ salesName: '张三' });
+
+      const res = await request(app.getHttpServer())
+        .get(`/api/policy-records/${record.id}/sales-fill-logs`)
+        .set('Authorization', `Bearer ${token}`);
+      expect(res.body.data).toEqual([
+        expect.objectContaining({ fieldName: 'salesName', newValue: '张三' }),
+      ]);
+    });
+
+    it('混合销售人员+工作单号历史：按 changedAt 倒序统一排列，各自标注 fieldName', async () => {
+      const record = await createRecord({ workOrderNo: 'WO-MIX-01' });
+
+      await request(app.getHttpServer())
+        .patch(`/api/policy-records/${record.id}/sales-name`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ salesName: '张三' });
+
+      await request(app.getHttpServer())
+        .patch(`/api/policy-records/${record.id}/work-order-no`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ workOrderNo: 'WO-MIX-02', resetFillStatus: false });
+
+      const res = await request(app.getHttpServer())
+        .get(`/api/policy-records/${record.id}/sales-fill-logs`)
+        .set('Authorization', `Bearer ${token}`);
+
+      // 最近一次（工作单号修改）排最前，其次是销售人员补录
+      expect(res.body.data).toEqual([
+        expect.objectContaining({
+          fieldName: 'workOrderNo',
+          oldValue: 'WO-MIX-01',
+          newValue: 'WO-MIX-02',
+        }),
+        expect.objectContaining({
+          fieldName: 'salesName',
+          oldValue: null,
+          newValue: '张三',
+        }),
+      ]);
     });
   });
 });

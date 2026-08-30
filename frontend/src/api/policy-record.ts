@@ -26,12 +26,14 @@ export interface PolicyRecord {
   updatedAt: string
 }
 
-/** 单条销售人员补录日志（TRD §接口：GET /api/policy-records/:id/sales-fill-logs，满足 AC-09）。 */
+/** 单条保单记录人工修改日志（TRD §接口：GET /api/policy-records/:id/sales-fill-logs，满足 AC-09）。
+ * fieldName 区分该条日志是销售人员补录还是工作单号修改，两类历史合并展示、按 changedAt 统一倒序。 */
 export interface SalesFillLog {
   operator: string
   changedAt: string
   oldValue: string | null
   newValue: string
+  fieldName: 'salesName' | 'workOrderNo'
 }
 
 export interface PageQuery {
@@ -60,6 +62,24 @@ export async function fetchPolicyRecordPage(query: PageQuery): Promise<PageResul
  */
 export async function updateSalesName(id: string, salesName: string): Promise<PolicyRecord> {
   const res = await request.patch<ApiEnvelope<PolicyRecord>>(`/api/policy-records/${id}/sales-name`, { salesName })
+  return res.data.data
+}
+
+/**
+ * 更正工作单号（本任务新增，TRD §接口：PATCH /api/policy-records/:id/work-order-no）。
+ * resetFillStatus 为 true 且该记录已回填过销售人员（salesFillSource !== 'unmatched'）时，
+ * 后端会连带清空原销售人员回填结果；为 false 或本就未匹配时不影响销售人员字段。
+ * workOrderNo 为空由后端校验管道拦截并返回错误码 1001，本函数不做提前拦截（同 updateSalesName）。
+ */
+export async function updateWorkOrderNo(
+  id: string,
+  workOrderNo: string,
+  resetFillStatus: boolean,
+): Promise<PolicyRecord> {
+  const res = await request.patch<ApiEnvelope<PolicyRecord>>(`/api/policy-records/${id}/work-order-no`, {
+    workOrderNo,
+    resetFillStatus,
+  })
   return res.data.data
 }
 

@@ -17,7 +17,7 @@
       <div id="record-history-body" class="policy-record-history-drawer__body">
         <div v-for="(log, index) in logs" :key="index" class="policy-record-history-drawer__item">
           <div class="policy-record-history-drawer__change">
-            销售人员：
+            {{ FIELD_NAME_LABEL[log.fieldName] }}：
             <span class="policy-record-history-drawer__old">{{ log.oldValue || '空' }}</span>
             →
             <span class="policy-record-history-drawer__new">{{ log.newValue }}</span>
@@ -37,6 +37,12 @@ import { useResponsiveDialogWidth } from '@/composables/useResponsiveDialogWidth
 import { formatDateTime } from '@/utils/format'
 
 type Status = 'loading' | 'empty' | 'error' | 'success'
+
+/** fieldName → 中文标签（本任务泛化：历史记录不再假设一定是销售人员变更，含义随后端 fieldName 而定）。 */
+const FIELD_NAME_LABEL: Record<SalesFillLog['fieldName'], string> = {
+  salesName: '销售人员',
+  workOrderNo: '工作单号',
+}
 
 const props = defineProps<{
   visible: boolean
