@@ -84,3 +84,17 @@ Playwright 走查登录+批次列表+批次详情+保单记录+阶梯规则四�
 - 回到 manual-test 主流程：继续走查前端功能（本期已知欠账清单见 backlog.md 里带 `[欠账]` 标记的条目，多数已解决，剩余开放项见下）、或用户直接说"验收通过"进入签 G4
 - 那条间歇性超时问题（backlog.md 2026-08-29 条目）目前只是"本系统后端放宽超时兼容"，根因还没排查，如果后续发生频率变化或用户想升级给朱敏处理，可以再讨论
 - 仍保持开放的 backlog 项：销售回填第三方接口相关的历史遗留（已解决大部分，仅超时问题新增一条待观察）、`PolicyRecord` FK 装饰器（评估后决定不做）、migration `down()` 自动化测试基建（沙箱无 MySQL，决定不做）
+
+### 2026-08-30：续做验收，测试环境接入真实 Windows 主机 MySQL，3 条开放项全部处理
+
+**测试环境**：本轮沙箱新接入 Windows 宿主机 MySQL 8.0.36（`172.22.224.1:3306`，WSL2 网关地址），`backend/.env` 已改 `DB_TYPE=mysql`（原为 sqlite 权宜方案）；新建 `insurance_commission` 库并跑 `migration:run` 建表。后端 `http://localhost:3000`、前端 `http://localhost:5173` 均已拉起。
+
+用户对上轮遗留的 3 条开放 backlog 项表态"都解决"，逐条处理：
+
+1. **PolicyRecord 关系装饰器**：不满足 manual-test 快速通道条件（需要判断是否会破坏隔离单测，非显而易见），写入 develop 任务包 `ic-mt-001`（`iterations/v1/queue/ic-mt-001.md`，`source: manual-test`，状态 `[可取]`），已同步 `status.yml`/`sprint.md`，commit+push（`e6fe8fd`）。任务范围：评估能否安全补 `import_batch_id`/`import_file_id` 的 `@ManyToOne`，能补则落地，不能补需给出实测证据而非重复引用旧结论。
+2. **migration `down()` 自动化测试基建**：用户选择"现在用真实 MySQL 手动跑一次验证"而非另立 CI 自动化任务。已用新接入的 MySQL 完整验证两条上游路径（空库直建 / 已有 V0 表 ALTER），`migration:run`→`migration:revert` 全链路均通过，唯一索引正确恢复、测试数据完整保留、无半回滚状态；验证用数据已清理，库已恢复 v1 终态。backlog.md 对应条目标 `[x]`，注明"一次性人工验证，非 CI 覆盖，是当前决策下的预期状态，不再挂账"。
+3. **第三方接口间歇性超时**：用户确认当前 30s 超时兼容方案已足够，不再升级给朱敏排查根因。backlog.md 对应条目标 `[x]` 关账。
+
+### 当前状态
+
+3 条开放项已全部按用户决定处理完毕（1 条转 develop 任务包待认领执行，2 条已直接关账）。测试环境仍在运行（真实 MySQL，非 sqlite），等待用户继续走查前端功能或说"验收通过"。
