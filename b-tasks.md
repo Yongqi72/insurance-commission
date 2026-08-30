@@ -14,3 +14,4 @@
 | ic-b-010 | optimization | normal | 导入记录历史失败原因可查看 | merged（PR#20） | 2026-08-30 |
 | ic-b-011 | optimization | normal | 同批次同名文件导入前二次确认 | merged（PR#21） | 2026-08-30 |
 | ic-b-012 | optimization | normal | 保单明细回填状态旁加未匹配条数提示 | merged（PR#22） | 2026-08-30 |
+| ic-b-013 | optimization | normal | 提成汇总未匹配记录按投保人单列展示 | [可取] | 2026-08-30 |
