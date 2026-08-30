@@ -381,6 +381,23 @@ tasks:
     urgency: null
     branch: ic-b-007
     risk: sensitive
+  - id: ic-mt-001
+    iteration: v1
+    sprint: null
+    source: manual-test
+    title: 评估补 PolicyRecord 关系装饰器
+    type: develop
+    discipline: dev-backend
+    layer: backend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: []
+    delivery: null
+    urgency: null
+    branch: null
+    risk: standard
 # 每条（写 queue 任务包处同步追加）：
 #  - id: {缩写}-v{N}-001     # B 类为 {缩写}-b-001
 #    iteration: v1           # 属哪期；B 类(bug/optimization)为 null
