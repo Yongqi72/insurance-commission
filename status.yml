@@ -500,6 +500,23 @@ tasks:
     urgency: null
     branch: ic-b-013
     risk: standard
+  - id: ic-b-014
+    iteration: null
+    sprint: null
+    source: optimization
+    title: 保单记录明细工作单号可编辑并留痕
+    type: develop
+    discipline: dev-fullstack
+    layer: null
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: []
+    delivery: null
+    urgency: null
+    branch: null
+    risk: standard
 # 每条（写 queue 任务包处同步追加）：
 #  - id: {缩写}-v{N}-001     # B 类为 {缩写}-b-001
 #    iteration: v1           # 属哪期；B 类(bug/optimization)为 null

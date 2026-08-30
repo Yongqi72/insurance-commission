@@ -1,0 +1,88 @@
+{
+  "schema": "develop-review-profile/v1",
+  "task_id": "ic-b-013",
+  "task_type": "dev-fullstack",
+  "layers": [
+    "backend",
+    "frontend"
+  ],
+  "source": "",
+  "effective_risk": "standard",
+  "changed_files": [
+    "backend/src/commission-report/commission-report.service.ts",
+    "backend/src/common/excel/excel-builder.ts",
+    "backend/test/commission-report.e2e-spec.ts",
+    "frontend/src/api/commission-report.ts",
+    "frontend/src/components/CommissionSummaryPanel.vue"
+  ],
+  "input_fingerprint": "53f73eab1ef1ad94044e73dd4c25328a3df1938a8559356b687d58a79b70f493",
+  "signals": {
+    "metadata_incomplete": true,
+    "unknown_layer": false,
+    "surface": "production",
+    "frontend": true,
+    "backend": true,
+    "ui": true,
+    "input": true,
+    "query": true,
+    "concurrency": false,
+    "logging": true,
+    "enforcement": true,
+    "sensitive": false
+  },
+  "selected_dimensions": [
+    {
+      "id": "contract",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "scope-and-secrets",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "test-evidence",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "comment-hygiene",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "standards",
+      "reason": "fail-safe: task metadata is incomplete"
+    },
+    {
+      "id": "enforcement",
+      "reason": "fail-safe: task metadata is incomplete"
+    },
+    {
+      "id": "design-fidelity",
+      "reason": "fail-safe: frontend applicability is unresolved"
+    },
+    {
+      "id": "input-provenance",
+      "reason": "fail-safe: backend input applicability is unresolved"
+    },
+    {
+      "id": "query-performance",
+      "reason": "fail-safe: backend query applicability is unresolved"
+    },
+    {
+      "id": "concurrency",
+      "reason": "fail-safe: backend concurrency applicability is unresolved"
+    },
+    {
+      "id": "logging-privacy",
+      "reason": "fail-safe: task metadata is incomplete"
+    },
+    {
+      "id": "maintainability",
+      "reason": "fail-safe: changed surface is unresolved"
+    },
+    {
+      "id": "sensitive-boundaries",
+      "reason": "fail-safe: task metadata is incomplete"
+    }
+  ],
+  "omitted_dimensions": []
+}
