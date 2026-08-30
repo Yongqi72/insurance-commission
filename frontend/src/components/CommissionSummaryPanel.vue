@@ -22,10 +22,11 @@
         </div>
         <div v-else id="grid-commission-summary" class="commission-summary-panel__grid">
           <div
-            v-for="group in summary.groups"
+            v-for="(group, index) in summary.groups"
             :id="group.policyholder === firstEmptyPolicyholder ? 'card-commission-empty' : undefined"
             :key="group.policyholder"
             class="commission-summary-panel__card"
+            :class="`commission-summary-panel__card--cat-${(index % 8) + 1}`"
           >
             <div class="commission-summary-panel__station">{{ group.policyholder }}</div>
             <div v-if="group.items.length === 0" class="commission-summary-panel__empty-hint">
@@ -134,6 +135,7 @@ defineExpose({ refresh: loadSummary })
 </script>
 
 <style scoped lang="scss">
+@use 'sass:list';
 @use '@/styles/variables.scss' as *;
 
 .commission-summary-panel {
@@ -190,15 +192,36 @@ defineExpose({ refresh: loadSummary })
     padding: $space-md;
     background-color: $bg-card;
     border: 1px solid $border-color;
+    border-left-width: 4px;
     border-radius: $radius-md;
     box-shadow: $shadow-md;
+
+    // 分类色板循环取色（8 色一组，超过 8 个投保人分组时循环），仅用于卡片左边框+投保人名底色块
+    // 辅助区分，投保人名称文字本身仍是 $text-primary，颜色不是身份判断的唯一依据。
+    $cat-colors: $chart-cat-1, $chart-cat-2, $chart-cat-3, $chart-cat-4, $chart-cat-5, $chart-cat-6, $chart-cat-7,
+      $chart-cat-8;
+    $cat-bgs: $chart-cat-1-bg, $chart-cat-2-bg, $chart-cat-3-bg, $chart-cat-4-bg, $chart-cat-5-bg, $chart-cat-6-bg,
+      $chart-cat-7-bg, $chart-cat-8-bg;
+
+    @for $i from 1 through 8 {
+      &--cat-#{$i} {
+        border-left-color: list.nth($cat-colors, $i);
+
+        .commission-summary-panel__station {
+          background-color: list.nth($cat-bgs, $i);
+        }
+      }
+    }
   }
 
   &__station {
+    display: inline-block;
     font-size: $fs-caption;
     font-weight: $fw-h3;
     margin-bottom: $space-sm;
+    padding: $space-xs $space-sm;
     color: $text-primary;
+    border-radius: $radius-sm;
   }
 
   &__row {
@@ -223,11 +246,13 @@ defineExpose({ refresh: loadSummary })
     display: flex;
     justify-content: space-between;
     margin-top: $space-sm;
-    padding-top: $space-sm;
+    padding: $space-sm;
     font-size: $fs-caption;
-    font-weight: $fw-h3;
+    font-weight: $fw-h1;
     color: $text-primary;
-    border-top: 1px solid $border-color;
+    background-color: $bg-hover;
+    border-top: 2px solid $border-color;
+    border-radius: $radius-sm;
   }
 
   &__empty-hint {

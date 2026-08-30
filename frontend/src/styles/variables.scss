@@ -100,3 +100,24 @@ $input-width-full: 100%;
 $btn-height-sm: 28px;
 $btn-height-md: 32px;
 $btn-height-lg: 36px;
+
+// ------ 八、分类色板（多分组场景循环取色，如提成汇总按投保人分组） ------
+// 8 色一组，CVD 安全性已用 dataviz 校验脚本验证（相邻色对 ΔE 达标）；分组数超过 8 时循环使用，
+// 颜色仅作辅助区分（配色块/边框条），投保人名称本身仍走 $text-primary 文字色，不依赖颜色单独传达身份。
+
+$chart-cat-1: #2a78d6;
+$chart-cat-1-bg: #e7eff8;
+$chart-cat-2: #eb6834;
+$chart-cat-2-bg: #f8ece7;
+$chart-cat-3: #1baf7a;
+$chart-cat-3-bg: #e7f8f2;
+$chart-cat-4: #eda100;
+$chart-cat-4-bg: #f8f3e7;
+$chart-cat-5: #e87ba4;
+$chart-cat-5-bg: #f8e7ee;
+$chart-cat-6: #008300;
+$chart-cat-6-bg: #e7f8e7;
+$chart-cat-7: #4a3aa7;
+$chart-cat-7-bg: #eae8f7;
+$chart-cat-8: #e34948;
+$chart-cat-8-bg: #f8e7e7;
