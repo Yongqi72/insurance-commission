@@ -5,8 +5,17 @@
       <el-button id="btn-start-fill" :loading="filling" @click="handleStartFill">开始回填</el-button>
     </div>
 
-    <Transition name="fade">
-      <div v-if="fillProgress" id="fill-progress" class="policy-record-table__fill-progress">
+    <el-dialog
+      id="fill-progress"
+      v-model="fillDialogVisible"
+      title="正在回填"
+      :width="fillDialogWidth"
+      align-center
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :show-close="false"
+    >
+      <div v-if="fillProgress" class="policy-record-table__fill-progress">
         <el-progress
           :percentage="fillProgressPercentage"
           :stroke-width="10"
@@ -18,7 +27,7 @@
           正在回填：{{ fillProgress.processed }}/{{ fillProgress.total }}
         </span>
       </div>
-    </Transition>
+    </el-dialog>
 
     <div class="policy-record-table__toolbar">
       <div class="policy-record-table__search-wrap">
@@ -145,6 +154,7 @@ import DataStateWrapper from '@/components/DataStateWrapper.vue'
 import PolicyRecordHistoryDrawer from '@/components/PolicyRecordHistoryDrawer.vue'
 import { fetchBatchPolicyRecords, triggerSalesFill } from '@/api/commission-batch'
 import { updateSalesName, type PolicyRecord, type SalesFillSource } from '@/api/policy-record'
+import { useResponsiveDialogWidth } from '@/composables/useResponsiveDialogWidth'
 
 type Status = 'loading' | 'empty' | 'error' | 'success'
 
@@ -183,6 +193,14 @@ const fillProgressPercentage = computed(() => {
     return 0
   }
   return Math.round((fillProgress.value.processed / fillProgress.value.total) * 100)
+})
+const fillDialogWidth = useResponsiveDialogWidth('420px')
+// 回填进度弹窗不允许用户主动关闭（do-not：不新增可手动关闭的入口）：可见性完全由 fillProgress
+// 是否为 null 派生，setter 留空——close-on-click-modal/close-on-press-escape/show-close 已堵死
+// el-dialog 内部触发关闭的所有来源，此处仅作兜底，忽略任何试图写回 false 的尝试。
+const fillDialogVisible = computed({
+  get: () => fillProgress.value !== null,
+  set: () => {},
 })
 const savingId = ref<string | null>(null)
 const editingSalesName = ref('')
@@ -413,14 +431,11 @@ defineExpose({ refresh: loadData })
     margin-bottom: $space-md;
   }
 
+  // 弹窗内容区（el-dialog__body 已提供内边距/背景，此处只负责进度条+文案的横向布局）
   &__fill-progress {
     display: flex;
     align-items: center;
     gap: $space-md;
-    margin-bottom: $space-md;
-    padding: $space-sm $space-md;
-    background-color: $bg-page;
-    border-radius: $radius-md;
 
     :deep(.el-progress) {
       flex: 1;
@@ -516,16 +531,5 @@ defineExpose({ refresh: loadData })
       color: $primary-dark;
     }
   }
-}
-
-// 回填进度条的显隐过渡（FE-EP-04 之外的纯动效需求，与 design.md $transition-fast 一致）
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity $transition-fast;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>
