@@ -381,6 +381,23 @@ tasks:
     urgency: null
     branch: ic-b-007
     risk: sensitive
+  - id: ic-b-008
+    iteration: null
+    sprint: null
+    source: optimization
+    title: 导入记录文件名加超链接，可下载原始 Excel
+    type: develop
+    discipline: dev-fullstack
+    layer: null
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: []
+    delivery: null
+    urgency: null
+    branch: null
+    risk: standard
   - id: ic-mt-001
     iteration: v1
     sprint: null
