@@ -34,6 +34,8 @@ export interface CommissionSummaryGroupDto {
   policyholder: string;
   items: CommissionSummaryItemDto[];
   subtotal: number;
+  /** 该投保人分组内 salesFillSource === 'unmatched' 的记录条数。 */
+  unmatchedCount: number;
 }
 
 export interface CommissionSummaryResultDto {
@@ -89,7 +91,8 @@ export class CommissionReportService {
       ({ policyholder, records: groupRecords }) => {
         const items = this.buildSummaryItems(groupRecords, tiers);
         const subtotal = items.reduce((sum, item) => sum + item.commission, 0);
-        return { policyholder, items, subtotal };
+        const unmatchedCount = this.countUnmatched(groupRecords);
+        return { policyholder, items, subtotal, unmatchedCount };
       },
     );
 
@@ -129,6 +132,7 @@ export class CommissionReportService {
           policyNo: record.policyNo,
         }),
       );
+      const unmatchedCount = this.countUnmatched(groupRecords);
 
       return {
         sheetName: buildUniqueSheetName(policyholder, usedSheetNames),
@@ -138,6 +142,7 @@ export class CommissionReportService {
           policyCount: item.ticketCount,
           commissionAmount: item.commission,
         })),
+        unmatchedCount,
         totalRow: {
           policyCount: items.reduce((sum, item) => sum + item.ticketCount, 0),
           commissionAmount: items.reduce(
@@ -221,6 +226,12 @@ export class CommissionReportService {
       policyholder,
       records: grouped.get(policyholder) ?? [],
     }));
+  }
+
+  /** 组内 salesFillSource === 'unmatched' 的记录条数，getSummary()/exportReport() 共用同一份计算。 */
+  private countUnmatched(records: PolicyRecord[]): number {
+    return records.filter((record) => record.salesFillSource === 'unmatched')
+      .length;
   }
 
   /**
