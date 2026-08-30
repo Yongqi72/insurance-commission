@@ -247,6 +247,60 @@ describe('commission-batch 导入 (e2e)', () => {
       where: { importFileId },
     });
     expect(records).toHaveLength(1);
+
+    // ic-b-010：failReasons 已持久化，且与本次导入即时响应的 failRows 一致
+    const listRes = await request(app.getHttpServer())
+      .get(`/api/commission-batches/${batchId}/imports`)
+      .set('Authorization', `Bearer ${token}`);
+    const listedItem = listRes.body.data.find(
+      (item: { id: string }) => item.id === importFileId,
+    );
+    expect(listedItem.failReasons).toEqual(res.body.data.failRows);
+  });
+
+  it('GET .../imports 无失败行的导入记录，failReasons 为空数组（ic-b-010）', async () => {
+    const batchId = await createBatch('导入-failReasons为空批次');
+    const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [VALID_ROW]);
+
+    const importRes = await request(app.getHttpServer())
+      .post(`/api/commission-batches/${batchId}/imports`)
+      .set('Authorization', `Bearer ${token}`)
+      .attach('file', buffer, '账单.xlsx');
+    expect(importRes.body.data.failRows).toEqual([]);
+
+    const listRes = await request(app.getHttpServer())
+      .get(`/api/commission-batches/${batchId}/imports`)
+      .set('Authorization', `Bearer ${token}`);
+    const listedItem = listRes.body.data.find(
+      (item: { id: string }) => item.id === importRes.body.data.importFileId,
+    );
+    expect(listedItem.failReasons).toEqual([]);
+  });
+
+  it('GET .../imports 历史记录 fail_reasons 为 null（本任务上线前产生）时，failReasons 降级为空数组（ic-b-010，BE-JSON-01）', async () => {
+    const batchId = await createBatch('导入-历史空列批次');
+    const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [VALID_ROW]);
+
+    const importRes = await request(app.getHttpServer())
+      .post(`/api/commission-batches/${batchId}/imports`)
+      .set('Authorization', `Bearer ${token}`)
+      .attach('file', buffer, '账单.xlsx');
+    const importFileId = importRes.body.data.importFileId as string;
+
+    // 模拟本任务上线前产生的历史记录：fail_reasons 列为 null（未跑本迁移前的既有数据）
+    const importFile = await importFileRepository.findOne({
+      where: { id: importFileId },
+    });
+    importFile!.failReasons = null;
+    await importFileRepository.save(importFile!);
+
+    const listRes = await request(app.getHttpServer())
+      .get(`/api/commission-batches/${batchId}/imports`)
+      .set('Authorization', `Bearer ${token}`);
+    const listedItem = listRes.body.data.find(
+      (item: { id: string }) => item.id === importFileId,
+    );
+    expect(listedItem.failReasons).toEqual([]);
   });
 
   it('同一批次可重复上传多份文件', async () => {

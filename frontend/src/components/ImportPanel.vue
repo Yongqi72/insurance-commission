@@ -21,7 +21,20 @@
             </template>
           </el-table-column>
           <el-table-column prop="successCount" label="成功" width="90" align="right" />
-          <el-table-column prop="failCount" label="失败" width="90" align="right" />
+          <el-table-column label="失败" width="90" align="right">
+            <template #default="{ row }: { row: ImportRecord }">
+              <el-button
+                v-if="row.failCount > 0 && row.failReasons.length"
+                class="btn-view-fail-reasons"
+                link
+                type="danger"
+                @click="openFailReasonsDialog(row)"
+              >
+                {{ row.failCount }}
+              </el-button>
+              <span v-else>{{ row.failCount }}</span>
+            </template>
+          </el-table-column>
           <el-table-column label="" width="90">
             <template #default="{ row }: { row: ImportRecord }">
               <el-button class="btn-delete-import" link type="danger" @click="handleDeleteImport(row)">
@@ -82,6 +95,23 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <el-dialog
+      id="modal-fail-reasons"
+      v-model="failReasonsDialogVisible"
+      title="失败原因"
+      :width="dialogWidth"
+      align-center
+    >
+      <ul id="fail-reasons-list" class="import-panel__fail-list">
+        <li v-for="failRow in activeFailReasons" :key="failRow.row">
+          第 {{ failRow.row }} 行：{{ failRow.reason }}
+        </li>
+      </ul>
+      <template #footer>
+        <el-button @click="failReasonsDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -95,6 +125,7 @@ import {
   importExcel,
   listImports,
   type ImportExcelResult,
+  type ImportFailRow,
   type ImportRecord,
 } from '@/api/commission-batch'
 import { triggerUrlDownload } from '@/api/commission-report'
@@ -122,6 +153,9 @@ const importing = ref(false)
 const selectedFile = ref<File | null>(null)
 const importResult = ref<ImportExcelResult | null>(null)
 const fileInputRef = ref<HTMLInputElement>()
+
+const failReasonsDialogVisible = ref(false)
+const activeFailReasons = ref<ImportFailRow[]>([])
 
 async function loadImports() {
   status.value = 'loading'
@@ -170,6 +204,12 @@ async function handleStartImport() {
   } finally {
     importing.value = false
   }
+}
+
+/** 点击历史列表"失败"列数字，查看该次导入持久化的失败行清单（ic-b-010，与即时上传弹窗 #import-result 同一份文案格式）。 */
+function openFailReasonsDialog(row: ImportRecord) {
+  activeFailReasons.value = row.failReasons
+  failReasonsDialogVisible.value = true
 }
 
 /** 点击文件名下载该次导入上传的原始 Excel（与导出历史"重新下载"AC-13 同一套签名 URL 交互）。 */
