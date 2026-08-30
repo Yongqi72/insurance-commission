@@ -398,6 +398,23 @@ tasks:
     urgency: null
     branch: ic-b-008
     risk: standard
+  - id: ic-b-009
+    iteration: null
+    sprint: null
+    source: optimization
+    title: 回填进度指示改弹出层，遮挡页面并阻断其他操作
+    type: develop
+    discipline: dev-frontend
+    layer: frontend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: []
+    delivery: null
+    urgency: null
+    branch: null
+    risk: standard
   - id: ic-mt-001
     iteration: v1
     sprint: null
