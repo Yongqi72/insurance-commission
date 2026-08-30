@@ -189,14 +189,35 @@ function handleFileChange(event: Event) {
 }
 
 async function handleStartImport() {
-  if (!selectedFile.value) {
+  const file = selectedFile.value
+  if (!file) {
     return
   }
+
+  const isDuplicateFileName = list.value.some((record) => record.fileName === file.name)
+  if (isDuplicateFileName) {
+    try {
+      // 同批次已存在同名文件的历史导入记录：仅软提示，不去重，确认后仍走下方原有导入逻辑。
+      await ElMessageBox.confirm(
+        `本批次已存在文件名为「${file.name}」的导入记录，是否仍要继续导入？`,
+        '文件名重复',
+        {
+          type: 'warning',
+          confirmButtonText: '继续导入',
+          cancelButtonText: '取消',
+          customClass: 'import-panel__confirm-dialog',
+        },
+      )
+    } catch {
+      return
+    }
+  }
+
   importing.value = true
   try {
     // 成功响应渲染于 #import-result；失败（如错误码 1001）由 request.ts 拦截器统一
     // ElMessage.error 透传后端 msg（FE-ASYNC-01），此处 catch 分支不写入结果区。
-    importResult.value = await importExcel(props.batchId, selectedFile.value)
+    importResult.value = await importExcel(props.batchId, file)
     await loadImports()
     emit('records-changed')
   } catch {
@@ -227,7 +248,7 @@ async function handleDeleteImport(row: ImportRecord) {
         type: 'warning',
         confirmButtonText: '确定删除',
         cancelButtonText: '取消',
-        customClass: 'import-panel__delete-confirm',
+        customClass: 'import-panel__confirm-dialog',
       },
     )
   } catch {
@@ -348,7 +369,7 @@ onMounted(() => {
 <style lang="scss">
 @use '@/styles/variables.scss' as *;
 
-.import-panel__delete-confirm {
+.import-panel__confirm-dialog {
   @media (width <= $breakpoint-mobile) {
     width: 95vw;
     max-width: 95vw;
