@@ -491,9 +491,9 @@ tasks:
     type: develop
     discipline: dev-fullstack
     layer: null
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 23
     parent_id: null
     depends_on: []
     delivery: null
@@ -1076,6 +1076,25 @@ code_reviews:
       - { id: ic-b-012-F001, dimension: contract, severity: 严重, type: behavior-bug, reachability: current, action: fix-code, impact: "直接改 URL 在两个批次详情页间跳转（不触发组件重挂载）时，未匹配条数提示会显示上一批次的过期值，误导操作人员", description: "watch(() => props.batchId, ...) 回调只调用了 loadData()，未调用新增的 loadUnmatchedCount()，round-02 已验证修复", status: verified-closed }
       - { id: ic-b-012-F002, dimension: maintainability, severity: 建议, type: future-risk, reachability: current, action: backlog, impact: "当前无功能性后果，两处查询字面量含义一致；后续如需调整该查询方式容易漏改一处", description: "loadUnmatchedCount() 与 handleStartFill() 内的 { page: 1, pageSize: 1, fillStatus: 'unmatched' } 查询字面量重复，可提取共享" }
       - { id: ic-b-012-F003, dimension: concurrency, severity: 建议, type: future-risk, reachability: conditional, action: backlog, impact: "理论上乱序网络响应可能用旧值覆盖新值，但触发场景概率很低（挂载时立即请求，回填后请求发生在较慢的多步流程之后，因果顺序天然错开）", description: "loadUnmatchedCount() 的多个调用点之间无请求时序/取消保护" }
+  - iteration: null
+    task_id: ic-b-013
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-013
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-30T08:49:40Z
+    implementation_completed_at: 2026-08-30T08:54:09Z
+    review_started_at: 2026-08-30T08:54:09Z
+    review_completed_at: 2026-08-30T08:58:03Z
+    implementation_minutes: 5
+    review_minutes: 4
+    spec_minutes: 2
+    comment: "manual-test 验收会话中用户提出：提成汇总应展示未匹配记录（按投保人单列），导出 Excel 同步。CommissionSummaryGroupDto/ExcelBuilderGroup 新增 unmatchedCount 字段，从既有 groupRecords 计算，不新增查询；界面卡片新增“未匹配 N 票”行，导出销售汇总表同步追加一行，合计行口径不变（仍只统计已匹配销售）。round-01（full，13 个 selected dimensions 全审）0 blocking，3 条建议级（F001 导出测试断言判别力偏弱/F002 注释写任务号/F003 unmatchedCount 计算重复两处）：F002/F003 在提交前直接清理（抽取 countUnmatched() 共享私有方法），F001 记入 backlog。conclusion: pass。审查逐项核实 totalRow 真的不受未匹配影响、firstEmptyPolicyholder 收窄的必要性（对照 prototype-map.md 的 AC-16 空态选择器）。全量检测 backend build/lint/单测(56)/e2e(20 commission-report 专项)、frontend build/lint/stylelint 全绿。"
+    issues:
+      - { id: ic-b-013-F001, dimension: test-evidence, severity: 建议, type: evidence-gap, reachability: current, action: backlog, impact: "当前代码正确，但若未来未匹配行的插入位置/触发条件被误改（如插到合计行之后、或在 unmatchedCount=0 时也插入），现有按内容存在性匹配的断言不一定能捕获", description: "新增的导出 e2e 断言按内容存在性匹配未匹配行，未验证其相对位置（须在销售汇总行之后、合计行之前）" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
