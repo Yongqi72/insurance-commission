@@ -3,9 +3,13 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  JoinColumn,
+  ManyToOne,
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { CommissionBatch } from '../commission-batch/commission-batch.entity';
+import { ImportFile } from '../commission-batch/import-file.entity';
 import { decimalTransformer } from '../common/transformers/decimal.transformer';
 import { numericIdTransformer } from '../common/transformers/numeric-id.transformer';
 
@@ -73,6 +77,14 @@ export class PolicyRecord {
   })
   importBatchId: string | null;
 
+  /** 与 importBatchId 共享同一物理列（@JoinColumn 指向 import_batch_id，不新增列）的关系对象，
+   * 默认不 eager 加载、现有查询也不显式 relations: [...]，因此不出现在任何既有响应 DTO 里
+   * （BE-TYPEORM-02 评估结论，backlog.md 2026-08-27 条目 2026-08-30 更新）。
+   * onDelete 与 migration SQL 的 ON DELETE RESTRICT 语义一致，不引入级联行为。 */
+  @ManyToOne(() => CommissionBatch, { nullable: true, onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'import_batch_id' })
+  commissionBatch: CommissionBatch | null;
+
   /** 保费，对应账单 Excel「保险金额」与「保单号」之间的无表头列（V1 新增，TRD §表：保单记录）。
    * DECIMAL 金额字段，经 decimalTransformer 序列化为 number（BE-TYPEORM-03）。 */
   @Column({
@@ -94,6 +106,12 @@ export class PolicyRecord {
     transformer: numericIdTransformer,
   })
   importFileId: string | null;
+
+  /** 与 importFileId 共享同一物理列（@JoinColumn 指向 import_file_id，不新增列）的关系对象，
+   * 默认不 eager 加载、现有查询也不显式 relations: [...]（同 commissionBatch 说明）。 */
+  @ManyToOne(() => ImportFile, { nullable: true, onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'import_file_id' })
+  importFile: ImportFile | null;
 
   /** 销售人员回填来源：unmatched（未匹配）｜system（第三方接口回填）｜manual（人工补录），
    * 默认 unmatched（V1 新增，TRD §表：保单记录），替代原先仅靠 sales_name 是否为空判断回填状态。 */

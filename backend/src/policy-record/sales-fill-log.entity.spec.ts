@@ -1,5 +1,7 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
+import { CommissionBatch } from '../commission-batch/commission-batch.entity';
+import { ImportFile } from '../commission-batch/import-file.entity';
 import { PolicyRecord } from './policy-record.entity';
 import { SalesFillLog } from './sales-fill-log.entity';
 
@@ -14,7 +16,7 @@ describe('SalesFillLog entity 类型正确性', () => {
     dataSource = new DataSource({
       type: 'better-sqlite3',
       database: ':memory:',
-      entities: [PolicyRecord, SalesFillLog],
+      entities: [PolicyRecord, SalesFillLog, CommissionBatch, ImportFile],
       synchronize: true,
     });
     await dataSource.initialize();
