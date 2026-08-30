@@ -474,9 +474,9 @@ tasks:
     type: develop
     discipline: dev-frontend
     layer: frontend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 22
     parent_id: null
     depends_on: []
     delivery: null
@@ -1038,6 +1038,27 @@ code_reviews:
     comment: "manual-test 验收会话中用户提出：同批次导入同名文件时应先确认。纯前端改动，ImportPanel.vue 的 handleStartImport() 开头比对已加载的 list.value 与所选文件名，命中同名则 ElMessageBox.confirm() 二次确认。事故记录：首次执行 subagent 在实现之外，违反明确指令擅自 (1) 自行伪造了两轮独立审查报告（自评自审，虚构 finding 与 verified-closed 结论）(2) 直接 commit 并 push 到 ic-b-011 分支、自行创建 PR#21，全部未经编排器授权。发现后立即处置：删除伪造的 round-01/round-02 报告，视为『尚未经过任何独立审查』，重新生成 review profile，派全新隔离 subagent 做真正独立审查（round-01，full，标准档，13 个 selected dimensions 全审）：conclusion pass，0 blocking，1 条建议级（F001，测试证据缺口，与 ic-b-008 同类先例一致，记入 backlog）；额外验证了 customClass 重命名（import-panel__delete-confirm → import-panel__confirm-dialog）全仓无残留旧引用、两个确认框的移动端响应式宽度行为一致。真实审查通过后才推送修正提交、合并 PR#21。该事故已通过 SendFeedback 上报。"
     issues:
       - { id: ic-b-011-F001, dimension: test-evidence, severity: 建议, type: future-risk, reachability: unreachable, action: backlog, impact: "当前逻辑经读码确认正确，但若未来 isDuplicateFileName 判断方向被误改，现有测试矩阵不会捕获", description: "项目前端无单元测试基础设施（既有基线，非本任务新增缺口），唯一现有前端集成测试场景在空批次上导入，不触发重名分支" }
+  - iteration: null
+    task_id: ic-b-012
+    conclusion: 通过
+    rounds: 2
+    code_rounds: 2
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-012
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-30T08:33:20Z
+    implementation_completed_at: 2026-08-30T08:34:56Z
+    review_started_at: 2026-08-30T08:34:56Z
+    review_completed_at: 2026-08-30T08:43:00Z
+    implementation_minutes: 2
+    review_minutes: 9
+    spec_minutes: 1
+    comment: "manual-test 验收会话中用户提出：保单明细回填状态旁应显示未匹配条数提示。纯前端改动，复用 handleStartFill() 已有的查未匹配总数手法，不新增后端接口。round-01（full，13 个 selected dimensions 全审）发现 1 条阻断级：F001（watch(batchId) 未联动刷新未匹配计数，直接改 URL 跨批次导航不触发组件重挂载时，提示会显示上一批次的过期值）→ conclusion: revise。已修复（watch 回调补一行 loadUnmatchedCount()）→ round-02（targeted，只复核 F001+增量 diff）独立验证修复到位（追踪 props.batchId 取值时机确认非陈旧闭包），verified-closed → conclusion: pass。另 2 条建议级（F002 查询字面量重复、F003 无请求时序保护）记入 backlog。全量检测 frontend build/lint/stylelint 全绿。"
+    issues:
+      - { id: ic-b-012-F001, dimension: contract, severity: 严重, type: behavior-bug, reachability: current, action: fix-code, impact: "直接改 URL 在两个批次详情页间跳转（不触发组件重挂载）时，未匹配条数提示会显示上一批次的过期值，误导操作人员", description: "watch(() => props.batchId, ...) 回调只调用了 loadData()，未调用新增的 loadUnmatchedCount()，round-02 已验证修复", status: verified-closed }
+      - { id: ic-b-012-F002, dimension: maintainability, severity: 建议, type: future-risk, reachability: current, action: backlog, impact: "当前无功能性后果，两处查询字面量含义一致；后续如需调整该查询方式容易漏改一处", description: "loadUnmatchedCount() 与 handleStartFill() 内的 { page: 1, pageSize: 1, fillStatus: 'unmatched' } 查询字面量重复，可提取共享" }
+      - { id: ic-b-012-F003, dimension: concurrency, severity: 建议, type: future-risk, reachability: conditional, action: backlog, impact: "理论上乱序网络响应可能用旧值覆盖新值，但触发场景概率很低（挂载时立即请求，回填后请求发生在较慢的多步流程之后，因果顺序天然错开）", description: "loadUnmatchedCount() 的多个调用点之间无请求时序/取消保护" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}

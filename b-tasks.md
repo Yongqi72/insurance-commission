@@ -13,4 +13,4 @@
 | ic-b-009 | optimization | normal | 回填进度指示改弹出层，遮挡页面并阻断其他操作 | merged（PR#19） | 2026-08-30 |
 | ic-b-010 | optimization | normal | 导入记录历史失败原因可查看 | merged（PR#20） | 2026-08-30 |
 | ic-b-011 | optimization | normal | 同批次同名文件导入前二次确认 | merged（PR#21） | 2026-08-30 |
-| ic-b-012 | optimization | normal | 保单明细回填状态旁加未匹配条数提示 | [可取] | 2026-08-30 |
+| ic-b-012 | optimization | normal | 保单明细回填状态旁加未匹配条数提示 | merged（PR#22） | 2026-08-30 |
