@@ -18,3 +18,4 @@
 | ic-b-014 | optimization | normal | 保单记录明细工作单号可编辑并留痕 | merged（PR#24） | 2026-08-30 |
 | ic-b-015 | bug | normal | 导入时保费为空应允许正常导入 | merged（PR#25） | 2026-08-30 |
 | ic-b-016 | optimization | normal | 提成汇总导出报表新增提成单价列 | merged（PR#26） | 2026-08-30 |
+| ic-b-017 | optimization | normal | 批次详情页提成汇总加显提成单价 | [可取] | 2026-08-30 |
