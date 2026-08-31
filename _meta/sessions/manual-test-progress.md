@@ -168,11 +168,15 @@ Playwright 走查登录+批次列表+批次详情+保单记录+阶梯规则四�
 
 `calcCommission()` 返回结构由单一 `number` 改为 `{ commission, unitPrice }`（阶梯匹配逻辑零改动）；`CommissionSummaryItemDto`/`GET .../commission-summary` 响应新增 `unitPrice`（纯加法，前端本次不要求消费）；导出 Excel 销售汇总表表头新增"提成单价"列，未匹配行/合计行该列留空字符串（非 0，避免误读为单价为零）。独立审查 round-01（full，13 个 selected dimensions 全审）0 blocking finding，独立重跑 build/tsc/lint/单测(62)/e2e(117) 全绿；核实 `calcCommission()` 仍是仓内唯一调用点，`CommissionSummaryPanel.vue` 未被触碰。**PR#26 已合并**，可复测。
 
+### 2026-08-30 续：批次详情页提成汇总也加显提成单价（ic-b-017）
+
+用户追加要求：批次详情页"提成汇总（实时）"卡片也要加显提成单价（在票数和金额之间），未匹配记录不显示单价。由于 `ic-b-016` 已把 `unitPrice` 加进 `GET .../commission-summary` 响应体（前端此前未消费），本任务纯前端改动（2 个文件），走 `ic-b-017`。`CommissionSummaryItem` 类型新增 `unitPrice`；`CommissionSummaryPanel.vue` 销售行展示改为"票数 · 单价 · 金额"；未匹配行是独立模板分支未改动，天然满足要求。独立审查 round-01（full）0 blocking / 0 advisory finding，独立重跑 build/vue-tsc/lint/stylelint 全绿。**PR#27 已合并**，可复测。
+
 ### 当前状态
 
-`ic-b-008`~`ic-b-016`（PR#17~#26）、`ic-mt-001`（PR#18）、顶栏吸顶直修、提成汇总视觉标识直修、登录默认落地页直修均已合并到 master，测试环境（真实 MySQL 172.22.224.1）代码已是最新，后端已随 `--watch` 自动重编译加载最新代码（`:3000`），前端 dev server 持续运行（`:5173`）。
+`ic-b-008`~`ic-b-017`（PR#17~#27）、`ic-mt-001`（PR#18）、顶栏吸顶直修、提成汇总视觉标识直修、登录默认落地页直修均已合并到 master，测试环境（真实 MySQL 172.22.224.1）代码已是最新，后端已随 `--watch` 自动重编译加载最新代码（`:3000`），前端 dev server（`:5173`）为 Vite，编辑源码后 HMR 自动生效。
 
 **续做入口**：下次直接说"继续"或说明具体想做什么。可能的方向——
-- 回到 manual-test 主流程：复测提成汇总导出的新增单价列，或继续走查其他前端功能，或用户直接说"验收通过"进入签 G4
+- 回到 manual-test 主流程：复测提成单价（导出 Excel + 批次详情页实时预览两处），或继续走查其他前端功能，或用户直接说"验收通过"进入签 G4
 - 开放的 backlog 观察项：`PolicyRecordListView.vue` 孤儿页面要不要保留/接入导航/退役（产品决策，未处理）
 - 其余 backlog `[不阻断]` 建议级项：详见 `backlog.md`，均非阻断，可自行决定是否处理
