@@ -31,6 +31,7 @@ const DETAIL_COLUMNS = [
 export interface SalesSummaryRow {
   salesName: string;
   policyCount: number;
+  unitPrice: number;
   commissionAmount: number;
 }
 
@@ -90,21 +91,28 @@ export class ExcelBuilder {
 
       // 销售人员汇总行
       sheet.addRow([SUMMARY_SECTION_TITLE]);
-      sheet.addRow(['销售人员', '保单票数', '提成金额']);
+      sheet.addRow(['销售人员', '保单票数', '提成单价', '提成金额']);
       group.summaryRows.forEach((row) => {
-        sheet.addRow([row.salesName, row.policyCount, row.commissionAmount]);
+        sheet.addRow([
+          row.salesName,
+          row.policyCount,
+          row.unitPrice,
+          row.commissionAmount,
+        ]);
       });
       // 未匹配统计行：既有 summaryRows 之后、合计行之前追加，仅 unmatchedCount > 0 时展示；
-      // 不参与下方 totalRow 的计算（totalRow 仍只统计已匹配销售，do-not）。
+      // 不参与下方 totalRow 的计算（totalRow 仍只统计已匹配销售，do-not）。单价列留空字符串
+      // 占位（不填 0）——未匹配行不对应任何单一单价，填 0 会被误读为"单价为零"。
       if (group.unmatchedCount && group.unmatchedCount > 0) {
-        sheet.addRow([UNMATCHED_ROW_LABEL, group.unmatchedCount, 0]);
+        sheet.addRow([UNMATCHED_ROW_LABEL, group.unmatchedCount, '', 0]);
       }
 
-      // 合计行
+      // 合计行：单价列同样留空字符串占位——多个销售可能命中不同档位，合计行不对应单一单价。
       sheet.addRow([]);
       sheet.addRow([
         TOTAL_SECTION_TITLE,
         group.totalRow.policyCount,
+        '',
         group.totalRow.commissionAmount,
       ]);
     });

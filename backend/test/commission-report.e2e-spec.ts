@@ -253,7 +253,7 @@ describe('commission-report 提成汇总与导出 (e2e)', () => {
       expect(group).toBeDefined();
       expect(group.items).toEqual(
         expect.arrayContaining([
-          { salesName: '张三', ticketCount: 40, commission: 80 },
+          { salesName: '张三', ticketCount: 40, unitPrice: 2, commission: 80 },
         ]),
       );
     });
@@ -312,7 +312,9 @@ describe('commission-report 提成汇总与导出 (e2e)', () => {
       );
       expect(group).toEqual({
         policyholder: '常熟',
-        items: [{ salesName: '张三', ticketCount: 3, commission: 6 }],
+        items: [
+          { salesName: '张三', ticketCount: 3, unitPrice: 2, commission: 6 },
+        ],
         subtotal: 6,
         unmatchedCount: 2,
       });
@@ -387,8 +389,17 @@ describe('commission-report 提成汇总与导出 (e2e)', () => {
       expect(workbook.worksheets.map((s) => s.name).sort()).toEqual(
         ['常熟', '太仓'].sort(),
       );
-      expect(findRowValues(workbook, '常熟', ['张三', 40, 80])).toBe(true);
-      expect(findRowValues(workbook, '太仓', ['张三', 20, 40])).toBe(true);
+      // 表头新增「提成单价」列（位于「保单票数」与「提成金额」之间）
+      expect(
+        findRowValues(workbook, '常熟', [
+          '销售人员',
+          '保单票数',
+          '提成单价',
+          '提成金额',
+        ]),
+      ).toBe(true);
+      expect(findRowValues(workbook, '常熟', ['张三', 40, 2, 80])).toBe(true);
+      expect(findRowValues(workbook, '太仓', ['张三', 20, 2, 40])).toBe(true);
 
       expect(ossUploadMock).toHaveBeenCalledTimes(1);
       // ic-b-001 起 ossKey 改为按日期分层归档（bill/export/yyyy/yyyyMM/yyyyMMdd/...），不再含 batchId
@@ -454,11 +465,13 @@ describe('commission-report 提成汇总与导出 (e2e)', () => {
       const detailRow = sheet.getRow(2).values as unknown[];
       expect(detailRow[6]).toBeFalsy();
 
-      // 销售汇总表在空的已匹配汇总行之后追加一行未匹配统计
-      expect(findRowValues(workbook, 'XX保险', ['未匹配', 10, 0])).toBe(true);
+      // 销售汇总表在空的已匹配汇总行之后追加一行未匹配统计；单价列留空字符串（不填 0）
+      expect(findRowValues(workbook, 'XX保险', ['未匹配', 10, '', 0])).toBe(
+        true,
+      );
 
-      // 合计行：总票数 0、总提成 0（销售汇总表为空，未匹配不计入合计）
-      expect(findRowValues(workbook, 'XX保险', ['合计', 0, 0])).toBe(true);
+      // 合计行：总票数 0、总提成 0（销售汇总表为空，未匹配不计入合计）；单价列同样留空
+      expect(findRowValues(workbook, 'XX保险', ['合计', 0, '', 0])).toBe(true);
     });
 
     it('分组内同时存在已匹配与未匹配记录 → 导出的销售汇总表在已匹配行之后追加未匹配行，合计行口径不变', async () => {
@@ -490,12 +503,12 @@ describe('commission-report 提成汇总与导出 (e2e)', () => {
       expect(sheet).toBeDefined();
       if (!sheet) return;
 
-      // 已匹配销售行不受影响
-      expect(findRowValues(workbook, '常熟', ['张三', 3, 6])).toBe(true);
-      // 未匹配统计行
-      expect(findRowValues(workbook, '常熟', ['未匹配', 2, 0])).toBe(true);
-      // 合计行只统计已匹配的 3 票/6 元，不把未匹配的 2 票折进去
-      expect(findRowValues(workbook, '常熟', ['合计', 3, 6])).toBe(true);
+      // 已匹配销售行不受影响，单价列为命中档位的 2
+      expect(findRowValues(workbook, '常熟', ['张三', 3, 2, 6])).toBe(true);
+      // 未匹配统计行：单价列留空字符串（不填 0）
+      expect(findRowValues(workbook, '常熟', ['未匹配', 2, '', 0])).toBe(true);
+      // 合计行只统计已匹配的 3 票/6 元，不把未匹配的 2 票折进去；单价列留空
+      expect(findRowValues(workbook, '常熟', ['合计', 3, '', 6])).toBe(true);
     });
   });
 
@@ -551,14 +564,20 @@ describe('commission-report 提成汇总与导出 (e2e)', () => {
     });
   });
 
-  describe('calcCommission()（技术 AC：单一权威实现，两接口共用同一份计算）', () => {
+  describe('calcCommission()（技术 AC：单一权威实现，两接口共用同一份计算；返回 { commission, unitPrice }）', () => {
     it('区间为左开右闭 (下限,上限]：票数等于上限归入本档，票数等于下限归入前一档', () => {
       const tiers = [
         { lowerBound: 0, upperBound: 50, unitPrice: 2 },
         { lowerBound: 50, upperBound: 100, unitPrice: 2.2 },
       ];
-      expect(calcCommission(50, tiers)).toBe(100); // 50 落入 (0,50]
-      expect(calcCommission(51, tiers)).toBe(51 * 2.2); // 51 落入 (50,100]
+      expect(calcCommission(50, tiers)).toEqual({
+        commission: 100,
+        unitPrice: 2,
+      }); // 50 落入 (0,50]
+      expect(calcCommission(51, tiers)).toEqual({
+        commission: 51 * 2.2,
+        unitPrice: 2.2,
+      }); // 51 落入 (50,100]
     });
 
     it('末档 upperBound=null 视为 +∞，覆盖任意大票数', () => {
@@ -566,7 +585,10 @@ describe('commission-report 提成汇总与导出 (e2e)', () => {
         { lowerBound: 0, upperBound: 100, unitPrice: 2 },
         { lowerBound: 100, upperBound: null, unitPrice: 3 },
       ];
-      expect(calcCommission(150, tiers)).toBe(450);
+      expect(calcCommission(150, tiers)).toEqual({
+        commission: 450,
+        unitPrice: 3,
+      });
     });
 
     it('票数落不进任何区间（阶梯不完整/边界之外）时抛错，不静默返回 0', () => {

@@ -169,16 +169,16 @@
 
 ### 接口：GET /api/commission-batches/:id/commission-summary
 - 请求体：无
-- 响应体：`{ ruleComplete: boolean, groups: [{ policyholder, items: [{ salesName, ticketCount, commission }], subtotal }] }`
+- 响应体：`{ ruleComplete: boolean, groups: [{ policyholder, items: [{ salesName, ticketCount, unitPrice, commission }], subtotal }] }`（`unitPrice` 为该 (投保人, 销售人员) 局部票数在阶梯规则里命中的单价，来自 `calcCommission()` 返回结构，不另起匹配逻辑；ic-b-016 新增字段，纯加法，其余字段不变）
 - 错误码：`1004`（批次不存在）；规则不完整时 `ruleComplete=false`、`groups=[]`，前端展示"未配置规则，无法计算"，不算错误
-- 服务流程：先查阶梯规则完整性（复用 `GET /api/commission-tiers` 同一判定逻辑）；不完整 → 直接返回 `ruleComplete=false`；完整则查询该批次内 `sales_fill_source != 'unmatched'` 的全部记录，按投保人分组，组内再按销售人员分组计数（局部票数）；每个 (投保人, 销售人员) 组合调用 `calcCommission(ticketCount, tiers)` 得单价与提成；投保人分组即使组内为空（该投保人下全部未匹配）也要出现在 `groups` 里（`items` 为空数组），供前端展示 AC-16 的提示
+- 服务流程：先查阶梯规则完整性（复用 `GET /api/commission-tiers` 同一判定逻辑）；不完整 → 直接返回 `ruleComplete=false`；完整则查询该批次内 `sales_fill_source != 'unmatched'` 的全部记录，按投保人分组，组内再按销售人员分组计数（局部票数）；每个 (投保人, 销售人员) 组合调用 `calcCommission(ticketCount, tiers)` 得 `{ commission, unitPrice }`，同时填入 `items[].commission` 与 `items[].unitPrice`；投保人分组即使组内为空（该投保人下全部未匹配）也要出现在 `groups` 里（`items` 为空数组），供前端展示 AC-16 的提示
 # 满足 AC：AC-14, AC-16
 
 ### 接口：GET /api/commission-batches/:id/commission-report
 - 请求体：无
 - 响应体：二进制文件流（`Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`，`Content-Disposition: attachment; filename="{批次名}-提成报表.xlsx"`）
 - 错误码：`1004`（批次不存在）、`2002`（阶梯规则不完整，无法导出——新增错误码，与 `1005`"操作冲突"语义不同，本期在 `standards-shared.md` 一并登记）
-- 服务流程：先查阶梯规则完整性，不完整 → `2002`，不生成文件；完整则查询该批次全部保单记录（含未匹配），按投保人值分组，`ExcelBuilder` 为每个投保人生成一个 sheet：sheet 上方写明细行（客户名称/工作单号/业务类型/币种/投保人/销售[未匹配留空]/保险金额/保费/保单号），下方写销售汇总（销售姓名/票数/提成，计算复用 `calcCommission()`，与 `commission-summary` 接口同一份实现）+ 末行合计；生成 buffer 后先上传至 OSS（私有 Bucket，经 `OssClient`），插入一条导出记录（`batch_id`/`oss_key`/`exported_at`），再把同一份 buffer 流式返回前端下载（提成汇总本身仍现查现算，不做计算结果快照——归档的是"当次导出的文件"，不是把计算过程改成落库）
+- 服务流程：先查阶梯规则完整性，不完整 → `2002`，不生成文件；完整则查询该批次全部保单记录（含未匹配），按投保人值分组，`ExcelBuilder` 为每个投保人生成一个 sheet：sheet 上方写明细行（客户名称/工作单号/业务类型/币种/投保人/销售[未匹配留空]/保险金额/保费/保单号），下方写销售汇总（销售姓名/票数/提成单价/提成，计算复用 `calcCommission()`，与 `commission-summary` 接口同一份实现；表头 `['销售人员', '保单票数', '提成单价', '提成金额']`，`unitPrice` 列位于票数与提成金额之间，ic-b-016 新增）+ 末行合计（未匹配统计行、合计行的单价列留空字符串，不填 0）；生成 buffer 后先上传至 OSS（私有 Bucket，经 `OssClient`），插入一条导出记录（`batch_id`/`oss_key`/`exported_at`），再把同一份 buffer 流式返回前端下载（提成汇总本身仍现查现算，不做计算结果快照——归档的是"当次导出的文件"，不是把计算过程改成落库）
 # 满足 AC：AC-15, AC-16
 
 ### 接口：GET /api/commission-batches/:id/exports

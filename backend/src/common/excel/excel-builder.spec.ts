@@ -23,7 +23,12 @@ describe('ExcelBuilder（AC6：与 ExcelParser 共用同一套列定义 + 多 sh
         },
       ],
       summaryRows: [
-        { salesName: '张三', policyCount: 1, commissionAmount: 50 },
+        {
+          salesName: '张三',
+          policyCount: 1,
+          unitPrice: 50,
+          commissionAmount: 50,
+        },
       ],
       totalRow: { policyCount: 1, commissionAmount: 50 },
     },
@@ -95,17 +100,66 @@ describe('ExcelBuilder（AC6：与 ExcelParser 共用同一套列定义 + 多 sh
     expect((sheet.getRow(4).values as unknown[]).slice(1)).toEqual([
       '销售人员提成汇总',
     ]);
+    // 表头新增「提成单价」列，位于「保单票数」与「提成金额」之间
+    expect((sheet.getRow(5).values as unknown[]).slice(1)).toEqual([
+      '销售人员',
+      '保单票数',
+      '提成单价',
+      '提成金额',
+    ]);
+    // 数据行同样在票数与提成金额之间插入 unitPrice
     expect((sheet.getRow(6).values as unknown[]).slice(1)).toEqual([
       '张三',
       1,
       50,
+      50,
     ]);
 
-    // 合计行：第 7 行空行分隔，第 8 行合计
+    // 合计行：第 7 行空行分隔，第 8 行合计；单价列留空字符串占位（不填 0），保持 4 列对齐
     expect((sheet.getRow(8).values as unknown[]).slice(1)).toEqual([
       '合计',
       1,
+      '',
       50,
+    ]);
+  });
+
+  it('未匹配统计行与合计行的提成单价列留空字符串占位（不填 0），保持与新表头 4 列对齐', () => {
+    const groupWithUnmatched: ExcelBuilderGroup[] = [
+      {
+        sheetName: '含未匹配',
+        detailRows: [],
+        summaryRows: [
+          {
+            salesName: '张三',
+            policyCount: 40,
+            unitPrice: 2,
+            commissionAmount: 80,
+          },
+        ],
+        unmatchedCount: 3,
+        totalRow: { policyCount: 40, commissionAmount: 80 },
+      },
+    ];
+    const workbook = builder.build(groupWithUnmatched);
+    const sheet = workbook.getWorksheet('含未匹配');
+    expect(sheet).toBeDefined();
+    if (!sheet) return;
+
+    // detailRows 为空：第 1 行表头（无数据行）、第 2 行空行分隔、第 3 行标题、第 4 行汇总表头、
+    // 第 5 行数据、第 6 行未匹配统计行
+    expect((sheet.getRow(6).values as unknown[]).slice(1)).toEqual([
+      '未匹配',
+      3,
+      '',
+      0,
+    ]);
+    // 第 7 行空行分隔，第 8 行合计
+    expect((sheet.getRow(8).values as unknown[]).slice(1)).toEqual([
+      '合计',
+      40,
+      '',
+      80,
     ]);
   });
 

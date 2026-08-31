@@ -27,6 +27,7 @@ export class RuleIncompleteException extends HttpException {
 export interface CommissionSummaryItemDto {
   salesName: string;
   ticketCount: number;
+  unitPrice: number;
   commission: number;
 }
 
@@ -140,6 +141,7 @@ export class CommissionReportService {
         summaryRows: items.map((item) => ({
           salesName: item.salesName,
           policyCount: item.ticketCount,
+          unitPrice: item.unitPrice,
           commissionAmount: item.commission,
         })),
         unmatchedCount,
@@ -260,10 +262,12 @@ export class CommissionReportService {
 
     return order.map((salesName) => {
       const ticketCount = ticketCountBySales.get(salesName) ?? 0;
+      const { commission, unitPrice } = calcCommission(ticketCount, tiers);
       return {
         salesName,
         ticketCount,
-        commission: calcCommission(ticketCount, tiers),
+        unitPrice,
+        commission,
       };
     });
   }
