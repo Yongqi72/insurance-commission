@@ -39,7 +39,7 @@
               <div v-for="item in group.items" :key="item.salesName" class="commission-summary-panel__row">
                 <span>{{ item.salesName }}</span>
                 <span class="commission-summary-panel__amt">
-                  {{ item.ticketCount }} 票 · ¥{{ item.commission.toFixed(2) }}
+                  {{ item.ticketCount }} 票 · 单价¥{{ item.unitPrice.toFixed(2) }} · ¥{{ item.commission.toFixed(2) }}
                 </span>
               </div>
               <div

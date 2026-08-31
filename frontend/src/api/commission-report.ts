@@ -7,6 +7,7 @@ import { ErrorCode } from '@/types/enums'
 export interface CommissionSummaryItem {
   salesName: string
   ticketCount: number
+  unitPrice: number
   commission: number
 }
 
