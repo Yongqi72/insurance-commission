@@ -19,4 +19,4 @@
 | ic-b-015 | bug | normal | 导入时保费为空应允许正常导入 | merged（PR#25） | 2026-08-30 |
 | ic-b-016 | optimization | normal | 提成汇总导出报表新增提成单价列 | merged（PR#26） | 2026-08-30 |
 | ic-b-017 | optimization | normal | 批次详情页提成汇总加显提成单价 | merged（PR#27） | 2026-08-30 |
-| ic-b-018 | optimization | normal | 登录页改版为品牌方视觉 | [可取] | 2026-08-30 |
+| ic-b-018 | optimization | normal | 登录页改版为品牌方视觉 | merged（PR#28） | 2026-08-30 |
