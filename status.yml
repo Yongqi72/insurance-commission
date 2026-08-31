@@ -559,9 +559,9 @@ tasks:
     type: develop
     discipline: dev-frontend
     layer: frontend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 27
     parent_id: null
     depends_on: []
     delivery: null
@@ -1219,6 +1219,24 @@ code_reviews:
     review_minutes: 4
     spec_minutes: 1
     comment: "manual-test 验收会话中用户提出：提成汇总导出报表在提成金额前加一列提成单价。AC-15 原文未定义此列，判定纯加法且规模小（单价其实已在 calcCommission() 内部算出，只是没往外传），走 B 类快速通道。calcCommission() 返回结构由单一 number 改为 { commission, unitPrice }（阶梯匹配逻辑本身零改动）；CommissionSummaryItemDto/GET commission-summary 响应新增 unitPrice（纯加法）；导出 Excel 销售汇总表表头新增提成单价列，未匹配行/合计行该列留空字符串（非 0，避免误读）。round-01（full，13 个 selected dimensions 全审）0 blocking finding，独立重跑 build/tsc/lint/单测(62)/e2e(117)全绿；核实 calcCommission() 仍为仓内唯一调用点、do-not 边界（未触碰 CommissionSummaryPanel.vue）未被越过。conclusion: pass。"
+    issues: []
+  - iteration: null
+    task_id: ic-b-017
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-017
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-31T01:18:09Z
+    implementation_completed_at: 2026-08-31T01:19:29Z
+    review_started_at: 2026-08-31T01:19:29Z
+    review_completed_at: 2026-08-31T01:21:22Z
+    implementation_minutes: 2
+    review_minutes: 2
+    spec_minutes: 1
+    comment: "manual-test 验收会话中用户追加需求：批次详情页提成汇总（实时预览）也要加显提成单价，未匹配记录不显示单价。由于 ic-b-016 已把 unitPrice 加进 GET .../commission-summary 响应体（buildSummaryItems() 是 getSummary()/exportReport() 共用实现，字段随 ic-b-016 自然带出，前端此前未消费），本任务纯前端改动（2 个文件），走 B 类快速通道。CommissionSummaryItem 类型新增 unitPrice；CommissionSummaryPanel.vue 销售行展示由『票数·金额』改为『票数·单价·金额』；未匹配行是独立模板分支，未改动，天然满足『未匹配不显示单价』的要求。round-01（full，13 个 selected dimensions 全审）0 blocking / 0 advisory finding，独立重跑 build/vue-tsc/lint/stylelint 全绿；核实 unitPrice 不会为 undefined（calcCommission() 不返回 undefined，getSummary() 仅在 ruleComplete 时才计算分组）。conclusion: pass。"
     issues: []
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
