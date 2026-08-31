@@ -1,30 +1,37 @@
 <template>
   <div class="login-view">
-    <el-card class="login-view__card">
-      <template #header>
-        <span class="login-view__title">保单提成管理系统</span>
-      </template>
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="0" @submit.prevent>
-        <el-form-item prop="username">
-          <el-input v-model="form.username" placeholder="账号" size="large" />
-        </el-form-item>
-        <el-form-item prop="password">
-          <el-input
-            v-model="form.password"
-            type="password"
-            placeholder="密码"
-            size="large"
-            show-password
-            @keyup.enter="handleSubmit"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" size="large" :loading="submitting" class="login-view__submit" @click="handleSubmit">
-            登录
-          </el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
+    <div class="login-view__brand" aria-hidden="true" />
+    <div class="login-view__panel">
+      <div class="login-view__panel-inner">
+        <img class="login-view__logo" src="/logoimgloxson.png" alt="LOXSON" />
+        <h1 class="login-view__title">保单提成管理系统</h1>
+        <el-form ref="formRef" :model="form" :rules="rules" label-width="0" @submit.prevent>
+          <el-form-item prop="username">
+            <el-input v-model="form.username" placeholder="账号" size="large" :prefix-icon="User" />
+          </el-form-item>
+          <el-form-item prop="password">
+            <el-input
+              v-model="form.password"
+              type="password"
+              placeholder="密码"
+              size="large"
+              show-password
+              :prefix-icon="Lock"
+              @keyup.enter="handleSubmit"
+            />
+          </el-form-item>
+          <div class="login-view__row">
+            <el-checkbox v-model="rememberAccount">记住账号</el-checkbox>
+            <span class="login-view__forgot">忘记密码</span>
+          </div>
+          <el-form-item>
+            <el-button type="primary" size="large" :loading="submitting" class="login-view__submit" @click="handleSubmit">
+              登录
+            </el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -33,6 +40,7 @@ import { reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
+import { User, Lock } from '@element-plus/icons-vue'
 import { login } from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
 
@@ -42,6 +50,10 @@ const authStore = useAuthStore()
 
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
+
+// 纯 UI 状态：仅承载"记住账号"勾选框的展示态，不读写 localStorage、不影响登录请求参数、
+// 不做任何自动填充或免登录逻辑。
+const rememberAccount = ref(false)
 
 const form = reactive({
   username: '',
@@ -83,26 +95,73 @@ async function handleSubmit() {
 
 .login-view {
   display: flex;
-  align-items: center;
-  justify-content: center;
   min-height: 100vh;
-  background-color: $bg-page;
 
-  &__card {
-    width: 380px;
-    border: none;
-    box-shadow: $shadow-lg;
+  &__brand {
+    flex: 0 0 62%;
+    width: 62%;
+    background-image: url('/bgimgloxson.jpg');
 
-    :deep(.el-card__header) {
-      border-bottom: none;
-      padding-bottom: 0;
+    /* stylelint-disable scale-unlimited/declaration-strict-value -- 结构性关键字（非色值/非量纲），
+       variables.scss 无对应 token 可引用；background-repeat / background-position / background-size
+       是背景图正确渲染所必需的固定取值，不属于设计 token 管辖范畴 */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+
+    /* stylelint-enable scale-unlimited/declaration-strict-value */
+  }
+
+  &__panel {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    background-color: $bg-page;
+  }
+
+  &__panel-inner {
+    position: absolute;
+    top: 33.333%;
+    left: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 360px;
+    padding: $space-xl;
+    transform: translate(-50%, -50%);
+
+    :deep(.el-form) {
+      width: 100%;
     }
   }
 
+  &__logo {
+    max-width: 200px;
+    height: auto;
+    object-fit: contain;
+    margin-bottom: $space-lg;
+  }
+
   &__title {
+    margin: 0 0 $space-xl;
     font-size: $fs-h3;
     font-weight: $fw-h1;
     color: $text-primary;
+    text-align: center;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $space-lg;
+    font-size: $fs-caption;
+  }
+
+  &__forgot {
+    color: $text-secondary;
+    cursor: default;
   }
 
   &__submit {
@@ -111,8 +170,25 @@ async function handleSubmit() {
 }
 
 @media (width <= $breakpoint-mobile) {
-  .login-view__card {
-    width: 90%;
+  .login-view {
+    &__brand {
+      display: none;
+    }
+
+    &__panel {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    &__panel-inner {
+      position: static;
+      max-width: 100%;
+      padding: $space-lg;
+      transform: none;
+    }
   }
 }
 </style>
