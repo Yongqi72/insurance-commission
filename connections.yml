@@ -1,0 +1,19 @@
+# connections.yml · 本项目的外部连接登记
+#
+# 入库、零机密——机密只写 ${secret:NAME} 引用，真值放 ~/.hact/secrets.env（机器本地，不入库）。
+# 校验：node scripts/check-conn.js check [--live]
+
+ssh:
+  test:
+    host: 47.96.22.19
+    user: root
+    identity-file: ~/.ssh/id_ed25519
+    app-dir: /alidata/server/insurance-commission
+
+db:
+  test:
+    host: 127.0.0.1
+    port: 3306
+    name: insurance_commission_test
+    user: insurance_commission
+    password: ${secret:HACT_INSURANCE_COMMISSION_DB_TEST_PASSWORD}
