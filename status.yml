@@ -542,9 +542,9 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 26
     parent_id: null
     depends_on: []
     delivery: null
@@ -1185,6 +1185,24 @@ code_reviews:
     comment: "manual-test 验收会话中用户提出 5 条批量反馈中的最后一条：保费为空时应允许正常导入。已先走 revise-doc(target=prd) 修订 AC-03 校验口径（commit 62e758d，无下游 TRD 影响），本任务落地代码：PolicyRecordColumnDef 新增 optional 标记，仅 premiumAmount 设为 true；excel-parser.ts 空值分支 honor optional，落 null 不计入必填校验，数字校验分支不受影响。round-01（full，13 个 selected dimensions 全审）0 blocking，1 条建议级（F001：缺'保险金额为空仍判失败'专项测试，未验证 optional 未泄漏到同为数值列的保险金额）已在提交前直接补齐测试用例。conclusion: pass。全量检测 backend build/lint/单测(61)/e2e(118)全绿。"
     issues:
       - { id: ic-b-015-F001, dimension: test-evidence, severity: 建议, type: future-risk, reachability: unreachable, action: backlog, impact: "当前代码经审查确认正确，测试覆盖缺口本身不影响当前行为正确性", description: "缺'保险金额为空仍判失败'的专项测试用例，未验证 optional 标记未泄漏到同为数值列的保险金额——提交前已直接补齐（backend/src/common/excel/excel-parser.spec.ts 新增用例），backlog.md 对应条目标 [x]" }
+  - iteration: null
+    task_id: ic-b-016
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-016
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-31T00:51:50Z
+    implementation_completed_at: 2026-08-31T00:55:00Z
+    review_started_at: 2026-08-31T00:55:00Z
+    review_completed_at: 2026-08-31T00:59:00Z
+    implementation_minutes: 4
+    review_minutes: 4
+    spec_minutes: 1
+    comment: "manual-test 验收会话中用户提出：提成汇总导出报表在提成金额前加一列提成单价。AC-15 原文未定义此列，判定纯加法且规模小（单价其实已在 calcCommission() 内部算出，只是没往外传），走 B 类快速通道。calcCommission() 返回结构由单一 number 改为 { commission, unitPrice }（阶梯匹配逻辑本身零改动）；CommissionSummaryItemDto/GET commission-summary 响应新增 unitPrice（纯加法）；导出 Excel 销售汇总表表头新增提成单价列，未匹配行/合计行该列留空字符串（非 0，避免误读）。round-01（full，13 个 selected dimensions 全审）0 blocking finding，独立重跑 build/tsc/lint/单测(62)/e2e(117)全绿；核实 calcCommission() 仍为仓内唯一调用点、do-not 边界（未触碰 CommissionSummaryPanel.vue）未被越过。conclusion: pass。"
+    issues: []
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
