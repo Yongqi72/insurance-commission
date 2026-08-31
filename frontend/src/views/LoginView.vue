@@ -20,10 +20,6 @@
               @keyup.enter="handleSubmit"
             />
           </el-form-item>
-          <div class="login-view__row">
-            <el-checkbox v-model="rememberAccount">记住账号</el-checkbox>
-            <span class="login-view__forgot">忘记密码</span>
-          </div>
           <el-form-item>
             <el-button type="primary" size="large" :loading="submitting" class="login-view__submit" @click="handleSubmit">
               登录
@@ -50,10 +46,6 @@ const authStore = useAuthStore()
 
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
-
-// 纯 UI 状态：仅承载"记住账号"勾选框的展示态，不读写 localStorage、不影响登录请求参数、
-// 不做任何自动填充或免登录逻辑。
-const rememberAccount = ref(false)
 
 const form = reactive({
   username: '',
@@ -149,19 +141,6 @@ async function handleSubmit() {
     font-weight: $fw-h1;
     color: $text-primary;
     text-align: center;
-  }
-
-  &__row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: $space-lg;
-    font-size: $fs-caption;
-  }
-
-  &__forgot {
-    color: $text-secondary;
-    cursor: default;
   }
 
   &__submit {
