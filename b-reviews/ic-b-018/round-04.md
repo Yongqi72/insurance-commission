@@ -1,11 +1,11 @@
-```yaml
+---
 task_id: ic-b-018
 round: 4
 mode: targeted
 risk: standard
 review_profile: b-reviews/ic-b-018/profile-round-01.json
 prior_report: b-reviews/ic-b-018/round-03.md
-target_finding_ids: []
+target_finding_ids: [ic-b-018-F003]
 base_ref: e8bc985d04ab3e8294cbfc7f2775670aa9f5d21e
 reviewed_base: e32b15dfc3e89ebaab7a3ca9034692a4b4f6f538
 reviewed_head: 63fde3ba72e06fdf352e41188b489123cbe26770
@@ -16,7 +16,7 @@ completed_at: 2026-08-31T02:20:47Z
 elapsed_minutes: 2
 escalate_to_full: false
 conclusion: pass
-```
+---
 
 ## diff_sha256 独立核验
 
@@ -85,8 +85,16 @@ npm run stylelint     → 无输出，无样式规则违例
 
 `git status --short` 复核：lint/stylelint 的 `--fix` 未对任何已跟踪文件产生额外改动，暂存区仍只有 `frontend/src/views/LoginView.vue` 一处变更，与 diff 固定对象保持一致。
 
+## Findings
+
+### ic-b-018-F003
+- **status**: verified-closed
+- **type**: 用户新增需求（非独立审查发现的缺陷），非 round-01/02/03 遗留 finding
+- **描述**：用户最终决定把此前保留的"记住账号"勾选框和"忘记密码"纯视觉占位元素整个删除
+- **本轮验证**：Playwright 实测 `记住账号`/`忘记密码` 两段文字及 `.el-checkbox`/`.login-view__row` 容器计数均为 0；全仓 grep 未发现死代码残留；账号/密码框/登录按钮三控件正常；round-03 的 1/3 垂直定位无回归。判定关闭。
+
 ## 结论
 
-纯删除改动，无死代码残留，无功能回归（表单三控件正常可用，round-03 垂直定位精确保持），构建/类型检查/lint/stylelint 全部干净通过，Playwright 独立实测确认"记住账号"和"忘记密码"两段文字及其容器/复选框已彻底移除。
+纯删除改动，无死代码残留，无功能回归（表单三控件正常可用，round-03 垂直定位精确保持），构建/类型检查/lint/stylelint 全部干净通过，Playwright 独立实测确认"记住账号"和"忘记密码"两段文字及其容器/复选框已彻底移除。F003（本轮目标）verified-closed。
 
 **conclusion: pass**——本任务最后一轮，可进入合并。

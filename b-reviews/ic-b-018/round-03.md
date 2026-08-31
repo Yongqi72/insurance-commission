@@ -1,23 +1,24 @@
-```yaml
+---
 task_id: ic-b-018
 round: 3
 mode: targeted
 risk: standard
 review_profile: b-reviews/ic-b-018/profile-round-01.json
 prior_report: b-reviews/ic-b-018/round-02.md
-target_finding_ids: []
+target_finding_ids: [ic-b-018-F002]
 base_ref: e8bc985d04ab3e8294cbfc7f2775670aa9f5d21e
 reviewed_base: b5ccd9e5d426d0c40ad69f4e65aca189dfacfd54
-reviewed_head: 2ebfa0ad156bbb8df0f268f7789127ad6ea6dce5
+reviewed_head: e32b15dfc3e89ebaab7a3ca9034692a4b4f6f538
 diff_sha256: d79224e4ceb20c3e657ee91ae563069a9b99f64f19b3eee8f4fdb89af7e9bb27
-diff_sha256_note: "computed value differs from the placeholder given in the task prompt (96bd27e0...egfea... was 65 hex chars, not a valid sha256 — recomputed independently from `git diff <reviewed_base> <reviewed_head> | sha256sum`, verified twice"
 changed_files: [frontend/src/views/LoginView.vue]
-started_at: "2026-08-30T19:11:23-07:00"
-completed_at: "2026-08-30T19:24:00-07:00"
+started_at: 2026-08-31T02:11:23Z
+completed_at: 2026-08-31T02:24:00Z
 elapsed_minutes: 13
 escalate_to_full: false
 conclusion: pass
-```
+---
+
+> `diff_sha256` 编排器在派发 prompt 时给的占位值（`96bd27e0...`）是 65 位 hex，非法 sha256；本轮审查员自行用 `git diff <reviewed_base> <reviewed_head> | sha256sum` 独立重算并复核两次，取代占位值，如实记录该差异。
 
 ## 1. Diff scope check
 
@@ -67,6 +68,14 @@ At every tested height (700 → 430px) `.login-view__panel-inner` is exactly ver
 - `npm run lint` (`eslint --fix` + router-structure check) — clean; `git status` after run shows no additional file modifications beyond the reviewed diff (eslint --fix made no changes).
 - `npm run stylelint` (`--fix`) — clean; same no-additional-changes check confirmed via `git status`.
 
+## Findings
+
+### ic-b-018-F002
+- **status**: verified-closed
+- **type**: 用户新增需求（非独立审查发现的缺陷），非 round-01/02 遗留 finding
+- **描述**：用户要求登录面板从垂直居中改为垂直中心位于页面高度 1/3 处（编排器已用 AskUserQuestion 向用户确认方向为"靠上"）
+- **本轮验证**：桌面端 panel-inner 几何中心精确落在 panel 高度 × 1/3（两组视口均 0.0px 偏移）；移动端 `<=768px` 正确降级为原有居中布局（`position:static`），768/769px 断点边界验证正确；矮屏（最低测到 430px）均无裁切、无横向溢出；round-02 的 296px 输入框宽度修复无回归。判定关闭。
+
 ## 4. Conclusion
 
 All three geometry claims verified independently and precisely:
@@ -74,4 +83,4 @@ All three geometry claims verified independently and precisely:
 2. Mobile (`<=768px`) reverts cleanly to viewport-centered flex layout with `position:static`/`transform:none`, confirmed at the 768/769px boundary.
 3. No clipping at any tested mobile height down to 430px; no horizontal overflow at any size; no regression to the round-02 296px input-width fix; no changes outside the styling scope.
 
-**conclusion: pass** — no findings, no advisories opened this round.
+**conclusion: pass** — F002（本轮目标）verified-closed；无其他新增 finding。

@@ -576,9 +576,9 @@ tasks:
     type: develop
     discipline: dev-frontend
     layer: frontend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 28
     parent_id: null
     depends_on: []
     delivery: null
@@ -1255,6 +1255,27 @@ code_reviews:
     spec_minutes: 1
     comment: "manual-test 验收会话中用户追加需求：批次详情页提成汇总（实时预览）也要加显提成单价，未匹配记录不显示单价。由于 ic-b-016 已把 unitPrice 加进 GET .../commission-summary 响应体（buildSummaryItems() 是 getSummary()/exportReport() 共用实现，字段随 ic-b-016 自然带出，前端此前未消费），本任务纯前端改动（2 个文件），走 B 类快速通道。CommissionSummaryItem 类型新增 unitPrice；CommissionSummaryPanel.vue 销售行展示由『票数·金额』改为『票数·单价·金额』；未匹配行是独立模板分支，未改动，天然满足『未匹配不显示单价』的要求。round-01（full，13 个 selected dimensions 全审）0 blocking / 0 advisory finding，独立重跑 build/vue-tsc/lint/stylelint 全绿；核实 unitPrice 不会为 undefined（calcCommission() 不返回 undefined，getSummary() 仅在 ruleComplete 时才计算分组）。conclusion: pass。"
     issues: []
+  - iteration: null
+    task_id: ic-b-018
+    conclusion: 通过
+    rounds: 4
+    code_rounds: 4
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-018
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-08-31T01:44:27Z
+    implementation_completed_at: 2026-08-31T01:47:25Z
+    review_started_at: 2026-08-31T01:47:25Z
+    review_completed_at: 2026-08-31T02:20:47Z
+    implementation_minutes: 3
+    review_minutes: 34
+    spec_minutes: 1
+    comment: "manual-test 验收会话中用户提出登录页改版为品牌方视觉（附参照截图+3个品牌素材文件：背景图/logo/favicon）。登录页是 V0 遗留页面，本次纯视觉改版不涉及 v1 功能 AC，单页面/纯前端/不改鉴权逻辑，判定符合 B 类快速通道；design.md 未覆盖该页面，用参照截图本身作为视觉规格来源（等同 prototype.html 角色）。用户提供的参照图里有『记住账号』/『忘记密码』但系统本无这两个功能，已用 AskUserQuestion 确认『只做视觉不做功能』。round-01（full，13 dimensions）pass，1 条 advisory（F001 注释点名任务号）。用户实测反馈输入框偏窄，编排器用 Playwright 定位根因：.login-view__panel-inner 的 align-items:center 导致 el-form 作为 flex item 退化 shrink-to-fit，收缩到浏览器原生 input 默认宽度（约226px）而非应有的约296px——round-02（targeted）修复（el-form 显式 width:100%）+ 关闭 F001，pass。用户追加需求：登录面板从垂直居中改为垂直中心在页面高度 1/3 处（用 AskUserQuestion 确认方向为靠上），round-03（targeted）用 position:absolute+top:33.333%+transform 实现，移动端矮屏降级为原有居中避免裁切，Playwright 实测桌面端偏移0.0px、移动端多档矮屏均无裁切，pass。用户最终决定把『记住账号』/『忘记密码』这两个纯视觉占位整个删除，round-04（targeted，本任务最后一轮）确认纯删除、无死代码残留、round-03 定位无回归，pass。全程独立重跑 build/vue-tsc/eslint/stylelint 均绿；round-01/02/03 三份报告的 started_at 时间戳发现审查 subagent 自报时间早于编排器实际派发时间的错误（与此前 ic-b-017 同类问题），编排器用 duration_ms/派发时间锚点做了事后订正，如实记录不隐瞒。"
+    issues:
+      - { id: ic-b-018-F001, dimension: comment-hygiene, severity: 建议, type: future-risk, reachability: current, action: backlog, status: verified-closed, description: "两处新增注释里点名任务号 ic-b-018，round-02 已改为不点名任务号的纯业务语言描述，独立复审确认已关闭" }
+      - { id: ic-b-018-F002, dimension: contract, severity: n/a, type: n/a, reachability: n/a, action: none, status: verified-closed, description: "用户新增需求（非缺陷）：登录面板垂直位置从居中调整为页面高度1/3处（已用 AskUserQuestion 确认方向），round-03 实现并独立复测验证桌面端0.0px偏移、移动端矮屏无裁切；同轮 round-02 里还独立修复了一个编排器 Playwright 实测发现的真实 bug（.login-view__panel-inner 的 align-items:center 导致 el-form flex shrink-to-fit 收缩到浏览器原生 input 默认宽度约226px，应为约296px），该 bug 未单独编号，详见本条目上方 comment 叙事" }
+      - { id: ic-b-018-F003, dimension: contract, severity: n/a, type: n/a, reachability: n/a, action: none, status: verified-closed, description: "用户新增需求（非缺陷）：移除记住账号/忘记密码两个纯视觉占位元素，round-04 实现并独立复测验证元素已彻底移除、无死代码残留" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}

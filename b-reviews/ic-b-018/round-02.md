@@ -1,4 +1,4 @@
-```yaml
+---
 task_id: ic-b-018
 round: 2
 mode: targeted
@@ -11,12 +11,12 @@ reviewed_base: f1cf011ed1d350e13950a30b4783c1c93d218d0a
 reviewed_head: b5ccd9e5d426d0c40ad69f4e65aca189dfacfd54
 diff_sha256: a9e4643377bac86ff98592e586d83b356862a4eb2f7de7203ff1cf274386144f
 changed_files: [frontend/src/views/LoginView.vue]
-started_at: 2026-08-31T01:45:00Z
+started_at: 2026-08-31T02:00:37Z
 completed_at: 2026-08-31T02:06:19Z
-elapsed_minutes: 22
+elapsed_minutes: 6
 escalate_to_full: false
 conclusion: pass
-```
+---
 
 ## 重要提示：reviewed_head 是树对象，不是提交
 
