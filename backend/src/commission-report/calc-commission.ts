@@ -13,10 +13,16 @@ export interface CommissionTierRate {
   unitPrice: number;
 }
 
+/** calcCommission() 返回结构：提成金额与命中该结果的阶梯单价，供调用方在不另起匹配逻辑的前提下同时取用两者。 */
+export interface CommissionCalcResult {
+  commission: number;
+  unitPrice: number;
+}
+
 export function calcCommission(
   ticketCount: number,
   tiers: CommissionTierRate[],
-): number {
+): CommissionCalcResult {
   const matchedTier = tiers.find(
     (tier) =>
       ticketCount > tier.lowerBound &&
@@ -29,5 +35,8 @@ export function calcCommission(
     );
   }
 
-  return ticketCount * matchedTier.unitPrice;
+  return {
+    commission: ticketCount * matchedTier.unitPrice,
+    unitPrice: matchedTier.unitPrice,
+  };
 }
