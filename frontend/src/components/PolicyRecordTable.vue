@@ -383,6 +383,7 @@ async function handleStartFill() {
     ElMessage.success(`回填完成，${totalUnmatchedAfter} 条待人工补录`)
     resetExpandState()
     await loadData()
+    emit('sales-name-changed')
   } catch {
     // 失败已由 api/request.ts 响应拦截器统一 ElMessage.error 透传后端 msg（FE-ASYNC-01），不重复弹窗
   } finally {
