@@ -610,9 +610,9 @@ tasks:
     type: develop
     discipline: dev-frontend
     layer: frontend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 30
     parent_id: null
     depends_on: []
     delivery: null
@@ -1330,6 +1330,24 @@ code_reviews:
     issues:
       - { id: ic-b-019-F001, dimension: comment-hygiene, severity: advisory, type: scope-gap, reachability: current, action: fix-code, status: fixed, description: "两处新增注释里嵌入任务号 ic-b-019，编排器提交前直接删除任务号引用（未另派独立复审确认）" }
       - { id: ic-b-019-F002, dimension: test-evidence, severity: advisory, type: example-error, reachability: current, action: fix-code, status: fixed, description: "新增测试标题声称验证「保险金额不能为空」，实际断言命中优先级更高的「客户名称不能为空」；编排器提交前把标题改为与断言一致的「仅保单号非空…仍判客户名称不能为空（AC2 回归）」（未另派独立复审确认）" }
+  - iteration: null
+    task_id: ic-b-020
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-020
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-09-01T02:33:14Z
+    implementation_completed_at: 2026-09-01T02:35:16Z
+    review_started_at: 2026-09-01T02:35:16Z
+    review_completed_at: 2026-09-01T02:36:22Z
+    implementation_minutes: 3
+    review_minutes: 2
+    spec_minutes: 1
+    comment: "用户在测试中报告『保单记录明细回填销售完成后要刷新保单明细记录表和提成汇总』。编排器先自行读代码核实：保单明细表其实已经会自动刷新（handleStartFill() 内部已有 loadData()/loadUnmatchedCount() 调用），真正没刷新的只有提成汇总面板——BatchDetailView.vue 已具备『监听 sales-name-changed 事件 → 调用 commissionSummaryRef.refresh()』的完整机制（供单条编辑场景使用），只是批量回填路径从未触发这个事件。已用 AskUserQuestion 向用户核实『只补提成汇总刷新』这个范围，用户确认。走 dispatch-new 写包（单文件改动，frontend-only，判定 B 类）后 develop 拾取实现：PolicyRecordTable.vue 的 handleStartFill() 成功路径末尾补一行 emit('sales-name-changed')，复用已有事件类型，不改动 BatchDetailView.vue（监听已存在）。前端设计门：本任务无视觉/交互改动，已用 AskUserQuestion 确认可全自动跑。round-01（full，13 selected dimensions）conclusion: pass，findings: []——独立审查逐行核实 emit 位于成功路径（loadData() 之后、catch 之外）、totalToProcess===0 早退分支物理上到不了 emit 语句、独立复读 BatchDetailView.vue 确认监听链路本就完整。项目前端无单测基建（无 vitest/jest、无 .spec.ts），本任务按 build/vue-tsc/lint/stylelint 全绿 + 独立审查逐行代码路径核实的方式验证，未新增测试基建（超出本任务 1 文件改动范围）。PR #30 合并同样被 Gitee 仓库的 reviewer/tester 审查门控拦截，浮给用户在 Gitee 网页亲自审批后再合并。"
+    issues: []
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
