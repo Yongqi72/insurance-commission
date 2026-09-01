@@ -593,9 +593,9 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 29
     parent_id: null
     depends_on: []
     delivery: null
@@ -1293,6 +1293,26 @@ code_reviews:
       - { id: ic-b-018-F001, dimension: comment-hygiene, severity: 建议, type: future-risk, reachability: current, action: backlog, status: verified-closed, description: "两处新增注释里点名任务号 ic-b-018，round-02 已改为不点名任务号的纯业务语言描述，独立复审确认已关闭" }
       - { id: ic-b-018-F002, dimension: contract, severity: n/a, type: n/a, reachability: n/a, action: none, status: verified-closed, description: "用户新增需求（非缺陷）：登录面板垂直位置从居中调整为页面高度1/3处（已用 AskUserQuestion 确认方向），round-03 实现并独立复测验证桌面端0.0px偏移、移动端矮屏无裁切；同轮 round-02 里还独立修复了一个编排器 Playwright 实测发现的真实 bug（.login-view__panel-inner 的 align-items:center 导致 el-form flex shrink-to-fit 收缩到浏览器原生 input 默认宽度约226px，应为约296px），该 bug 未单独编号，详见本条目上方 comment 叙事" }
       - { id: ic-b-018-F003, dimension: contract, severity: n/a, type: n/a, reachability: n/a, action: none, status: verified-closed, description: "用户新增需求（非缺陷）：移除记住账号/忘记密码两个纯视觉占位元素，round-04 实现并独立复测验证元素已彻底移除、无死代码残留" }
+  - iteration: null
+    task_id: ic-b-019
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-019
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-09-01T01:59:24Z
+    implementation_completed_at: 2026-09-01T02:02:34Z
+    review_started_at: 2026-09-01T02:02:34Z
+    review_completed_at: 2026-09-01T02:08:12Z
+    implementation_minutes: 4
+    review_minutes: 6
+    spec_minutes: 1
+    comment: "用户在测试导入功能时提供真实账单 Excel 截图，指出文件末尾自带的合计/说明行（客户名称/工作单号/业务类型/币种/投保人/保单号 6 个字段全空，仅保费列有汇总数字或数据落在未读取的 J/K 列）被误判为失败行。用户明确指定跳过判据：这 6 个识别字段同时为空才跳过整行，保险金额/保费两个数值列不参与该判断。走 dispatch-new 写包（单文件改动，backend-only，判定 B 类）后 develop 拾取实现：excel-parser.ts 的 sheet.eachRow 回调新增前置判断，命中则 return（不进 successRows/failRows），否则不受影响继续走原有逐列校验。round-01（full，13 selected dimensions）conclusion: pass，2 条 advisory finding（F001 注释误带任务号、F002 测试标题与实际断言不符，均规模小、原因显而易见）提交前由编排器直接修复，未另派复审 subagent 独立复核，改动已重跑 excel-parser.spec.ts（18/18 通过）+ eslint 自证。全量 build/lint 干净；全量 test 有 5 个套件（14 条用例）失败，经 git stash/pop 复核为改动前既有的 better-sqlite3 原生绑定 Node 版本不匹配问题（环境问题，与本次改动无关），excel-parser.spec.ts 全绿。round-01 报告内自报 completed_at（elapsed 24 分钟）与编排器派发/处理锚点（实测 6 分钟）矛盾，已在报告内订正并如实记录，不隐瞒原始自报值。PR #29 首次合并时被 Gitee 仓库新启用的 reviewer/tester 审查门控拦截（此前 28 个 B 类 PR 均未遇到），未自行绕过，浮给用户在 Gitee 网页亲自审批后再合并。"
+    issues:
+      - { id: ic-b-019-F001, dimension: comment-hygiene, severity: advisory, type: scope-gap, reachability: current, action: fix-code, status: fixed, description: "两处新增注释里嵌入任务号 ic-b-019，编排器提交前直接删除任务号引用（未另派独立复审确认）" }
+      - { id: ic-b-019-F002, dimension: test-evidence, severity: advisory, type: example-error, reachability: current, action: fix-code, status: fixed, description: "新增测试标题声称验证「保险金额不能为空」，实际断言命中优先级更高的「客户名称不能为空」；编排器提交前把标题改为与断言一致的「仅保单号非空…仍判客户名称不能为空（AC2 回归）」（未另派独立复审确认）" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}

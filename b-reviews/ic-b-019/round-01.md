@@ -6,7 +6,7 @@ risk: standard
 review_profile: b-reviews/ic-b-019/profile-round-01.json
 prior_report: null
 target_finding_ids: []
-base_ref: 4b592c29bcd5e390ed386c1653cf9e7a66c69efb
+base_ref: bf8c5035cedc2c7ae0f11363faad22ac9acfdd2f
 reviewed_base: 4b592c29bcd5e390ed386c1653cf9e7a66c69efb
 reviewed_head: 2df56a9c35ba826617f61b2065d79d6a67f1f963
 diff_sha256: 5c433c561c77487b30d390ec65aebf5f368b5de2d395bf305c20f4f89c5f9e03
