@@ -178,6 +178,130 @@ describe('ExcelParser（AC5：8 列解析 + 失败行/文件级失败识别）',
     expect(result.successRows).toEqual([]);
   });
 
+  it('6 个识别字段全空、保费有值（截图 1326 行场景）：整行跳过，不进 successRows/failRows（AC1）', async () => {
+    const trailerRow = [...VALID_ROW];
+    trailerRow[0] = '';
+    trailerRow[1] = '';
+    trailerRow[2] = '';
+    trailerRow[3] = '';
+    trailerRow[4] = '';
+    trailerRow[5] = '';
+    trailerRow[6] = 339818.02;
+    trailerRow[7] = '';
+    const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [
+      trailerRow,
+      VALID_ROW,
+    ]);
+
+    const result = await parser.parse(buffer);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.failRows).toEqual([]);
+    expect(result.successRows).toHaveLength(1);
+    expect(result.successRows[0].rowNumber).toBe(3);
+  });
+
+  it('6 个识别字段全空、保险金额为非数字非法值：仍判定跳过，不因保险金额非法而变成失败行（AC3）', async () => {
+    const trailerRow = [...VALID_ROW];
+    trailerRow[0] = '';
+    trailerRow[1] = '';
+    trailerRow[2] = '';
+    trailerRow[3] = '';
+    trailerRow[4] = '';
+    trailerRow[5] = '不是数字';
+    trailerRow[6] = '';
+    trailerRow[7] = '';
+    const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [trailerRow]);
+
+    const result = await parser.parse(buffer);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.failRows).toEqual([]);
+    expect(result.successRows).toEqual([]);
+  });
+
+  it('6 个识别字段全空、保险金额恰好也填了数字：同样跳过，保险金额有值不影响跳过判断（AC1）', async () => {
+    const trailerRow = [...VALID_ROW];
+    trailerRow[0] = '';
+    trailerRow[1] = '';
+    trailerRow[2] = '';
+    trailerRow[3] = '';
+    trailerRow[4] = '';
+    trailerRow[5] = 100;
+    trailerRow[6] = '';
+    trailerRow[7] = '';
+    const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [trailerRow]);
+
+    const result = await parser.parse(buffer);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.failRows).toEqual([]);
+    expect(result.successRows).toEqual([]);
+  });
+
+  it('6 个识别字段中仅客户名称非空、其余（含保险金额/保费）全空：不跳过，按现有逻辑判「工作单号」不能为空（AC2 回归）', async () => {
+    const rowWithOnlyCustomerName = ['测试客户', '', '', '', '', '', '', ''];
+    const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [
+      rowWithOnlyCustomerName,
+    ]);
+
+    const result = await parser.parse(buffer);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.failRows).toEqual([
+      { rowNumber: 2, reason: '「工作单号」不能为空' },
+    ]);
+    expect(result.successRows).toEqual([]);
+  });
+
+  it('6 个识别字段仅保单号非空：不跳过，按既有 missingField 优先级仍判「客户名称」不能为空（AC2 回归）', async () => {
+    const rowWithOnlyPolicyNo = ['', '', '', '', '', '', '', 'PN-9999'];
+    const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [
+      rowWithOnlyPolicyNo,
+    ]);
+
+    const result = await parser.parse(buffer);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.failRows).toEqual([
+      { rowNumber: 2, reason: '「客户名称」不能为空' },
+    ]);
+    expect(result.successRows).toEqual([]);
+  });
+
+  it('完整合法行不受本次改动影响，仍正常成功导入（回归）', async () => {
+    const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [VALID_ROW]);
+
+    const result = await parser.parse(buffer);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.failRows).toEqual([]);
+    expect(result.successRows).toHaveLength(1);
+  });
+
+  it('6 个识别字段全部齐全但保险金额非数字：仍判「保险金额」必须为数字失败，不因新前置检查而被跳过（回归）', async () => {
+    const rowWithNonNumericInsuredAmount = [...VALID_ROW];
+    rowWithNonNumericInsuredAmount[5] = '不是数字';
+    const buffer = await buildWorkbookBuffer(BILL_SHEET_NAME, [
+      rowWithNonNumericInsuredAmount,
+    ]);
+
+    const result = await parser.parse(buffer);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.failRows).toEqual([
+      { rowNumber: 2, reason: '「保险金额」必须为数字' },
+    ]);
+    expect(result.successRows).toEqual([]);
+  });
+
   it('未找到「账单」sheet 时产出 sheet_not_found 文件级失败', async () => {
     const buffer = await buildWorkbookBuffer('其他sheet', [VALID_ROW]);
     const result = await parser.parse(buffer);

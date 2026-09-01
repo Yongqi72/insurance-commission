@@ -45,6 +45,19 @@ export type ExcelParseResult = ExcelParseSuccess | ExcelParseFileFailure;
 const HEADER_ROW_COUNT = 1;
 
 /**
+ * 判断"整行跳过"的 6 个识别字段 key：客户名称/工作单号/业务类型/币种/投保人/保单号。
+ * 显式不含 insuredAmount/premiumAmount ——数值列不参与"是否跳过整行"的判断。
+ */
+const ROW_SKIP_CHECK_KEYS: readonly string[] = [
+  'customerName',
+  'workOrderNo',
+  'businessType',
+  'currency',
+  'policyholder',
+  'policyNo',
+];
+
+/**
  * 账单 Excel 解析器：读「账单」sheet，跳过表头后按 policy-record-columns.ts 定义的
  * 8 列顺序逐行取值（纯位置解析，不按表头文字匹配，见该文件顶部注释）。
  * 单行失败不中断其余行处理；文件级失败（无法解析 / 未找到「账单」sheet）与行级失败分开表达，
@@ -84,6 +97,23 @@ export class ExcelParser {
 
     sheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
       if (rowNumber <= HEADER_ROW_COUNT) {
+        return;
+      }
+
+      // 尾部合计/说明行前置跳过：6 个识别字段（不含保险金额/保费）同时为空时，
+      // 整行既不算成功也不算失败，如同不存在。
+      const allIdentifyingFieldsEmpty = POLICY_RECORD_COLUMNS.every(
+        (column, index) => {
+          if (!ROW_SKIP_CHECK_KEYS.includes(column.key)) {
+            return true;
+          }
+          const raw = ExcelParser.extractCellValue(
+            row.getCell(index + 1).value,
+          );
+          return isEmptyValue(raw);
+        },
+      );
+      if (allIdentifyingFieldsEmpty) {
         return;
       }
 
