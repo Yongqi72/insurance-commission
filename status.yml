@@ -16,7 +16,7 @@ iterations:
       G1: { signed: true, date: "2026-08-25" }
       G2: { signed: true, date: "2026-08-26" }
       G3: { signed: true, date: "2026-08-26" }
-      G4: { signed: false, date: null }
+      G4: { signed: true, date: "2026-09-10" }
       G5: { signed: false, date: null }
 # v0 走骨架（A 类项目，先于 V1）：draft-foundation 建 iterations.v0 块，仅 G2（无 G1/G3-5）：
 #   v0:

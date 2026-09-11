@@ -30,4 +30,4 @@
 - 前端：`AppLayout` 外壳（V0）、`LoginView`（V0）、`PolicyRecordListView`（V0）、`BatchListView`/`BatchDetailView`/`CommissionTierView`（v1 新增）
 
 ## 当前状态
-V1 技术设计完成（TRD + standards，2026-08-26）：4 个功能、17 个接口、6 张表；G2 待签。V0 走骨架已完成（PR #1 已合并 master，2026-08-25）。下一步：`plan-sprint`。
+V0 走骨架已完成。V1 开发与人工验收完成，G1–G4 已签（G4：2026-09-10），G5 未签；sprint 14 个任务全部合并，后续 B 类修复已合并，测试环境部署记录截至 2026-09-01。验收依据与环境限制见 `iterations/v1/acceptance-report.md`。下一步：`wrap-up-iteration`；生产部署需另行执行部署流程。上方产品与技术摘要保留设计阶段描述，后续 B 类交付差异待收尾同步。
