@@ -6,12 +6,12 @@ risk: standard
 review_profile: b-reviews/ic-b-021/profile-round-01.json
 prior_report: null
 target_finding_ids: []
-base_ref: 919a4a3ad804cc1260f914393f471b750fd3d2d1
+base_ref: 2448188f60400b187b6f9c125d6fd704804e68e5
 reviewed_base: 919a4a3ad804cc1260f914393f471b750fd3d2d1
 reviewed_head: dd14a1b3571b6160692980d9ab70339f351a9335
 diff_sha256: 45040e3b54d113f7bffe239a9c09d17c38b7692e8b72be8efc5837574435e4cb
-changed_files: ["frontend/src/components/PolicyRecordTable.vue"]
-started_at: 2026-09-23T00:58:05Z
+changed_files: [frontend/src/components/PolicyRecordTable.vue]
+started_at: 2026-09-23T00:57:44Z
 completed_at: 2026-09-23T01:01:42Z
 elapsed_minutes: 4
 escalate_to_full: false
@@ -23,7 +23,7 @@ conclusion: pass
 ```yaml
 counterexamples: []
 affected_regressions: []
-changed_surface_allowed: ["frontend/src/components/PolicyRecordTable.vue"]
+changed_surface_allowed: [frontend/src/components/PolicyRecordTable.vue]
 ```
 
 固定 diff 命令 `git diff 919a4a3ad804cc1260f914393f471b750fd3d2d1 dd14a1b3571b6160692980d9ab70339f351a9335` 实测：仅 1 个文件、2 处插入，与任务包 `files` 清单一致，无越界改动。按 `profile-round-01.json` 的 `selected_dimensions`（13/13 全选）逐项执行。机械证据：`npm run lint:check`、`npx vue-tsc -b` 均通过。

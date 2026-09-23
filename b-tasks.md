@@ -22,6 +22,6 @@
 | ic-b-018 | optimization | normal | 登录页改版为品牌方视觉 | merged（PR#28） | 2026-08-30 |
 | ic-b-019 | bug | normal | 导入时跳过 Excel 尾部合计/说明行 | merged（PR#29） | 2026-09-01 |
 | ic-b-020 | bug | normal | 批量回填完成后提成汇总未刷新 | merged（PR#30） | 2026-09-01 |
-| ic-b-021 | bug | normal | 保单明细未匹配数未随行内保存刷新 | [可取] | 2026-09-23 |
+| ic-b-021 | bug | normal | 保单明细未匹配数未随行内保存刷新 | merged（PR#31） | 2026-09-23 |
 | ic-b-022 | optimization | normal | 登录接口补失败次数限流防护 | [可取] | 2026-09-23 |
 | ic-b-023 | optimization | normal | CORS 未限制来源改为按环境变量白名单 | [可取] | 2026-09-23 |
