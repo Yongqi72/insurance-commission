@@ -644,14 +644,14 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: 可取
-    assigned_to: null
+    status: taken-by
+    assigned_to: yongqi.liu
     pr: null
     parent_id: null
     depends_on: []
     delivery: null
     urgency: normal
-    branch: null
+    branch: ic-b-022
     risk: sensitive
   - id: ic-b-023
     iteration: null
