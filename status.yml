@@ -644,9 +644,9 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 32
     parent_id: null
     depends_on: []
     delivery: null
@@ -1418,6 +1418,26 @@ code_reviews:
     comment: "本轮项目状态审核会话委派 general-purpose agent 独立审查前端已合并代码质量时，在 backlog.md 已知问题之外新发现：PolicyRecordTable.vue 的 handleSaveSalesName()/handleSaveWorkOrderNo() 两个行内保存函数保存成功后未刷新 unmatchedCount，与已修复的 ic-b-020（批量回填路径）同类但不同函数、不同根因。用户审阅后确认转 B 类任务包直接修复。走 dispatch-new 写包（单文件改动，frontend-only）后 develop 拾取实现：两个函数各自 finally 块内新增 loadUnmatchedCount() 调用，手法与 handleStartFill() 既有 finally 块一致。round-01（full，13 selected dimensions）conclusion: pass，1 条 advisory finding（F001，concurrency 维度：新增调用点与已知 backlog ic-b-012-F003 同根，触发场景略微扩大，非新根因）路由 backlog，已并入该条目说明，未阻断合并。全量 build（含 vue-tsc 类型检查）+ lint:check 全绿。PR #31 创建时因 PowerShell Invoke-RestMethod 对无 charset 声明的响应默认解码为非 UTF-8，本地终端一度显示标题/正文乱码；经改用 Invoke-WebRequest -UseBasicParsing 手动以 UTF8 解码原始响应字节核实，Gitee 服务端存储的标题与正文内容实际完整正确，纯属本地显示问题，未影响 PR 实质内容。合并同样被 Gitee 仓库的 reviewer/tester 审查门控拦截（与 ic-b-019/020 同款门控），编排器尝试查文档确认审批 API 时被会话权限分类器判定为『Self-Approval』并拒绝，未继续寻找绕过路径，原样浮给用户在 Gitee 网页亲自审批后合并。"
     issues:
       - { id: ic-b-021-F001, dimension: concurrency, severity: advisory, type: future-risk, reachability: conditional, action: backlog, status: advisory, description: "新增的两处 loadUnmatchedCount() 调用点与已知 backlog 条目 ic-b-012-F003（多调用点无请求时序保护）同根，连续快速编辑两条不同记录保存时理论上可能被旧响应覆盖计数，触发场景较原有四个调用点略微扩大，非新根因，已并入该 backlog 条目说明" }
+  - iteration: null
+    task_id: ic-b-022
+    conclusion: 通过
+    rounds: 1
+    code_rounds: 1
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-022
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-09-23T01:18:00Z
+    implementation_completed_at: 2026-09-23T01:23:12Z
+    review_started_at: 2026-09-23T01:23:12Z
+    review_completed_at: 2026-09-23T01:29:27Z
+    implementation_minutes: 6
+    review_minutes: 7
+    spec_minutes: 2
+    comment: "本轮项目状态审核会话委派 general-purpose agent 独立审查后端已合并代码质量时，在 backlog.md 已知问题之外新发现：POST /auth/login 无任何限流/失败锁定机制，单一管理员账号可被无限次密码尝试。用户审阅后确认转 B 类任务包直接修复。走 dispatch-new 写包（risk: sensitive，触及认证边界）后 develop 拾取实现：引入 @nestjs/throttler，auth.module.ts 注册 ThrottlerModule.forRoot([{ttl:60000,limit:5}])，auth.controller.ts 的 login() 方法级加 @UseGuards(ThrottlerGuard)+@Throttle，按 IP 限流、无持久化账号锁定，auth.service.ts 凭证校验/JWT 签发逻辑零改动。新增 backend/test/auth-throttle.e2e-spec.ts 验证 60 秒 5 次窗口、第 6 次 429、限流先于密码比对生效。round-01（full，13 selected dimensions，risk=sensitive 继承会话默认模型）conclusion: pass——独立审查独立重跑 test:e2e（7 suites/119 tests）、test（13 suites/69 tests）、npm audit 均通过，逐行核实全局 JwtAuthGuard 与局部 ThrottlerGuard 共存不冲突、do-not 四条全部合规。2 条 advisory finding：F001（注释写入任务号）、F002（窗口重置/跨IP隔离两条子句缺自动化实证，依赖库默认实现担保）均路由 backlog，未阻断合并。全量 build/lint/test 全绿。PR #32 创建阶段遭遇 Gitee body 字段间歇性校验失败（'body is invalid'，与内容长度/字符集无关，含 markdown 标题/粗体/列表的正文屡次被拒，改用纯段落文本后成功，根因未完全查明，记录供后续参考）；合并同样被 Gitee reviewer/tester 审查门控拦截，浮给用户在 Gitee 网页亲自审批后合并。"
+    issues:
+      - { id: ic-b-022-F001, dimension: comment-hygiene, severity: advisory, type: future-risk, reachability: current, action: backlog, status: advisory, description: "auth.controller.ts/auth.module.ts/auth-throttle.e2e-spec.ts 三处新增注释写入任务号 ic-b-022，与仓库既有『运行时注释不留任务号』惯例不符，同类模式此前已出现四次并由 ic-b-002 统一清理" }
+      - { id: ic-b-022-F002, dimension: contract, severity: advisory, type: evidence-gap, reachability: conditional, action: request-evidence, status: advisory, description: "oracle 的『60 秒窗口过后自动恢复』与『不同 IP 互不影响』两条子句未经自动化测试验证，仅依赖 @nestjs/throttler 库自身默认实现担保，最坏情况是过度限流影响合法用户登录节奏，非安全漏洞" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
