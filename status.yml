@@ -661,9 +661,9 @@ tasks:
     type: develop
     discipline: dev-backend
     layer: backend
-    status: taken-by
+    status: merged
     assigned_to: yongqi.liu
-    pr: null
+    pr: 33
     parent_id: null
     depends_on: []
     delivery: null
@@ -1438,6 +1438,25 @@ code_reviews:
     issues:
       - { id: ic-b-022-F001, dimension: comment-hygiene, severity: advisory, type: future-risk, reachability: current, action: backlog, status: advisory, description: "auth.controller.ts/auth.module.ts/auth-throttle.e2e-spec.ts 三处新增注释写入任务号 ic-b-022，与仓库既有『运行时注释不留任务号』惯例不符，同类模式此前已出现四次并由 ic-b-002 统一清理" }
       - { id: ic-b-022-F002, dimension: contract, severity: advisory, type: evidence-gap, reachability: conditional, action: request-evidence, status: advisory, description: "oracle 的『60 秒窗口过后自动恢复』与『不同 IP 互不影响』两条子句未经自动化测试验证，仅依赖 @nestjs/throttler 库自身默认实现担保，最坏情况是过度限流影响合法用户登录节奏，非安全漏洞" }
+  - iteration: null
+    task_id: ic-b-023
+    conclusion: 通过
+    rounds: 2
+    code_rounds: 2
+    spec_rounds: 0
+    freshness: pass
+    review_report_dir: b-reviews/ic-b-023
+    review_profile_version: develop-review-profile/v1
+    implementation_started_at: 2026-09-23T01:44:30Z
+    implementation_completed_at: 2026-09-23T01:45:39Z
+    review_started_at: 2026-09-23T01:45:39Z
+    review_completed_at: 2026-09-23T01:56:29Z
+    implementation_minutes: 2
+    review_minutes: 11
+    spec_minutes: 1
+    comment: "本轮项目状态审核会话委派 general-purpose agent 独立审查后端已合并代码质量时，在 backlog.md 已知问题之外新发现：main.ts 的 app.enableCors() 未限制来源，等价于放行任意跨域请求。用户审阅后确认转 B 类任务包直接修复。走 dispatch-new 写包（risk: sensitive）后 develop 拾取实现：改为从环境变量 CORS_ALLOWED_ORIGINS（逗号分隔）读取白名单，未配置/为空/仅逗号空白时默认仅放行 http://localhost:5173，.env.example 补充说明。round-01（full，13 selected dimensions）conclusion: revise——独立审查发现 1 条 blocking finding（F001，test-evidence）：判定逻辑内联于 main.ts 未导出、零自动化测试覆盖，仅有审查员人工走查作为证据，对照同为 sensitive 的 ic-b-022 落地时同步补测试的先例，判定证据不足。整改：将 resolveCorsAllowedOrigins() 提取为独立文件 backend/src/common/utils/resolve-cors-allowed-origins.util.ts 并导出，main.ts 改为 import 调用（纯位置迁移，行为逐字符不变），新增配对单测覆盖 6 个边界分支（含『仅逗号/空白』过严陷阱分支）。round-02（targeted）独立重跑 jest 目标测试与全量测试均通过，逐字符核对函数体未被篡改，F001 verified-closed，conclusion: pass。全量 build/lint/test（14 suites/75 tests）绿。PR #33 合并同样被 Gitee reviewer/tester 审查门控拦截，浮给用户在 Gitee 网页亲自审批后合并；合并后 git pull 一度因本机到 gitee.com 的 TLS 握手瞬时失败（curl exit 35，同时段 baidu.com/api.anthropic.com 均可达，判断为 Gitee 单点瞬时网络问题而非本机整体断网）未能拉取，等待约 75 秒后重试恢复，fast-forward 成功，无冲突。"
+    issues:
+      - { id: ic-b-023-F001, dimension: test-evidence, severity: blocking, type: evidence-gap, reachability: current, action: fix-code, status: fixed, description: "resolveCorsAllowedOrigins() 原内联于 main.ts 未导出、零自动化测试覆盖；已提取为独立文件并导出，新增配对单测覆盖 6 个边界分支，round-02 targeted 审查 verified-closed" }
 # 每条（develop 自审末端追加，替代旧 pr-review）：
 #  - iteration: v1
 #    task_id: {被审 develop 任务 id}
