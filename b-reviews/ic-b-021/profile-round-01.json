@@ -1,0 +1,83 @@
+{
+  "schema": "develop-review-profile/v1",
+  "task_id": "ic-b-021",
+  "task_type": "dev-frontend",
+  "layers": [
+    "frontend"
+  ],
+  "source": "",
+  "effective_risk": "standard",
+  "changed_files": [
+    "frontend/src/components/PolicyRecordTable.vue"
+  ],
+  "input_fingerprint": "7521f9be2138f1ece96727ca8e179b5516722e16448d9f5e8e6597be9930b60c",
+  "signals": {
+    "metadata_incomplete": true,
+    "unknown_layer": false,
+    "surface": "production",
+    "frontend": true,
+    "backend": false,
+    "ui": true,
+    "input": false,
+    "query": false,
+    "concurrency": false,
+    "logging": true,
+    "enforcement": true,
+    "sensitive": false
+  },
+  "selected_dimensions": [
+    {
+      "id": "contract",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "scope-and-secrets",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "test-evidence",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "comment-hygiene",
+      "reason": "core: every code review keeps contract, scope, evidence, and changed-comment checks"
+    },
+    {
+      "id": "standards",
+      "reason": "fail-safe: task metadata is incomplete"
+    },
+    {
+      "id": "enforcement",
+      "reason": "fail-safe: task metadata is incomplete"
+    },
+    {
+      "id": "design-fidelity",
+      "reason": "fail-safe: frontend applicability is unresolved"
+    },
+    {
+      "id": "input-provenance",
+      "reason": "fail-safe: backend input applicability is unresolved"
+    },
+    {
+      "id": "query-performance",
+      "reason": "fail-safe: backend query applicability is unresolved"
+    },
+    {
+      "id": "concurrency",
+      "reason": "fail-safe: backend concurrency applicability is unresolved"
+    },
+    {
+      "id": "logging-privacy",
+      "reason": "fail-safe: task metadata is incomplete"
+    },
+    {
+      "id": "maintainability",
+      "reason": "fail-safe: changed surface is unresolved"
+    },
+    {
+      "id": "sensitive-boundaries",
+      "reason": "fail-safe: task metadata is incomplete"
+    }
+  ],
+  "omitted_dimensions": []
+}

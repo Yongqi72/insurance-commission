@@ -439,6 +439,7 @@ async function handleSaveSalesName(row: PolicyRecord) {
     // 失败已由 api/request.ts 响应拦截器统一 ElMessage.error 透传后端 msg（如 1001 salesName 为空，FE-ASYNC-01），不重复弹窗
   } finally {
     savingId.value = null
+    loadUnmatchedCount()
   }
 }
 
@@ -470,6 +471,7 @@ async function handleSaveWorkOrderNo(row: PolicyRecord) {
     // 失败已由 api/request.ts 响应拦截器统一 ElMessage.error 透传后端 msg（如 1001 workOrderNo 为空，FE-ASYNC-01），不重复弹窗
   } finally {
     savingWorkOrderNoId.value = null
+    loadUnmatchedCount()
   }
 }
 
