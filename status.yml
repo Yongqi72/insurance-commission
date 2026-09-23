@@ -619,6 +619,57 @@ tasks:
     urgency: normal
     branch: ic-b-020
     risk: standard
+  - id: ic-b-021
+    iteration: null
+    sprint: null
+    source: bug
+    title: 保单明细未匹配数未随行内保存刷新
+    type: develop
+    discipline: dev-frontend
+    layer: frontend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: []
+    delivery: null
+    urgency: normal
+    branch: null
+    risk: standard
+  - id: ic-b-022
+    iteration: null
+    sprint: null
+    source: optimization
+    title: 登录接口补失败次数限流防护
+    type: develop
+    discipline: dev-backend
+    layer: backend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: []
+    delivery: null
+    urgency: normal
+    branch: null
+    risk: sensitive
+  - id: ic-b-023
+    iteration: null
+    sprint: null
+    source: optimization
+    title: CORS 未限制来源改为按环境变量白名单
+    type: develop
+    discipline: dev-backend
+    layer: backend
+    status: 可取
+    assigned_to: null
+    pr: null
+    parent_id: null
+    depends_on: []
+    delivery: null
+    urgency: normal
+    branch: null
+    risk: sensitive
 # 每条（写 queue 任务包处同步追加）：
 #  - id: {缩写}-v{N}-001     # B 类为 {缩写}-b-001
 #    iteration: v1           # 属哪期；B 类(bug/optimization)为 null
