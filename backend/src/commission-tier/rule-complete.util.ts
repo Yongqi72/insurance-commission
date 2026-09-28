@@ -6,7 +6,7 @@
  * 完整性三条件（按 lowerBound 排序后）同时满足才为 true：
  * 1. 首档 lowerBound === 0
  * 2. 末档 upperBound === null（覆盖到无穷）
- * 3. 相邻档位首尾相接：前一档 upperBound === 后一档 lowerBound
+ * 3. 相邻闭区间首尾相接：后一档 lowerBound === 前一档 upperBound + 1
  */
 export interface TierBoundary {
   lowerBound: number;
@@ -27,7 +27,10 @@ export function ruleComplete(tiers: TierBoundary[]): boolean {
     return false;
   }
   for (let i = 0; i < sorted.length - 1; i += 1) {
-    if (sorted[i].upperBound !== sorted[i + 1].lowerBound) {
+    if (
+      sorted[i].upperBound === null ||
+      sorted[i + 1].lowerBound !== sorted[i].upperBound + 1
+    ) {
       return false;
     }
   }

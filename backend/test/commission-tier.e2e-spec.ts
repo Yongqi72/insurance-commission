@@ -98,7 +98,7 @@ describe('commission-tier 阶梯规则管理 (e2e)', () => {
 
     it('有档位但不完整时 ruleComplete=false，按 lowerBound 升序返回', async () => {
       await authed('post', '/api/commission-tiers').send({
-        lowerBound: 50,
+        lowerBound: 51,
         upperBound: 100,
         unitPrice: 2.2,
       });
@@ -114,12 +114,12 @@ describe('commission-tier 阶梯规则管理 (e2e)', () => {
       expect(res.body.data.ruleComplete).toBe(false);
       expect(
         res.body.data.tiers.map((t: { lowerBound: number }) => t.lowerBound),
-      ).toEqual([0, 50]);
+      ).toEqual([0, 51]);
     });
   });
 
   describe('POST /api/commission-tiers（AC-10/AC-11）', () => {
-    it('golden AC-10 example：空规则表新增 (0,50]=2 → 201 且立即可查', async () => {
+    it('空规则表新增 [0,50]=2 → 201 且立即可查', async () => {
       const res = await authed('post', '/api/commission-tiers').send({
         lowerBound: 0,
         upperBound: 50,
@@ -145,7 +145,7 @@ describe('commission-tier 阶梯规则管理 (e2e)', () => {
 
     it('upperBound 省略视为"及以上"，允许保存', async () => {
       const res = await authed('post', '/api/commission-tiers').send({
-        lowerBound: 100,
+        lowerBound: 101,
         unitPrice: 2.4,
       });
 
@@ -186,6 +186,43 @@ describe('commission-tier 阶梯规则管理 (e2e)', () => {
       expect(res.body.code).toBe(1001);
     });
 
+    it('unitPrice 最多两位小数：1.005 被拒绝，0.01 可保存', async () => {
+      const invalid = await authed('post', '/api/commission-tiers').send({
+        lowerBound: 0,
+        upperBound: 10,
+        unitPrice: 1.005,
+      });
+      expect(invalid.status).toBe(400);
+      expect(invalid.body.code).toBe(1001);
+      expect(await commissionTierRepository.count()).toBe(0);
+
+      const valid = await authed('post', '/api/commission-tiers').send({
+        lowerBound: 0,
+        upperBound: 10,
+        unitPrice: 0.01,
+      });
+      expect(valid.status).toBe(201);
+      expect(valid.body.data.unitPrice).toBe(0.01);
+    });
+
+    it('unitPrice 不超过 DECIMAL(10,2) 的最大值', async () => {
+      const invalid = await authed('post', '/api/commission-tiers').send({
+        lowerBound: 0,
+        upperBound: 10,
+        unitPrice: 100000000,
+      });
+      expect(invalid.status).toBe(400);
+      expect(invalid.body.code).toBe(1001);
+
+      const valid = await authed('post', '/api/commission-tiers').send({
+        lowerBound: 0,
+        upperBound: 10,
+        unitPrice: 99999999.99,
+      });
+      expect(valid.status).toBe(201);
+      expect(valid.body.data.unitPrice).toBe(99999999.99);
+    });
+
     it('lowerBound 缺失 → 1001', async () => {
       const res = await authed('post', '/api/commission-tiers').send({
         upperBound: 50,
@@ -207,15 +244,21 @@ describe('commission-tier 阶梯规则管理 (e2e)', () => {
       expect(res.body.code).toBe(1001);
     });
 
-    it('lowerBound >= upperBound → 1001', async () => {
+    it('单票档位允许 lowerBound = upperBound；下限超过上限才返回 1001', async () => {
       const res = await authed('post', '/api/commission-tiers').send({
         lowerBound: 50,
         upperBound: 50,
         unitPrice: 2,
       });
 
-      expect(res.status).toBe(400);
-      expect(res.body.code).toBe(1001);
+      expect(res.status).toBe(201);
+      const invalid = await authed('post', '/api/commission-tiers').send({
+        lowerBound: 52,
+        upperBound: 51,
+        unitPrice: 2,
+      });
+      expect(invalid.status).toBe(400);
+      expect(invalid.body.code).toBe(1001);
     });
 
     it('golden AC-11 example：新增区间与已有档位重叠 → 1005，提示含冲突档位', async () => {
@@ -225,7 +268,7 @@ describe('commission-tier 阶梯规则管理 (e2e)', () => {
         unitPrice: 2,
       });
       await authed('post', '/api/commission-tiers').send({
-        lowerBound: 50,
+        lowerBound: 51,
         upperBound: 100,
         unitPrice: 2.2,
       });
@@ -238,30 +281,53 @@ describe('commission-tier 阶梯规则管理 (e2e)', () => {
 
       expect(res.status).toBe(409);
       expect(res.body.code).toBe(1005);
-      expect(res.body.msg).toEqual(expect.stringContaining('50'));
+      expect(res.body.msg).toEqual(expect.stringContaining('51'));
       expect(res.body.msg).toEqual(expect.stringContaining('100'));
     });
 
-    it('golden AC-11 example（续）：改为新增下限100/上限留空 → 保存成功且 ruleComplete=true', async () => {
+    it('新增下限 101 / 上限留空 → 保存成功且 ruleComplete=true', async () => {
       await authed('post', '/api/commission-tiers').send({
         lowerBound: 0,
         upperBound: 50,
         unitPrice: 2,
       });
       await authed('post', '/api/commission-tiers').send({
-        lowerBound: 50,
+        lowerBound: 51,
         upperBound: 100,
         unitPrice: 2.2,
       });
 
       const createRes = await authed('post', '/api/commission-tiers').send({
-        lowerBound: 100,
+        lowerBound: 101,
         unitPrice: 2.4,
       });
       expect(createRes.status).toBe(201);
 
       const listRes = await authed('get', '/api/commission-tiers');
       expect(listRes.body.data.ruleComplete).toBe(true);
+    });
+
+    it('截图规则 0–10、11–20、21 及以上完整；边界重叠一票被拒绝', async () => {
+      for (const tier of [
+        { lowerBound: 0, upperBound: 10, unitPrice: 20 },
+        { lowerBound: 11, upperBound: 20, unitPrice: 30 },
+        { lowerBound: 21, upperBound: null, unitPrice: 40 },
+      ]) {
+        const created = await authed('post', '/api/commission-tiers').send(
+          tier,
+        );
+        expect(created.status).toBe(201);
+      }
+      const list = await authed('get', '/api/commission-tiers');
+      expect(list.body.data.ruleComplete).toBe(true);
+
+      const overlap = await authed('post', '/api/commission-tiers').send({
+        lowerBound: 10,
+        upperBound: 10,
+        unitPrice: 25,
+      });
+      expect(overlap.status).toBe(409);
+      expect(overlap.body.code).toBe(1005);
     });
 
     it('留有空隙（未紧邻）但不重叠 → 允许保存，ruleComplete 仍为 false', async () => {
@@ -302,6 +368,26 @@ describe('commission-tier 阶梯规则管理 (e2e)', () => {
       expect(res.body.data.unitPrice).toBe(2.5);
     });
 
+    it('编辑时同样拒绝超过两位小数的单价，原价保持不变', async () => {
+      const created = await authed('post', '/api/commission-tiers').send({
+        lowerBound: 0,
+        upperBound: 10,
+        unitPrice: 1,
+      });
+      const id = created.body.data.id as string;
+      const invalid = await authed('patch', `/api/commission-tiers/${id}`).send(
+        {
+          lowerBound: 0,
+          upperBound: 10,
+          unitPrice: 1.005,
+        },
+      );
+      expect(invalid.status).toBe(400);
+      expect(invalid.body.code).toBe(1001);
+      const unchanged = await commissionTierRepository.findOneByOrFail({ id });
+      expect(unchanged.unitPrice).toBe(1);
+    });
+
     it('编辑后与其他档位重叠 → 1005（排除自身）', async () => {
       const first = await authed('post', '/api/commission-tiers').send({
         lowerBound: 0,
@@ -309,7 +395,7 @@ describe('commission-tier 阶梯规则管理 (e2e)', () => {
         unitPrice: 2,
       });
       await authed('post', '/api/commission-tiers').send({
-        lowerBound: 50,
+        lowerBound: 51,
         upperBound: 100,
         unitPrice: 2.2,
       });
@@ -377,12 +463,12 @@ describe('commission-tier 阶梯规则管理 (e2e)', () => {
         unitPrice: 2,
       });
       const middle = await authed('post', '/api/commission-tiers').send({
-        lowerBound: 50,
+        lowerBound: 51,
         upperBound: 100,
         unitPrice: 2.2,
       });
       await authed('post', '/api/commission-tiers').send({
-        lowerBound: 100,
+        lowerBound: 101,
         unitPrice: 2.4,
       });
 
@@ -456,6 +542,29 @@ describe('commission-tier 阶梯规则管理 (e2e)', () => {
       expect(res.body.data).toEqual([]);
     });
 
+    it('旧日志没有区间语义标记时保持原样，新日志才带 inclusive 标记', async () => {
+      await changeLogRepository.save(
+        changeLogRepository.create({
+          operationType: 'create',
+          operator: '旧系统',
+          changedAt: new Date(),
+          beforeSnapshot: null,
+          afterSnapshot: JSON.stringify({
+            lowerBound: 50,
+            upperBound: 100,
+            unitPrice: 2.2,
+          }),
+        }),
+      );
+      const res = await authed('get', '/api/commission-tiers/change-logs');
+      expect(res.status).toBe(200);
+      expect(res.body.data[0].afterSnapshot).toEqual({
+        lowerBound: 50,
+        upperBound: 100,
+        unitPrice: 2.2,
+      });
+    });
+
     it('golden：新增一档后又删除该档 → 返回两条记录，最新的(delete)在前', async () => {
       const createRes = await authed('post', '/api/commission-tiers').send({
         lowerBound: 0,
@@ -473,7 +582,12 @@ describe('commission-tier 阶梯规则管理 (e2e)', () => {
         expect.objectContaining({
           operationType: 'delete',
           operator: 'e2e-admin',
-          beforeSnapshot: { lowerBound: 0, upperBound: 50, unitPrice: 2 },
+          beforeSnapshot: {
+            lowerBound: 0,
+            upperBound: 50,
+            unitPrice: 2,
+            rangeSemantics: 'inclusive',
+          },
           afterSnapshot: null,
         }),
       );
@@ -482,7 +596,12 @@ describe('commission-tier 阶梯规则管理 (e2e)', () => {
           operationType: 'create',
           operator: 'e2e-admin',
           beforeSnapshot: null,
-          afterSnapshot: { lowerBound: 0, upperBound: 50, unitPrice: 2 },
+          afterSnapshot: {
+            lowerBound: 0,
+            upperBound: 50,
+            unitPrice: 2,
+            rangeSemantics: 'inclusive',
+          },
         }),
       );
     });
@@ -508,8 +627,18 @@ describe('commission-tier 阶梯规则管理 (e2e)', () => {
 
       expect(updateLog).toEqual(
         expect.objectContaining({
-          beforeSnapshot: { lowerBound: 0, upperBound: 50, unitPrice: 2 },
-          afterSnapshot: { lowerBound: 0, upperBound: 50, unitPrice: 2.5 },
+          beforeSnapshot: {
+            lowerBound: 0,
+            upperBound: 50,
+            unitPrice: 2,
+            rangeSemantics: 'inclusive',
+          },
+          afterSnapshot: {
+            lowerBound: 0,
+            upperBound: 50,
+            unitPrice: 2.5,
+            rangeSemantics: 'inclusive',
+          },
         }),
       );
     });

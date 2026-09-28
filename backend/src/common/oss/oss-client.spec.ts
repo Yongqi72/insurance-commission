@@ -57,6 +57,13 @@ describe('OssClient（AC4，ali-oss SDK 单测级 mock）', () => {
       'imports/2026-08/bill.xlsx',
       expect.any(Buffer),
     );
+    expect(jest.requireMock('ali-oss')).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bucket: 'test-bucket',
+        region: 'oss-cn-hangzhou',
+        authorizationV4: true,
+      }),
+    );
   });
 
   it('getSignedUrl 返回底层 SDK 生成的签名 URL，且传入有效期参数', async () => {

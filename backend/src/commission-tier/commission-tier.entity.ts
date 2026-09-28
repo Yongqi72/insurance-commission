@@ -12,7 +12,8 @@ import { numericIdTransformer } from '../common/transformers/numeric-id.transfor
 /**
  * 提成阶梯规则：按票数区间定义单价（V1 新表，TRD §表：提成阶梯规则）。
  * `unitPrice` 为 DECIMAL 金额字段，经 decimalTransformer 序列化为 number（BE-TYPEORM-03）。
- * 应用层校验 unit_price > 0 且 lower_bound >= 0（TRD 约束，不在 Entity 层，属后续 Service 任务）。
+ * 请求 DTO 校验 unit_price > 0、最多两位小数且 <= 99999999.99，
+ * lower_bound >= 0；数据库字段本身只负责持久化。
  */
 @Entity('commission_tier')
 export class CommissionTier {

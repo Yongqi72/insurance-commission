@@ -14,7 +14,7 @@
         id="commission-unconfigured"
         class="commission-summary-panel__unconfigured"
       >
-        未配置规则，无法计算
+        阶梯规则不完整，无法计算
       </div>
       <template v-else-if="summary">
         <div v-if="summary.groups.length === 0" class="commission-summary-panel__no-data">
@@ -36,11 +36,21 @@
               当前没有已确认销售人员的记录
             </div>
             <template v-else>
-              <div v-for="item in group.items" :key="item.salesName" class="commission-summary-panel__row">
-                <span>{{ item.salesName }}</span>
-                <span class="commission-summary-panel__amt">
-                  {{ item.ticketCount }} 票 · 单价¥{{ item.unitPrice.toFixed(2) }} · ¥{{ item.commission.toFixed(2) }}
-                </span>
+              <div v-for="item in group.items" :key="item.salesName" class="commission-summary-panel__sales">
+                <div class="commission-summary-panel__row commission-summary-panel__row--sales">
+                  <span>{{ item.salesName }} · {{ item.ticketCount }} 票</span>
+                  <span class="commission-summary-panel__amt">小计 ¥{{ item.commission.toFixed(2) }}</span>
+                </div>
+                <div
+                  v-for="segment in item.segments"
+                  :key="`${segment.lowerBound}-${segment.upperBound ?? 'above'}`"
+                  class="commission-summary-panel__row commission-summary-panel__row--segment"
+                >
+                  <span>{{ formatTierRange(segment.lowerBound, segment.upperBound) }} · {{ segment.ticketCount }} 票</span>
+                  <span class="commission-summary-panel__amt">
+                    单价¥{{ segment.unitPrice.toFixed(2) }} · ¥{{ segment.commission.toFixed(2) }}
+                  </span>
+                </div>
               </div>
               <div
                 v-if="group.unmatchedCount > 0"
@@ -86,6 +96,10 @@ const errorMessage = ref('')
 const summary = ref<CommissionSummaryResult | null>(null)
 const exporting = ref(false)
 const historyDrawerVisible = ref(false)
+
+function formatTierRange(lowerBound: number, upperBound: number | null): string {
+  return upperBound === null ? `${lowerBound}票及以上` : `${lowerBound}–${upperBound}票`
+}
 
 // AC-16：某投保人分组 items 为空数组且 unmatchedCount 也为 0（兜底空态，正常情况下不会出现）时
 // 展示空态；对应原型 #card-commission-empty 只在静态演示里绑定单张卡片，一批数据中可能出现多个
@@ -240,7 +254,10 @@ defineExpose({ refresh: loadSummary })
 
   &__row {
     display: flex;
+    align-items: baseline;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: $space-xs $space-sm;
     padding: $space-xs 0;
     font-size: $fs-caption;
     color: $text-primary;
@@ -255,6 +272,20 @@ defineExpose({ refresh: loadSummary })
     &--unmatched {
       color: $text-hint;
     }
+
+    &--sales {
+      font-weight: $fw-h3;
+    }
+
+    &--segment {
+      padding-left: $space-sm;
+      font-size: $fs-small;
+      color: $text-secondary;
+    }
+  }
+
+  &__sales + &__sales {
+    margin-top: $space-sm;
   }
 
   &__amt {
