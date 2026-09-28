@@ -26,6 +26,8 @@ export interface CommissionTierSnapshot {
   lowerBound: number
   upperBound: number | null
   unitPrice: number
+  /** 旧日志未写此字段，其区间是左开右闭。 */
+  rangeSemantics?: 'inclusive'
 }
 
 export interface CommissionTierChangeLog {

@@ -31,8 +31,14 @@ const DETAIL_COLUMNS = [
 export interface SalesSummaryRow {
   salesName: string;
   policyCount: number;
-  unitPrice: number;
   commissionAmount: number;
+  segments: Array<{
+    lowerBound: number;
+    upperBound: number | null;
+    ticketCount: number;
+    unitPrice: number;
+    commission: number;
+  }>;
 }
 
 /** 合计行：本组全体汇总 */
@@ -91,26 +97,40 @@ export class ExcelBuilder {
 
       // 销售人员汇总行
       sheet.addRow([SUMMARY_SECTION_TITLE]);
-      sheet.addRow(['销售人员', '保单票数', '提成单价', '提成金额']);
+      sheet.addRow(['销售人员', '档位', '保单票数', '提成单价', '提成金额']);
       group.summaryRows.forEach((row) => {
+        row.segments.forEach((segment) => {
+          const range =
+            segment.upperBound === null
+              ? `${segment.lowerBound} 票及以上`
+              : `${segment.lowerBound}–${segment.upperBound} 票`;
+          sheet.addRow([
+            row.salesName,
+            range,
+            segment.ticketCount,
+            segment.unitPrice,
+            segment.commission,
+          ]);
+        });
         sheet.addRow([
-          row.salesName,
+          `${row.salesName}小计`,
+          '',
           row.policyCount,
-          row.unitPrice,
+          '',
           row.commissionAmount,
         ]);
       });
       // 未匹配统计行：既有 summaryRows 之后、合计行之前追加，仅 unmatchedCount > 0 时展示；
-      // 不参与下方 totalRow 的计算（totalRow 仍只统计已匹配销售，do-not）。单价列留空字符串
-      // 占位（不填 0）——未匹配行不对应任何单一单价，填 0 会被误读为"单价为零"。
+      // 不参与下方 totalRow 的计算（totalRow 仍只统计已匹配销售）。档位和单价列留空。
       if (group.unmatchedCount && group.unmatchedCount > 0) {
-        sheet.addRow([UNMATCHED_ROW_LABEL, group.unmatchedCount, '', 0]);
+        sheet.addRow([UNMATCHED_ROW_LABEL, '', group.unmatchedCount, '', 0]);
       }
 
-      // 合计行：单价列同样留空字符串占位——多个销售可能命中不同档位，合计行不对应单一单价。
+      // 合计行：档位和单价列留空；票数和金额直接写数值，不设置 Excel 公式。
       sheet.addRow([]);
       sheet.addRow([
         TOTAL_SECTION_TITLE,
+        '',
         group.totalRow.policyCount,
         '',
         group.totalRow.commissionAmount,

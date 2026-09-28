@@ -14,7 +14,7 @@ import { CommissionTier } from '../commission-tier/commission-tier.entity';
 import { ruleComplete } from '../commission-tier/rule-complete.util';
 import { PolicyRecord } from '../policy-record/policy-record.entity';
 import { buildUniqueSheetName } from './build-unique-sheet-name.util';
-import { calcCommission } from './calc-commission';
+import { calcCommission, CommissionSegment } from './calc-commission';
 import { ExportRecord } from './export-record.entity';
 
 /** 阶梯规则不完整，无法计算/导出提成（SH-API-02 · 2002）。 */
@@ -27,8 +27,8 @@ export class RuleIncompleteException extends HttpException {
 export interface CommissionSummaryItemDto {
   salesName: string;
   ticketCount: number;
-  unitPrice: number;
   commission: number;
+  segments: CommissionSegment[];
 }
 
 export interface CommissionSummaryGroupDto {
@@ -53,6 +53,13 @@ export interface ExportListItemDto {
   id: string;
   exportedAt: Date;
   downloadUrl: string;
+}
+
+function sumCommissions(items: CommissionSummaryItemDto[]): number {
+  return (
+    items.reduce((sum, item) => sum + Math.round(item.commission * 100), 0) /
+    100
+  );
 }
 
 /**
@@ -91,7 +98,7 @@ export class CommissionReportService {
     const groups = this.groupByPolicyholder(records).map(
       ({ policyholder, records: groupRecords }) => {
         const items = this.buildSummaryItems(groupRecords, tiers);
-        const subtotal = items.reduce((sum, item) => sum + item.commission, 0);
+        const subtotal = sumCommissions(items);
         const unmatchedCount = this.countUnmatched(groupRecords);
         return { policyholder, items, subtotal, unmatchedCount };
       },
@@ -141,16 +148,13 @@ export class CommissionReportService {
         summaryRows: items.map((item) => ({
           salesName: item.salesName,
           policyCount: item.ticketCount,
-          unitPrice: item.unitPrice,
           commissionAmount: item.commission,
+          segments: item.segments,
         })),
         unmatchedCount,
         totalRow: {
           policyCount: items.reduce((sum, item) => sum + item.ticketCount, 0),
-          commissionAmount: items.reduce(
-            (sum, item) => sum + item.commission,
-            0,
-          ),
+          commissionAmount: sumCommissions(items),
         },
       };
     });
@@ -262,12 +266,12 @@ export class CommissionReportService {
 
     return order.map((salesName) => {
       const ticketCount = ticketCountBySales.get(salesName) ?? 0;
-      const { commission, unitPrice } = calcCommission(ticketCount, tiers);
+      const { commission, segments } = calcCommission(ticketCount, tiers);
       return {
         salesName,
         ticketCount,
-        unitPrice,
         commission,
+        segments,
       };
     });
   }

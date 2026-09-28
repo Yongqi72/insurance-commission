@@ -3,11 +3,20 @@ import request from './request'
 import type { ApiEnvelope } from './request'
 import { ErrorCode } from '@/types/enums'
 
-/** 单个 (投保人, 销售人员) 组合的实时提成明细（TRD §接口：GET .../commission-summary，满足 AC-14）。 */
+/** 单个档位实际计费的票数与金额；不包含该销售尚未达到的档位。 */
+export interface CommissionSummarySegment {
+  lowerBound: number
+  upperBound: number | null
+  ticketCount: number
+  unitPrice: number
+  commission: number
+}
+
+/** 单个 (投保人, 销售人员) 组合的实时分段提成明细。 */
 export interface CommissionSummaryItem {
   salesName: string
   ticketCount: number
-  unitPrice: number
+  segments: CommissionSummarySegment[]
   commission: number
 }
 

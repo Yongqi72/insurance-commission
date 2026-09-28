@@ -23,6 +23,8 @@ interface TierSnapshot {
   lowerBound: number;
   upperBound: number | null;
   unitPrice: number;
+  /** Old snapshots omit this field and used (lowerBound, upperBound]. */
+  rangeSemantics?: 'inclusive';
 }
 
 export interface ChangeLogItemDto {
@@ -42,7 +44,10 @@ function isTierSnapshot(value: unknown): value is TierSnapshot {
   return (
     typeof candidate.lowerBound === 'number' &&
     typeof candidate.unitPrice === 'number' &&
-    (candidate.upperBound === null || typeof candidate.upperBound === 'number')
+    (candidate.upperBound === null ||
+      typeof candidate.upperBound === 'number') &&
+    (candidate.rangeSemantics === undefined ||
+      candidate.rangeSemantics === 'inclusive')
   );
 }
 
@@ -68,6 +73,7 @@ function toSnapshot(tier: {
     lowerBound: tier.lowerBound,
     upperBound: tier.upperBound,
     unitPrice: tier.unitPrice,
+    rangeSemantics: 'inclusive',
   };
 }
 
@@ -219,25 +225,25 @@ export class CommissionTierService {
   }
 
   /**
-   * lowerBound < upperBound（upperBound 为空视为"及以上"，跳过该项比较）。
+   * lowerBound <= upperBound（闭区间允许单票档；upperBound 为空视为"及以上"）。
    * upperBound 未提供时既可能是省略该字段（值为 undefined），也可能是客户端
    * 按 JSON 惯例显式传 null（class-validator 的 @IsOptional 对显式 null 同样
    * 跳过后续校验器）——两种写法语义等价，都要跳过比较，否则 null 会被 JS 的
-   * `>=` 运算符隐式转换成 0 参与比较，把合法的开放区间请求误判为非法。
+   * `>` 运算符隐式转换成 0 参与比较，把合法的无上限区间请求误判为非法。
    */
   private assertBoundsOrdered(dto: UpsertCommissionTierDto): void {
     if (
       dto.upperBound !== undefined &&
       dto.upperBound !== null &&
-      dto.lowerBound >= dto.upperBound
+      dto.lowerBound > dto.upperBound
     ) {
-      throw new BadRequestException('下限必须小于上限');
+      throw new BadRequestException('下限不能大于上限');
     }
   }
 
   /**
-   * 区间为 (下限,上限]；重叠判定：新lowerBound < 其upperBound(空视为+∞) 且
-   * 其lowerBound < 新upperBound(空视为+∞)。留空隙（未紧邻）不算重叠，允许保存。
+   * 档位两端均包含；新下限等于已有上限时重叠一票。
+   * 留空隙不算重叠，允许保存，但完整性校验会阻止提成计算。
    */
   private assertNoConflict(
     dto: UpsertCommissionTierDto,
@@ -246,13 +252,13 @@ export class CommissionTierService {
     const newUpper = dto.upperBound ?? Infinity;
     const conflict = others.find((tier) => {
       const otherUpper = tier.upperBound ?? Infinity;
-      return dto.lowerBound < otherUpper && tier.lowerBound < newUpper;
+      return dto.lowerBound <= otherUpper && tier.lowerBound <= newUpper;
     });
     if (conflict) {
       const conflictUpper =
         conflict.upperBound === null ? '及以上' : conflict.upperBound;
       throw new ConflictException(
-        `与已有档位 (${conflict.lowerBound}, ${conflictUpper}] 区间重叠`,
+        `与已有档位 [${conflict.lowerBound}, ${conflictUpper}] 区间重叠`,
       );
     }
   }

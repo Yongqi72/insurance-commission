@@ -8,7 +8,7 @@
     :before-close="handleBeforeClose"
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
-      <el-form-item label="下限（票，不含）" prop="lowerBound">
+      <el-form-item label="下限（票，含）" prop="lowerBound">
         <el-input id="input-tier-lower" v-model="form.lowerBound" type="number" class="commission-tier-edit-modal__input" />
       </el-form-item>
       <el-form-item label="上限（票，含；最高档留空=“及以上”）" prop="upperBound">
@@ -99,8 +99,8 @@ const rules: FormRules = {
           return
         }
         const upper = toNumberOrNull(form.upperBound)
-        if (upper !== null && lower >= upper) {
-          callback(new Error('下限必须小于上限'))
+        if (upper !== null && lower > upper) {
+          callback(new Error('下限不能大于上限'))
           return
         }
         callback()
@@ -122,8 +122,8 @@ const rules: FormRules = {
           return
         }
         const lower = toNumberOrNull(form.lowerBound)
-        if (lower !== null && lower >= upper) {
-          callback(new Error('下限必须小于上限'))
+        if (lower !== null && lower > upper) {
+          callback(new Error('下限不能大于上限'))
           return
         }
         callback()
@@ -136,8 +136,12 @@ const rules: FormRules = {
     {
       validator: (_rule, value: string, callback) => {
         const price = toNumberOrNull(value)
-        if (price === null || price <= 0) {
-          callback(new Error('单价必须为正数'))
+        if (price === null || !Number.isFinite(price) || price <= 0 || price > 99999999.99) {
+          callback(new Error('单价须大于 0 且不超过 99999999.99 元'))
+          return
+        }
+        if (Math.abs(price * 100 - Math.round(price * 100)) > 1e-7) {
+          callback(new Error('单价最多保留两位小数'))
           return
         }
         callback()
@@ -240,7 +244,7 @@ async function handleSave() {
     closeDialog()
     emit('saved')
   } catch (error) {
-    // AC-11：1005（区间重叠）/1001（单价非正数、下限>=上限）在字段错误区展示、不关闭弹窗；
+    // AC-11：1005（区间重叠）/1001（单价非正数、下限>上限）在字段错误区展示、不关闭弹窗；
     // 其余异常已由 request.ts 拦截器统一 toast 提示（FE-ASYNC-01），此处不重复弹窗。
     if (axios.isAxiosError<ApiEnvelope<unknown>>(error)) {
       const code = error.response?.data?.code

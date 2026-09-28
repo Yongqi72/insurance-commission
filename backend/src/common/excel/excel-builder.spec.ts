@@ -26,8 +26,16 @@ describe('ExcelBuilder（AC6：与 ExcelParser 共用同一套列定义 + 多 sh
         {
           salesName: '张三',
           policyCount: 1,
-          unitPrice: 50,
           commissionAmount: 50,
+          segments: [
+            {
+              lowerBound: 0,
+              upperBound: 10,
+              ticketCount: 1,
+              unitPrice: 50,
+              commission: 50,
+            },
+          ],
         },
       ],
       totalRow: { policyCount: 1, commissionAmount: 50 },
@@ -100,31 +108,48 @@ describe('ExcelBuilder（AC6：与 ExcelParser 共用同一套列定义 + 多 sh
     expect((sheet.getRow(4).values as unknown[]).slice(1)).toEqual([
       '销售人员提成汇总',
     ]);
-    // 表头新增「提成单价」列，位于「保单票数」与「提成金额」之间
+    // 分段汇总表头
     expect((sheet.getRow(5).values as unknown[]).slice(1)).toEqual([
       '销售人员',
+      '档位',
       '保单票数',
       '提成单价',
       '提成金额',
     ]);
-    // 数据行同样在票数与提成金额之间插入 unitPrice
+    // 分段行保留数值，销售小计直接写数值而非 Excel 公式
     expect((sheet.getRow(6).values as unknown[]).slice(1)).toEqual([
       '张三',
+      '0–10 票',
       1,
       50,
       50,
     ]);
+    expect((sheet.getRow(7).values as unknown[]).slice(1)).toEqual([
+      '张三小计',
+      '',
+      1,
+      '',
+      50,
+    ]);
+    for (const cell of [
+      sheet.getCell('E6'),
+      sheet.getCell('E7'),
+      sheet.getCell('E9'),
+    ]) {
+      expect(typeof cell.value).toBe('number');
+    }
 
-    // 合计行：第 7 行空行分隔，第 8 行合计；单价列留空字符串占位（不填 0），保持 4 列对齐
-    expect((sheet.getRow(8).values as unknown[]).slice(1)).toEqual([
+    // 合计行：第 8 行空行分隔，第 9 行合计
+    expect((sheet.getRow(9).values as unknown[]).slice(1)).toEqual([
       '合计',
+      '',
       1,
       '',
       50,
     ]);
   });
 
-  it('未匹配统计行与合计行的提成单价列留空字符串占位（不填 0），保持与新表头 4 列对齐', () => {
+  it('未匹配统计行与合计行保留五列，金额直接写数值', () => {
     const groupWithUnmatched: ExcelBuilderGroup[] = [
       {
         sheetName: '含未匹配',
@@ -133,8 +158,16 @@ describe('ExcelBuilder（AC6：与 ExcelParser 共用同一套列定义 + 多 sh
           {
             salesName: '张三',
             policyCount: 40,
-            unitPrice: 2,
             commissionAmount: 80,
+            segments: [
+              {
+                lowerBound: 0,
+                upperBound: 50,
+                ticketCount: 40,
+                unitPrice: 2,
+                commission: 80,
+              },
+            ],
           },
         ],
         unmatchedCount: 3,
@@ -146,17 +179,18 @@ describe('ExcelBuilder（AC6：与 ExcelParser 共用同一套列定义 + 多 sh
     expect(sheet).toBeDefined();
     if (!sheet) return;
 
-    // detailRows 为空：第 1 行表头（无数据行）、第 2 行空行分隔、第 3 行标题、第 4 行汇总表头、
-    // 第 5 行数据、第 6 行未匹配统计行
-    expect((sheet.getRow(6).values as unknown[]).slice(1)).toEqual([
+    // 第 5 行分段、第 6 行小计、第 7 行未匹配统计行
+    expect((sheet.getRow(7).values as unknown[]).slice(1)).toEqual([
       '未匹配',
+      '',
       3,
       '',
       0,
     ]);
-    // 第 7 行空行分隔，第 8 行合计
-    expect((sheet.getRow(8).values as unknown[]).slice(1)).toEqual([
+    // 第 8 行空行分隔，第 9 行合计
+    expect((sheet.getRow(9).values as unknown[]).slice(1)).toEqual([
       '合计',
+      '',
       40,
       '',
       80,

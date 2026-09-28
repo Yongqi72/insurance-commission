@@ -63,12 +63,15 @@ async function loadLogs() {
   }
 }
 
-function formatBound(value: number | null): string {
-  return value === null ? '及以上' : String(value)
-}
-
 function formatRange(snapshot: CommissionTierSnapshot): string {
-  return `(${snapshot.lowerBound}, ${formatBound(snapshot.upperBound)}]`
+  if (snapshot.rangeSemantics === 'inclusive') {
+    return snapshot.upperBound === null
+      ? `${snapshot.lowerBound}票及以上`
+      : `${snapshot.lowerBound}–${snapshot.upperBound}票（含两端）`
+  }
+  return snapshot.upperBound === null
+    ? `超过${snapshot.lowerBound}票`
+    : `超过${snapshot.lowerBound}票至${snapshot.upperBound}票（含）`
 }
 
 /** 按操作类型渲染"操作类型 + 变更前→变更后"文案（AC-13）。 */

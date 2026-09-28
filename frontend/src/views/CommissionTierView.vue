@@ -12,7 +12,7 @@
       v-if="status === 'success' && !ruleComplete"
       id="hint-rule-incomplete"
       class="commission-tier-view__incomplete-hint"
-      title="规则不完整（存在空隙），提成计算暂不可用"
+      title="规则不完整（档位须从 0 票起、无重叠且无空隙，覆盖至及以上），提成计算暂不可用"
       type="warning"
       show-icon
       :closable="false"
@@ -28,10 +28,10 @@
       <div class="commission-tier-view__card surface-card">
         <div class="commission-tier-view__table-wrapper">
           <el-table id="table-rule-list" class="data-table" :data="tiers" stripe row-key="id">
-            <el-table-column label="下限（票）" width="120">
+            <el-table-column label="下限（票，含）" width="140">
               <template #default="{ row }: { row: CommissionTier }">{{ row.lowerBound }}</template>
             </el-table-column>
-            <el-table-column label="上限（票）" width="120">
+            <el-table-column label="上限（票，含）" width="140">
               <template #default="{ row }: { row: CommissionTier }">
                 {{ row.upperBound === null ? '及以上' : row.upperBound }}
               </template>

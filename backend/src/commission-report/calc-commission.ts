@@ -1,11 +1,9 @@
 /**
  * 提成计算单一权威函数（TRD §共享组件建议）：commission-summary 与 commission-report
- * 两个接口的提成计算必须调用本函数，禁止在 Controller/Service 中另外重复实现阶梯匹配/
- * 乘法逻辑，避免两个接口各自实现产生结果不一致。
+ * 两个接口的提成计算必须调用本函数，避免两个接口各自实现产生结果不一致。
  *
- * 按左开右闭区间 (下限, 上限] 在 tiers 中查档定单价，上限为空视为 +∞；提成 = 票数 × 单价。
- * 调用方需先经 `ruleComplete(tiers)` 确认阶梯规则完整覆盖，否则可能出现票数落不进任何
- * 区间的情况，此时本函数抛错而非静默返回 0，避免把"漏算"误当作"零提成"。
+ * 档位为闭区间 [下限, 上限]，各档票数分别乘以该档单价后累加。
+ * 调用方先用 `ruleComplete(tiers)` 确认档位连续；本函数也检查票数是否恰好覆盖。
  */
 export interface CommissionTierRate {
   lowerBound: number;
@@ -13,30 +11,58 @@ export interface CommissionTierRate {
   unitPrice: number;
 }
 
-/** calcCommission() 返回结构：提成金额与命中该结果的阶梯单价，供调用方在不另起匹配逻辑的前提下同时取用两者。 */
-export interface CommissionCalcResult {
+export interface CommissionSegment extends CommissionTierRate {
+  ticketCount: number;
   commission: number;
-  unitPrice: number;
 }
 
+export interface CommissionCalcResult {
+  commission: number;
+  segments: CommissionSegment[];
+}
+
+/** Tickets are numbered from 1; a configured 0–10 tier covers tickets 1–10. */
 export function calcCommission(
   ticketCount: number,
   tiers: CommissionTierRate[],
 ): CommissionCalcResult {
-  const matchedTier = tiers.find(
-    (tier) =>
-      ticketCount > tier.lowerBound &&
-      (tier.upperBound === null || ticketCount <= tier.upperBound),
-  );
+  if (!Number.isSafeInteger(ticketCount) || ticketCount < 0) {
+    throw new Error(`Invalid ticketCount: ${ticketCount}`);
+  }
 
-  if (!matchedTier) {
+  const segments = [...tiers]
+    .sort((a, b) => a.lowerBound - b.lowerBound)
+    .map((tier): CommissionSegment => {
+      const firstTicket = Math.max(1, tier.lowerBound);
+      const lastTicket = Math.min(ticketCount, tier.upperBound ?? ticketCount);
+      const count = Math.max(0, lastTicket - firstTicket + 1);
+      // unit_price is DECIMAL(10,2); use cents for exact numeric output.
+      const cents = Math.round(tier.unitPrice * 100) * count;
+      return {
+        lowerBound: tier.lowerBound,
+        upperBound: tier.upperBound,
+        ticketCount: count,
+        unitPrice: tier.unitPrice,
+        commission: cents / 100,
+      };
+    })
+    .filter((segment) => segment.ticketCount > 0);
+
+  if (
+    segments.reduce((sum, segment) => sum + segment.ticketCount, 0) !==
+    ticketCount
+  ) {
     throw new Error(
-      `未找到匹配的提成阶梯区间：ticketCount=${ticketCount}，请检查阶梯规则是否完整覆盖`,
+      `Commission tiers do not cover ${ticketCount} tickets exactly`,
     );
   }
 
   return {
-    commission: ticketCount * matchedTier.unitPrice,
-    unitPrice: matchedTier.unitPrice,
+    commission:
+      segments.reduce(
+        (sum, segment) => sum + Math.round(segment.commission * 100),
+        0,
+      ) / 100,
+    segments,
   };
 }

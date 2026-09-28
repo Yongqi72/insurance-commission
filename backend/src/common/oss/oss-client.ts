@@ -49,6 +49,7 @@ export class OssClient {
       bucket,
       region,
       endpoint: endpoint || undefined,
+      authorizationV4: true,
     });
     return this.client;
   }
